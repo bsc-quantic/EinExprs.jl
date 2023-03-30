@@ -1,0 +1,3 @@
+[deps]
+Tensors = "a57d67a0-4683-47ff-be60-6114e830558b"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
