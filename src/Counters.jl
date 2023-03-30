@@ -1,5 +1,7 @@
 using Tensors: Tensor
 
+Base.ndims(expr::EinExpr) = length(labels(expr))
+
 flops(::Tensor) = 0
 function flops(expr::EinExpr)
     flops_sub = sum(flops.(expr.args))

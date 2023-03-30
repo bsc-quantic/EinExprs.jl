@@ -17,8 +17,6 @@ function Tensors.labels(expr::EinExpr; all::Bool=false)
     return mapreduce(collect ∘ labels, vcat, expr.args) |> unique
 end
 
-Base.ndims(expr::EinExpr) = length(labels(expr))
-
 function Base.size(expr::EinExpr, i::Symbol)
     target = findfirst(input -> i ∈ labels(input), expr.args)
     isnothing(target) && throw(KeyError(i))
