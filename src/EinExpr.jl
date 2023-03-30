@@ -34,18 +34,3 @@ Base.size(expr::EinExpr) = tuple((size(expr, i) for i in labels(expr))...)
 Indices of summation of an `EinExpr`.
 """
 suminds(expr::EinExpr) = setdiff(labels(expr, all=true), labels(expr))
-
-# uncontractedinds(expr::EinExpr) = ... # TODO
-
-# function flops(expr::EinExpr)
-#     flops_children = map(tensor -> begin
-#             if tensor isa EinExpr
-#                 ... # TODO
-#             else # Tensor
-#                 0
-#             end
-#         end, expr.args)
-
-#     length(flops_children) == 1 && return only(flops_children)
-#     return ... # TODO
-# end
