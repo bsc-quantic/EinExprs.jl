@@ -1,5 +1,6 @@
 using Tensors: Tensor
 
+flops(::Tensor) = 0
 function flops(expr::EinExpr)
     flops_sub = sum(flops.(expr.args))
 
@@ -8,5 +9,3 @@ function flops(expr::EinExpr)
 
     return flops_sub + flops_cur
 end
-
-flops(::Tensor) = 0
