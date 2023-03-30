@@ -28,6 +28,13 @@ end
 
 Base.size(expr::EinExpr) = tuple((size(expr, i) for i in labels(expr))...)
 
+"""
+    suminds(expr)
+
+Indices of summation of an `EinExpr`.
+"""
+suminds(expr::EinExpr) = setdiff(labels(expr, all=true), labels(expr))
+
 # uncontractedinds(expr::EinExpr) = ... # TODO
 
 # function flops(expr::EinExpr)

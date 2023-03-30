@@ -1,5 +1,6 @@
 @testset "EinExpr" begin
     using Tensors
+    using EinExprs: suminds
 
     @testset "identity" begin
         tensor = Tensor(rand(2, 3), (:i, :j))
@@ -14,6 +15,8 @@
         @test size(expr, :i) == 2
         @test size(expr, :j) == 3
         @test size(expr) == (2, 3)
+
+        @test isempty(suminds(expr))
     end
 
     @testset "transpose" begin
@@ -29,6 +32,8 @@
         @test size(expr, :i) == 2
         @test size(expr, :j) == 3
         @test size(expr) == (3, 2)
+
+        @test isempty(suminds(expr))
     end
 
     @testset "axis sum" begin
@@ -44,6 +49,8 @@
         @test size(expr, :i) == 2
         @test size(expr, :j) == 3
         @test size(expr) == (2,)
+
+        @test suminds(expr) == [:j]
     end
 
     @testset "diagonal" begin
@@ -58,6 +65,8 @@
 
         @test size(expr, :i) == 2
         @test size(expr) == (2,)
+
+        @test isempty(suminds(expr))
     end
 
     @testset "trace" begin
@@ -72,6 +81,8 @@
 
         @test size(expr, :i) == 2
         @test size(expr) == ()
+
+        @test suminds(expr) == [:i]
     end
 
     @testset "outer product" begin
@@ -92,6 +103,8 @@
             @test size(expr, i) == d
         end
         @test size(expr) == (2, 3, 4, 5)
+
+        @test isempty(suminds(expr))
     end
 
     @testset "inner product" begin
@@ -110,6 +123,8 @@
 
         @test size(expr, :i) == 2
         @test size(expr) == ()
+
+        @test suminds(expr) == [:i]
     end
 
     @testset "matrix multiplication" begin
@@ -130,5 +145,7 @@
         @test size(expr, :j) == 4
         @test size(expr, :k) == 3
         @test size(expr) == (2, 4)
+
+        @test suminds(expr) == [:k]
     end
 end
