@@ -4,6 +4,7 @@
         expr = EinExpr([tensor])
 
         @test flops(expr) == 0
+        @test removedsize(expr) == 0
     end
 
     @testset "transpose" begin
@@ -11,6 +12,7 @@
         expr = EinExpr([tensor], [:j, :i])
 
         @test flops(expr) == 0
+        @test removedsize(expr) == 0
     end
 
     @testset "axis sum" begin
@@ -18,6 +20,7 @@
         expr = EinExpr([tensor], (:i,))
 
         @test flops(expr) == 6
+        @test removedsize(expr) == 4
     end
 
     @testset "diagonal" begin
@@ -25,6 +28,7 @@
         expr = EinExpr([tensor], (:i,))
 
         @test flops(expr) == 0
+        @test removedsize(expr) == 2
     end
 
     @testset "trace" begin
@@ -32,6 +36,7 @@
         expr = EinExpr([tensor], ())
 
         @test flops(expr) == 2
+        @test removedsize(expr) == 3
     end
 
     @testset "outer product" begin
@@ -42,6 +47,7 @@
         expr = EinExpr(tensors)
 
         @test flops(expr) == prod(2:5)
+        @test removedsize(expr) == -94
     end
 
     @testset "inner product" begin
@@ -52,6 +58,7 @@
         expr = EinExpr(tensors)
 
         @test flops(expr) == 2
+        @test removedsize(expr) == 3
     end
 
     @testset "matrix multiplication" begin
@@ -62,5 +69,6 @@
         expr = EinExpr(tensors)
 
         @test flops(expr) == 2 * 3 * 4
+        @test removedsize(expr) == 10
     end
 end

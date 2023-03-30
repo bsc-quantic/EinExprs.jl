@@ -4,7 +4,7 @@ include("EinExpr.jl")
 export EinExpr
 
 include("Counters.jl")
-export flops
+export flops, removedsize
 
 include("Optimizers/Optimizers.jl")
 export Optimizer, einexpr

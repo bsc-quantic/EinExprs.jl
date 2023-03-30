@@ -9,3 +9,6 @@ function flops(expr::EinExpr)
 
     return flops_sub + flops_cur
 end
+
+removedsize(::Tensor) = 0
+removedsize(expr::EinExpr) = mapreduce(prod ∘ size, +, expr.args) - prod(size(expr))
