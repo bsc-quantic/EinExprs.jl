@@ -10,7 +10,7 @@ Greedy contraction path solver. Greedily selects contractions that maximize the 
     heuristic::Function
 end
 
-function einexpr(config::Greedy, path)
+function einexpr(config::Greedy, expr)
     # TODO memory limit?
 end
 

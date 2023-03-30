@@ -9,7 +9,7 @@ Exhaustive contraction path optimizers. It guarantees to find the optimal contra
     outer::Bool = false
 end
 
-function einexpr(config::Exhaustive, output, inputs)
+function einexpr(config::Exhaustive, expr)
     config.outer && throw("Exhaustive search with outer-products is not implemented yet")
 
     expr = EinExpr(inputs, output)
