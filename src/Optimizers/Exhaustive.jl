@@ -33,7 +33,7 @@ function einexpr(config::Exhaustive, expr)
         # TODO prune paths based on memory limit?
 
         # recurse fixing candidate index
-        einexpr(candidate)
+        einexpr(config, candidate)
     end
 
     # end of path (only reached if flops is best so far)
