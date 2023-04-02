@@ -3,11 +3,11 @@ using Base: @kwdef
 """
     Greedy
 
-Greedy contraction path solver. Greedily selects contractions that maximize the heuristic.
+Greedy contraction path solver. Greedily selects contractions that maximize the metric.
 """
 @kwdef struct Greedy <: Optimizer
     choose::Function
-    heuristic::Function
+    metric::Function = removedsize
 end
 
 function einexpr(config::Greedy, expr)
