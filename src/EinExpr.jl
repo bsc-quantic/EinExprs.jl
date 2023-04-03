@@ -6,7 +6,7 @@ struct EinExpr
     head::Vector{Symbol}
     args::Vector{Union{EinExpr,Tensor}}
 
-    function EinExpr(inputs::AbstractVecOrTuple{Union{EinExpr,Tensor}}, output=mapreduce(labels, symdiff, inputs))
+    function EinExpr(inputs, output=mapreduce(labels, symdiff, inputs))
         # TODO checks: same dim for index, valid indices
         output = collect(output)
         new(output, inputs)
@@ -51,4 +51,8 @@ function suminds(expr::EinExpr; parallel::Bool=false)
     end
 
     return filter(>=(2) ∘ length, collect(values(dual)))
+end
+
+function Base.string(expr::EinExpr; recursive::Bool=false)
+    !recursive && return "$(join(map(x -> string.(labels(x)) |> join, expr.args), ","))->$(string.(labels(expr)) |> join)"
 end
