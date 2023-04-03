@@ -35,22 +35,25 @@ Indices of summation of an `EinExpr`.
 function suminds(expr::EinExpr; parallel::Bool=false)
     !parallel && return setdiff(labels(expr, all=true), labels(expr))
 
-    # compute connections of indices
-    edges = DefaultDict{Symbol,Vector{UInt}}(() -> UInt[])
+    # annotate connections of indices
+    edges = DefaultDict{Symbol,Set{UInt}}(() -> Set{UInt}())
     for input in expr.args
         for index in labels(input)
             push!(edges[index], objectid(input))
         end
     end
 
-    # compute dual of dictionary
-    dual = DefaultDict{Vector{UInt},Set{Symbol}}(() -> Set{Symbol}())
+    # compute dual of `edges` dictionary
+    dual = DefaultDict{Set{UInt},Vector{Symbol}}(() -> Vector{Symbol}())
     for (index, neighbours) in edges
         length(neighbours) < 2 && continue
         push!(dual[neighbours], index)
     end
 
-    return filter(>=(2) ∘ length, collect(values(dual)))
+    # filter out open indices
+    return filter(dual) do (neighbours, inds)
+               length(neighbours) >= 2
+           end |> values |> collect
 end
 
 function Base.string(expr::EinExpr; recursive::Bool=false)
