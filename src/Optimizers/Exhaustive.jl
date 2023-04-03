@@ -12,30 +12,30 @@ end
 function einexpr(config::Exhaustive, expr)
     config.outer && throw("Exhaustive search with outer-products is not implemented yet")
 
-    # cache flops computation
-    flops_best = flops(expr)
-
     # TODO group indices if they are parallel
-    for index in suminds(expr)
-        # select tensors containing such index
-        targets = filter(∋(index) ∘ labels, expr.args)
-        target_inds = labels.(targets)
-        contracting_inds = setdiff(∩(target_inds...), expr.head)
-        output_inds = setdiff(unique(vcat(target_inds)), contracting_inds)
+    # TODO cache flops computation
+    # TODO type annotation in `suminds(expr, parallel=true)::Vector{Vector{Symbol}}` for type-inference?
+    # NOTE `for index in suminds(expr)` is better for debugging
+    return reduce(suminds(expr, parallel=true), init=expr) do leader, inds
+        # select tensors containing such inds
+        targets = filter(x -> !isdisjoint(labels(x), inds), leader.args)
 
-        # add einsum node of tensor contraction of such index (and its parallels?)
-        node = EinExpr(targets, output_inds)
-        path = EinExpr([node, filter(∌(index) ∘ labels, expr.args)...], expr.head)
+        subinds::Vector{Base.AbstractVecOrTuple{Symbol}} = labels.(targets)
+        subsuminds = setdiff(∩(subinds...), leader.head)
+        suboutput = setdiff(Iterators.flatten(subinds), subsuminds)
+
+        # add einsum node of tensor contraction of such inds (and its parallels?)
+        candidate = EinExpr([
+                EinExpr(targets, suboutput),
+                filter(∌(inds) ∘ labels, leader.args)...
+            ], leader.head)
 
         # prune paths based on flops
-        flops(path) >= flops_best && continue
+        flops(candidate) >= flops(leader) && return leader
 
         # TODO prune paths based on memory limit?
 
         # recurse fixing candidate index
-        einexpr(config, candidate)
+        return einexpr(config, candidate)
     end
-
-    # end of path (only reached if flops is best so far)
-    return path
 end
