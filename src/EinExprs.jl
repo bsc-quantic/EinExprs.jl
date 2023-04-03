@@ -2,6 +2,7 @@ module EinExprs
 
 include("EinExpr.jl")
 export EinExpr
+export suminds
 
 include("Counters.jl")
 export flops, removedsize
