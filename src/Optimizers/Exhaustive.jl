@@ -16,7 +16,6 @@ function einexpr(config::Exhaustive, expr; leader=expr)
         return flops(expr) < flops(leader) ? expr : leader
     end
 
-    # TODO cache flops computation
     # TODO type annotation in `suminds(expr, parallel=true)::Vector{Vector{Symbol}}` for type-inference?
     # NOTE `for index in suminds(expr)` is better for debugging
     for inds in suminds(expr, parallel=true)
