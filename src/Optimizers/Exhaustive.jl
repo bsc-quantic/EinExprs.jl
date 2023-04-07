@@ -9,33 +9,38 @@ Exhaustive contraction path optimizers. It guarantees to find the optimal contra
     outer::Bool = false
 end
 
-function einexpr(config::Exhaustive, expr)
+function einexpr(config::Exhaustive, expr; leader=expr)
     config.outer && throw("Exhaustive search with outer-products is not implemented yet")
 
-    # TODO group indices if they are parallel
+    if length(suminds(expr, parallel=true)) == 1
+        return flops(expr) < flops(leader) ? expr : leader
+    end
+
     # TODO cache flops computation
     # TODO type annotation in `suminds(expr, parallel=true)::Vector{Vector{Symbol}}` for type-inference?
     # NOTE `for index in suminds(expr)` is better for debugging
-    return reduce(suminds(expr, parallel=true), init=expr) do leader, inds
+    for inds in suminds(expr, parallel=true)
         # select tensors containing such inds
-        targets = filter(x -> !isdisjoint(labels(x), inds), leader.args)
+        targets = filter(x -> !isdisjoint(labels(x), inds), expr.args)
 
-        subinds::Vector{Base.AbstractVecOrTuple{Symbol}} = labels.(targets)
-        subsuminds = setdiff(∩(subinds...), leader.head)
+        subinds = labels.(targets)
+        subsuminds = setdiff(∩(subinds...), expr.head)
         suboutput = setdiff(Iterators.flatten(subinds), subsuminds)
 
-        # add einsum node of tensor contraction of such inds (and its parallels?)
-        candidate = EinExpr([
-                EinExpr(targets, suboutput),
-                filter(∌(inds) ∘ labels, leader.args)...
-            ], leader.head)
+        candidate = EinExpr(targets, suboutput)
 
         # prune paths based on flops
-        flops(candidate) >= flops(leader) && return leader
+        flops(candidate) >= flops(leader) && continue
 
         # TODO prune paths based on memory limit?
 
         # recurse fixing candidate index
-        return einexpr(config, candidate)
+        candidate = EinExpr([
+                candidate,
+                filter(x -> isdisjoint(labels(x), inds), expr.args)...,
+            ], expr.head)
+        leader = einexpr(config, candidate, leader=leader)
     end
+
+    return leader
 end
