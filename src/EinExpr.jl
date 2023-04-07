@@ -19,6 +19,8 @@ function Tensors.labels(expr::EinExpr; all::Bool=false)
     return mapreduce(collect ∘ labels, vcat, expr.args) |> unique |> Tuple
 end
 
+path(expr::EinExpr) = vcat([path(i) for i in expr.args if i isa EinExpr]..., suminds(expr, parallel=false))
+
 function Base.size(expr::EinExpr, i::Symbol)
     target = findfirst(input -> i ∈ labels(input), expr.args)
     isnothing(target) && throw(KeyError(i))

@@ -36,4 +36,15 @@
     @test expr isa EinExpr
     # TODO traverse through the tree and check everything is ok
     @test flops(expr) == 48753
+    @test path(expr) == [
+        (:q,),
+        (:m,),
+        (:f, :i),
+        (:g, :l),
+        (:b,),
+        (:o,),
+        (:c, :e),
+        (:n, :a, :d, :h),
+        (:k,),
+    ]
 end
