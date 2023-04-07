@@ -6,10 +6,10 @@
         tensor = Tensor(rand(2, 3), (:i, :j))
         expr = EinExpr([tensor])
 
-        @test expr.head == collect(labels(tensor))
-        @test expr.args == [tensor]
+        @test expr.head == labels(tensor)
+        @test expr.args == (tensor,)
 
-        @test labels(expr) == collect(labels(tensor))
+        @test labels(expr) == labels(tensor)
         @test ndims(expr) == 2
 
         @test size(expr, :i) == 2
@@ -22,12 +22,12 @@
 
     @testset "transpose" begin
         tensor = Tensor(rand(2, 3), (:i, :j))
-        expr = EinExpr([tensor], [:j, :i])
+        expr = EinExpr([tensor], (:j, :i))
 
-        @test expr.head == collect(reverse(labels(tensor)))
-        @test expr.args == [tensor]
+        @test expr.head == reverse(labels(tensor))
+        @test expr.args == (tensor,)
 
-        @test labels(expr) == collect(reverse(labels(tensor)))
+        @test labels(expr) == reverse(labels(tensor))
         @test ndims(expr) == 2
 
         @test size(expr, :i) == 2
@@ -42,17 +42,17 @@
         tensor = Tensor(rand(2, 3), (:i, :j))
         expr = EinExpr([tensor], (:i,))
 
-        @test expr.head == [:i]
-        @test expr.args == [tensor]
+        @test expr.head == (:i,)
+        @test expr.args == (tensor,)
 
-        @test labels(expr) == [:i]
-        @test labels(expr, all=true) == [:i, :j]
+        @test labels(expr) == (:i,)
+        @test labels(expr, all=true) == (:i, :j)
 
         @test size(expr, :i) == 2
         @test size(expr, :j) == 3
         @test size(expr) == (2,)
 
-        @test suminds(expr) == [:j]
+        @test suminds(expr) == (:j,)
         @test isempty(suminds(expr, parallel=true))
     end
 
@@ -60,10 +60,10 @@
         tensor = Tensor(rand(2, 2), (:i, :i))
         expr = EinExpr([tensor], (:i,))
 
-        @test expr.head == [:i]
-        @test expr.args == [tensor]
+        @test expr.head == (:i,)
+        @test expr.args == (tensor,)
 
-        @test labels(expr) == [:i]
+        @test labels(expr) == (:i,)
         @test labels(expr, all=true) == labels(expr)
 
         @test size(expr, :i) == 2
@@ -78,29 +78,29 @@
         expr = EinExpr([tensor], ())
 
         @test isempty(expr.head)
-        @test expr.args == [tensor]
+        @test expr.args == (tensor,)
 
         @test isempty(labels(expr))
-        @test labels(expr, all=true) == [:i]
+        @test labels(expr, all=true) == (:i,)
 
         @test size(expr, :i) == 2
         @test size(expr) == ()
 
-        @test suminds(expr) == [:i]
+        @test suminds(expr) == (:i,)
         @test isempty(suminds(expr, parallel=true))
     end
 
     @testset "outer product" begin
-        tensors = [
+        tensors = (
             Tensor(rand(2, 3), (:i, :j)),
             Tensor(rand(4, 5), (:k, :l)),
-        ]
+        )
         expr = EinExpr(tensors)
 
-        @test expr.head == [:i, :j, :k, :l]
+        @test expr.head == (:i, :j, :k, :l,)
         @test expr.args == tensors
 
-        @test labels(expr) == mapreduce(collect ∘ labels, vcat, tensors)
+        @test labels(expr) == Tuple(mapreduce(collect ∘ labels, vcat, tensors))
         @test labels(expr, all=true) == labels(expr)
         @test ndims(expr) == 4
 
@@ -115,60 +115,60 @@
 
     @testset "inner product" begin
         @testset "Vector" begin
-            tensors = [
+            tensors = (
                 Tensor(rand(2), (:i,)),
                 Tensor(rand(2), (:i,)),
-            ]
+            )
             expr = EinExpr(tensors)
 
             @test isempty(expr.head)
             @test expr.args == tensors
 
             @test isempty(labels(expr))
-            @test labels(expr, all=true) == [:i]
+            @test labels(expr, all=true) == (:i,)
             @test ndims(expr) == 0
 
             @test size(expr, :i) == 2
             @test size(expr) == ()
 
-            @test suminds(expr) == [:i]
-            @test suminds(expr, parallel=true) == [[:i]]
+            @test suminds(expr) == (:i,)
+            @test suminds(expr, parallel=true) == ((:i,),)
         end
         @testset "Matrix" begin
-            tensors = [
+            tensors = (
                 Tensor(rand(2, 3), (:i, :j)),
                 Tensor(rand(2, 3), (:i, :j)),
-            ]
+            )
             expr = EinExpr(tensors)
 
             @test isempty(expr.head)
             @test expr.args == tensors
 
             @test isempty(labels(expr))
-            @test labels(expr, all=true) == [:i, :j]
+            @test labels(expr, all=true) == (:i, :j)
             @test ndims(expr) == 0
 
             @test size(expr, :i) == 2
             @test size(expr, :j) == 3
             @test size(expr) == ()
 
-            @test suminds(expr) == [:i, :j]
+            @test suminds(expr) == (:i, :j)
             @test Set(Set.(suminds(expr, parallel=true))) == Set([Set([:i, :j])])
         end
     end
 
     @testset "matrix multiplication" begin
-        tensors = [
+        tensors = (
             Tensor(rand(2, 3), (:i, :k)),
             Tensor(rand(3, 4), (:k, :j)),
-        ]
+        )
         expr = EinExpr(tensors)
 
-        @test expr.head == [:i, :j]
+        @test expr.head == (:i, :j)
         @test expr.args == tensors
 
-        @test labels(expr) == [:i, :j]
-        @test labels(expr, all=true) == [:i, :k, :j]
+        @test labels(expr) == (:i, :j)
+        @test labels(expr, all=true) == (:i, :k, :j)
         @test ndims(expr) == 2
 
         @test size(expr, :i) == 2
@@ -176,7 +176,7 @@
         @test size(expr, :k) == 3
         @test size(expr) == (2, 4)
 
-        @test suminds(expr) == [:k]
-        @test suminds(expr, parallel=true) == [[:k]]
+        @test suminds(expr) == (:k,)
+        @test suminds(expr, parallel=true) == ((:k,),)
     end
 end

@@ -3,19 +3,20 @@ using Tensors
 using DataStructures: DefaultDict
 
 struct EinExpr
-    head::Vector{Symbol}
-    args::Vector{Union{EinExpr,Tensor}}
+    head::NTuple{N,Symbol} where {N}
+    args::NTuple{M,Union{EinExpr,Tensor}} where {M}
 
     function EinExpr(inputs, output=mapreduce(labels, symdiff, inputs))
         # TODO checks: same dim for index, valid indices
-        output = collect(output)
+        output = Tuple(output)
+        inputs = Tuple(inputs)
         new(output, inputs)
     end
 end
 
 function Tensors.labels(expr::EinExpr; all::Bool=false)
     !all && return expr.head
-    return mapreduce(collect ∘ labels, vcat, expr.args) |> unique
+    return mapreduce(collect ∘ labels, vcat, expr.args) |> unique |> Tuple
 end
 
 function Base.size(expr::EinExpr, i::Symbol)
@@ -33,7 +34,7 @@ Base.size(expr::EinExpr) = tuple((size(expr, i) for i in labels(expr))...)
 Indices of summation of an `EinExpr`.
 """
 function suminds(expr::EinExpr; parallel::Bool=false)
-    !parallel && return setdiff(labels(expr, all=true), labels(expr))
+    !parallel && return setdiff(labels(expr, all=true), labels(expr)) |> Tuple
 
     # annotate connections of indices
     edges = DefaultDict{Symbol,Set{UInt}}(() -> Set{UInt}())
@@ -53,7 +54,7 @@ function suminds(expr::EinExpr; parallel::Bool=false)
     # filter out open indices
     return filter(dual) do (neighbours, inds)
                length(neighbours) >= 2
-           end |> values |> collect
+           end |> values .|> Tuple |> Tuple
 end
 
 function Base.string(expr::EinExpr; recursive::Bool=false)
