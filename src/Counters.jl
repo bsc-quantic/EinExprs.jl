@@ -1,9 +1,10 @@
 using Tensors: Tensor
+using Memoize
 
 Base.ndims(expr::EinExpr) = length(labels(expr))
 
 flops(::Tensor) = 0
-function flops(expr::EinExpr)
+@memoize function flops(expr::EinExpr)
     flops_sub = sum(flops.(expr.args))
 
     floppi(inds) = mapreduce(i -> size(expr, i), *, inds, init=one(BigInt))
