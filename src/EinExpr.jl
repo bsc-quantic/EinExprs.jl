@@ -59,6 +59,24 @@ function suminds(expr::EinExpr; parallel::Bool=false)
            end |> values .|> Tuple |> Tuple
 end
 
+"""
+    sum(expr, indices)
+
+Explicit sum over `indices`.
+"""
+function Base.sum(expr::EinExpr, inds)
+    i = .!isdisjoint.((inds,), labels.(expr.args))
+
+    subinds = labels.(expr.args[findall(i)])
+    subsuminds = setdiff(∩(subinds...), expr.head)
+    suboutput = setdiff(Iterators.flatten(subinds), subsuminds)
+
+    return EinExpr((
+            EinExpr(expr.args[findall(i)], suboutput),
+            expr.args[findall(.!i)]...,
+        ), expr.head)
+end
+
 function Base.string(expr::EinExpr; recursive::Bool=false)
     !recursive && return "$(join(map(x -> string.(labels(x)) |> join, expr.args), ","))->$(string.(labels(expr)) |> join)"
 end
