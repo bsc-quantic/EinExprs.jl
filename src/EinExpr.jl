@@ -80,3 +80,38 @@ end
 function Base.string(expr::EinExpr; recursive::Bool=false)
     !recursive && return "$(join(map(x -> string.(labels(x)) |> join, expr.args), ","))->$(string.(labels(expr)) |> join)"
 end
+
+# Iteration interface
+Base.IteratorSize(::Type{EinExpr}) = Base.HasLength()
+Base.length(expr::EinExpr) = sum(arg -> arg isa EinExpr ? length(arg) : 1, expr.args) + 1
+Base.IteratorEltype(::Type{EinExpr}) = Base.HasEltype()
+Base.eltype(::EinExpr) = Union{<:Tensor,EinExpr}
+
+# TODO only return `EinExpr`s?
+function Base.iterate(expr::EinExpr, state=1)
+    isnothing(state) && return nothing
+
+    # iterate child level
+    i, j... = state
+    it = iterate(expr.args, i)
+
+    # return itself on last iteration
+    isnothing(it) && return expr, nothing
+
+    # recurse iteration
+    (next, statenext) = it
+
+    # if `next` is a Tensor, return directly
+    !(next isa EinExpr) && return next, statenext
+
+    next, j = if isempty(j)
+        iterate(next)
+    else
+        iterate(next, j)
+    end
+
+    # if j === nothing, expr.args iteration has finished
+    isnothing(j) && return next, i + 1
+
+    return next, (i, j...)
+end
