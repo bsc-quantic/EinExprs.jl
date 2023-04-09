@@ -3,7 +3,7 @@ using Base: @kwdef
 """
     Exhaustive([outer = false])
 
-Exhaustive contraction path optimizers. It guarantees to find the optimal contraction path but at the cost of ``\\mathcal{O}(n!)`` time complexity.
+Exhaustive contraction path optimizers. It guarantees to find the optimal contraction path but at the cost of ``\\mathcal{O}(n!)`` time complexity if `outer = true` or ``\\mathcal{O}(exp(n))`` if `outer = false` (default).
 """
 @kwdef struct Exhaustive <: Optimizer
     metric::Function = flops
