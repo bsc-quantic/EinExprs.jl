@@ -17,7 +17,6 @@ function einexpr(config::Exhaustive, expr; leader=expr)
         return config.metric(expr) < config.metric(leader) ? expr : leader
     end
 
-    # TODO type annotation in `suminds(expr, parallel=true)::Vector{Vector{Symbol}}` for type-inference?
     # NOTE `for index in suminds(expr)` is better for debugging
     for inds in suminds(expr, parallel=true)
         # select tensors containing such inds
