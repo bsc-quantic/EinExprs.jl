@@ -2,7 +2,7 @@ module EinExprs
 
 include("EinExpr.jl")
 export EinExpr
-export suminds, path
+export suminds, path, select
 
 include("Counters.jl")
 export flops, removedsize

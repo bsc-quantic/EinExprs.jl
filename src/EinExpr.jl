@@ -30,6 +30,9 @@ end
 
 Base.size(expr::EinExpr) = tuple((size(expr, i) for i in labels(expr))...)
 
+select(expr::EinExpr, i) = filter(∋(i) ∘ labels, expr.args)
+select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> select(expr, j), i)...)
+
 """
     suminds(expr)
 
