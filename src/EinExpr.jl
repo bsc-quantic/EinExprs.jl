@@ -4,12 +4,12 @@ using DataStructures: DefaultDict
 
 struct EinExpr
     head::NTuple{N,Symbol} where {N}
-    args::NTuple{M,Union{EinExpr,Tensor}} where {M}
+    args::Vector{Any}
 
     function EinExpr(inputs, output=mapreduce(labels, symdiff, inputs))
         # TODO checks: same dim for index, valid indices
         output = Tuple(output)
-        inputs = Tuple(inputs)
+        inputs = collect(inputs)
         new(output, inputs)
     end
 end

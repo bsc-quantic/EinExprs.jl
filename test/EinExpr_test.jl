@@ -7,7 +7,7 @@
         expr = EinExpr([tensor])
 
         @test expr.head == labels(tensor)
-        @test expr.args == (tensor,)
+        @test expr.args == [tensor]
 
         @test labels(expr) == labels(tensor)
         @test ndims(expr) == 2
@@ -25,7 +25,7 @@
         expr = EinExpr([tensor], (:j, :i))
 
         @test expr.head == reverse(labels(tensor))
-        @test expr.args == (tensor,)
+        @test expr.args == [tensor]
 
         @test labels(expr) == reverse(labels(tensor))
         @test ndims(expr) == 2
@@ -43,7 +43,7 @@
         expr = EinExpr([tensor], (:i,))
 
         @test expr.head == (:i,)
-        @test expr.args == (tensor,)
+        @test expr.args == [tensor]
 
         @test labels(expr) == (:i,)
         @test labels(expr, all=true) == (:i, :j)
@@ -61,7 +61,7 @@
         expr = EinExpr([tensor], (:i,))
 
         @test expr.head == (:i,)
-        @test expr.args == (tensor,)
+        @test expr.args == [tensor]
 
         @test labels(expr) == (:i,)
         @test labels(expr, all=true) == labels(expr)
@@ -78,7 +78,7 @@
         expr = EinExpr([tensor], ())
 
         @test isempty(expr.head)
-        @test expr.args == (tensor,)
+        @test expr.args == [tensor]
 
         @test isempty(labels(expr))
         @test labels(expr, all=true) == (:i,)
@@ -91,10 +91,10 @@
     end
 
     @testset "outer product" begin
-        tensors = (
+        tensors = [
             Tensor(rand(2, 3), (:i, :j)),
             Tensor(rand(4, 5), (:k, :l)),
-        )
+        ]
         expr = EinExpr(tensors)
 
         @test expr.head == (:i, :j, :k, :l,)
@@ -115,10 +115,10 @@
 
     @testset "inner product" begin
         @testset "Vector" begin
-            tensors = (
+            tensors = [
                 Tensor(rand(2), (:i,)),
                 Tensor(rand(2), (:i,)),
-            )
+            ]
             expr = EinExpr(tensors)
 
             @test isempty(expr.head)
@@ -135,10 +135,10 @@
             @test suminds(expr, parallel=true) == ((:i,),)
         end
         @testset "Matrix" begin
-            tensors = (
+            tensors = [
                 Tensor(rand(2, 3), (:i, :j)),
                 Tensor(rand(2, 3), (:i, :j)),
-            )
+            ]
             expr = EinExpr(tensors)
 
             @test isempty(expr.head)
@@ -158,10 +158,10 @@
     end
 
     @testset "matrix multiplication" begin
-        tensors = (
+        tensors = [
             Tensor(rand(2, 3), (:i, :k)),
             Tensor(rand(3, 4), (:k, :j)),
-        )
+        ]
         expr = EinExpr(tensors)
 
         @test expr.head == (:i, :j)
