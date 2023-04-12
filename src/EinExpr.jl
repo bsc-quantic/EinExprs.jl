@@ -51,7 +51,7 @@ select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> selec
 
 Transform `expr` into a contraction path.
 """
-path(expr::EinExpr) = vcat([path(i) for i in expr.args if i isa EinExpr]..., suminds(expr, parallel=false))
+path(expr::EinExpr) = map(suminds, Iterators.filter(x -> x isa EinExpr, expr))
 
 """
     suminds(expr[, parallel=false])
