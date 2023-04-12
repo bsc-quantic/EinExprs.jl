@@ -14,12 +14,29 @@ struct EinExpr
     end
 end
 
+"""
+    labels(expr::EinExpr[, all=false])
+
+Return the indices of the `Tensor` resulting from contracting `expr`. If `all=true`, return a list of all the involved indices.
+"""
 function Tensors.labels(expr::EinExpr; all::Bool=false)
     !all && return expr.head
     return mapreduce(collect ∘ labels, vcat, expr.args) |> unique |> Tuple
 end
 
+"""
+    path(expr::EinExpr)
+
+Transform `expr` into a contraction path.
+"""
 path(expr::EinExpr) = vcat([path(i) for i in expr.args if i isa EinExpr]..., suminds(expr, parallel=false))
+
+"""
+    size(expr::EinExpr[, index])
+
+Return the size of the `Tensor` resulting from contracting `expr`. If `index` is specified, return the size of such index.
+"""
+Base.size(expr::EinExpr) = tuple((size(expr, i) for i in labels(expr))...)
 
 function Base.size(expr::EinExpr, i::Symbol)
     target = findfirst(input -> i ∈ labels(input), expr.args)
@@ -28,13 +45,16 @@ function Base.size(expr::EinExpr, i::Symbol)
     return size(expr.args[target], i)
 end
 
-Base.size(expr::EinExpr) = tuple((size(expr, i) for i in labels(expr))...)
+"""
+    select(expr, i)
 
+Return the child elements (i.e. `Tensor`s or `EinExpr`s) that contain `i` indices.
+"""
 select(expr::EinExpr, i) = filter(∋(i) ∘ labels, expr.args)
 select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> select(expr, j), i)...)
 
 """
-    suminds(expr)
+    suminds(expr[, parallel=false])
 
 Indices of summation of an `EinExpr`.
 """
@@ -62,6 +82,13 @@ function suminds(expr::EinExpr; parallel::Bool=false)
            end |> values .|> Tuple |> Tuple
 end
 
+"""
+    sum!(expr, indices)
+
+Explicit, in-place sum over `indices`.
+
+See also: [`sum`](@ref), [`suminds`](@ref).
+"""
 function Base.sum!(expr::EinExpr, inds)
     subargs = splice!(expr.args, findall(arg -> labels(arg) ∩ inds == inds, expr.args))
     subinds = unique(Iterators.flatten(labels.(subargs)))
@@ -76,7 +103,7 @@ end
 
 Explicit sum over `indices`.
 
-See also: [`sum!`](@ref).
+See [`sum!`](@ref) for inplace modification.
 """
 function Base.sum(expr::EinExpr, inds)
     i = .!isdisjoint.((inds,), labels.(expr.args))
