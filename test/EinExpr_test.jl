@@ -52,7 +52,7 @@
         @test size(expr, :j) == 3
         @test size(expr) == (2,)
 
-        @test suminds(expr) == (:j,)
+        @test suminds(expr) == [:j]
         @test isempty(suminds(expr, parallel=true))
     end
 
@@ -86,7 +86,7 @@
         @test size(expr, :i) == 2
         @test size(expr) == ()
 
-        @test suminds(expr) == (:i,)
+        @test suminds(expr) == [:i]
         @test isempty(suminds(expr, parallel=true))
     end
 
@@ -131,8 +131,8 @@
             @test size(expr, :i) == 2
             @test size(expr) == ()
 
-            @test suminds(expr) == (:i,)
-            @test suminds(expr, parallel=true) == ((:i,),)
+            @test suminds(expr) == [:i]
+            @test suminds(expr, parallel=true) == [[:i]]
         end
         @testset "Matrix" begin
             tensors = [
@@ -152,7 +152,7 @@
             @test size(expr, :j) == 3
             @test size(expr) == ()
 
-            @test suminds(expr) == (:i, :j)
+            @test suminds(expr) == [:i, :j]
             @test Set(Set.(suminds(expr, parallel=true))) == Set([Set([:i, :j])])
         end
     end
@@ -176,7 +176,7 @@
         @test size(expr, :k) == 3
         @test size(expr) == (2, 4)
 
-        @test suminds(expr) == (:k,)
-        @test suminds(expr, parallel=true) == ((:k,),)
+        @test suminds(expr) == [:k]
+        @test suminds(expr, parallel=true) == [[:k]]
     end
 end

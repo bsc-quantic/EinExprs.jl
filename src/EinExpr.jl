@@ -59,7 +59,7 @@ path(expr::EinExpr) = vcat([path(i) for i in expr.args if i isa EinExpr]..., sum
 Indices of summation of an `EinExpr`.
 """
 function suminds(expr::EinExpr; parallel::Bool=false)
-    !parallel && return setdiff(labels(expr, all=true), labels(expr)) |> Tuple
+    !parallel && return setdiff(labels(expr, all=true), labels(expr)) |> collect
 
     # annotate connections of indices
     edges = DefaultDict{Symbol,Set{UInt}}(() -> Set{UInt}())
@@ -79,7 +79,7 @@ function suminds(expr::EinExpr; parallel::Bool=false)
     # filter out open indices
     return filter(dual) do (neighbours, inds)
                length(neighbours) >= 2
-           end |> values .|> Tuple |> Tuple
+           end |> values .|> collect |> collect
 end
 
 """

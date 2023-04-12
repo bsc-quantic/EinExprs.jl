@@ -37,14 +37,14 @@
     # TODO traverse through the tree and check everything is ok
     @test flops(expr) == 48753
     @test issetequal(path(expr), [
-        (:q,),
-        (:m,),
-        (:f, :i),
-        (:g, :l),
-        (:b,),
-        (:o,),
-        (:c, :e),
-        (:n, :a, :d, :h),
-        (:k,),
+        [:q],
+        [:m],
+        [:f, :i],
+        [:g, :l],
+        [:b],
+        [:o],
+        [:c, :e],
+        [:n, :a, :d, :h],
+        [:k],
     ])
 end
