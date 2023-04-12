@@ -36,7 +36,7 @@
     @test expr isa EinExpr
     # TODO traverse through the tree and check everything is ok
     @test flops(expr) == 48753
-    @test path(expr) == [
+    @test issetequal(path(expr), [
         (:q,),
         (:m,),
         (:f, :i),
@@ -46,5 +46,5 @@
         (:c, :e),
         (:n, :a, :d, :h),
         (:k,),
-    ]
+    ])
 end
