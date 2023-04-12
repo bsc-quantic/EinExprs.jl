@@ -25,13 +25,6 @@ function Tensors.labels(expr::EinExpr; all::Bool=false)
 end
 
 """
-    path(expr::EinExpr)
-
-Transform `expr` into a contraction path.
-"""
-path(expr::EinExpr) = vcat([path(i) for i in expr.args if i isa EinExpr]..., suminds(expr, parallel=false))
-
-"""
     size(expr::EinExpr[, index])
 
 Return the size of the `Tensor` resulting from contracting `expr`. If `index` is specified, return the size of such index.
@@ -52,6 +45,13 @@ Return the child elements (i.e. `Tensor`s or `EinExpr`s) that contain `i` indice
 """
 select(expr::EinExpr, i) = filter(∋(i) ∘ labels, expr.args)
 select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> select(expr, j), i)...)
+
+"""
+    path(expr::EinExpr)
+
+Transform `expr` into a contraction path.
+"""
+path(expr::EinExpr) = vcat([path(i) for i in expr.args if i isa EinExpr]..., suminds(expr, parallel=false))
 
 """
     suminds(expr[, parallel=false])
