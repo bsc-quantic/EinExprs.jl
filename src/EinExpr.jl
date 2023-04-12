@@ -96,6 +96,7 @@ function Base.sum!(expr::EinExpr, inds)
     subhead = setdiff(subinds, subsuminds)
 
     pushfirst!(expr.args, EinExpr(subargs, subhead))
+    return expr
 end
 
 """
