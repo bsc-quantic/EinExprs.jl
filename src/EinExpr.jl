@@ -127,7 +127,7 @@ function Base.sum(expr::EinExpr, inds)
         ), expr.head)
 end
 
-Base.sum(inputs::Base.AbstractVecOrTuple{Union{Tensor,EinExpr}}; inds=mapreduce(labels, symdiff, inputs)) = EinExpr(inputs, inds)
+Base.sum(inputs::Union{Tensor,EinExpr}...; inds=mapreduce(labels, symdiff, inputs)) = EinExpr(inputs, inds)
 
 function Base.string(expr::EinExpr; recursive::Bool=false)
     !recursive && return "$(join(map(x -> string.(labels(x)) |> join, expr.args), ","))->$(string.(labels(expr)) |> join)"
