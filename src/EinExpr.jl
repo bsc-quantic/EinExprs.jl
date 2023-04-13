@@ -98,10 +98,12 @@ Explicit, in-place sum over `indices`.
 See also: [`sum`](@ref), [`suminds`](@ref).
 """
 function Base.sum!(expr::EinExpr, inds)
-    subargs = splice!(expr.args, findall(arg -> labels(arg) ∩ inds == inds, expr.args))
-    subinds = unique(Iterators.flatten(labels.(subargs)))
-    subsuminds = setdiff(subinds, expr.head)
-    subhead = setdiff(subinds, subsuminds)
+    i = .!isdisjoint.((inds,), labels.(expr.args))
+
+    subargs = splice!(expr.args, findall(i))
+    subinds = labels.(subargs)
+    subsuminds = setdiff(∩(subinds...), expr.head)
+    subhead = setdiff(Iterators.flatten(subinds), subsuminds)
 
     pushfirst!(expr.args, EinExpr(subargs, subhead))
     return expr
