@@ -47,6 +47,14 @@ select(expr::EinExpr, i) = filter(∋(i) ∘ labels, expr.args)
 select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> select(expr, j), i)...)
 
 """
+    neighbours(expr, i)
+
+Return the indices neighbouring to `i`.
+"""
+neighbours(expr::EinExpr, i) = setdiff(∪(labels.(select(expr, i))...), i)
+neighbours(expr::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(∪(labels.(select(expr, i))...), i...)
+
+"""
     path(expr::EinExpr)
 
 Transform `expr` into a contraction path.
