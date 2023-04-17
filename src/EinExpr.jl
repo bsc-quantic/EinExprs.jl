@@ -14,6 +14,8 @@ struct EinExpr
     end
 end
 
+Base.:(==)(a::EinExpr, b::EinExpr) = a.head == b.head && a.args == b.args
+
 """
     labels(expr::EinExpr[, all=false])
 
