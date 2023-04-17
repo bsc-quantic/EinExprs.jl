@@ -27,12 +27,13 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
     ax = if haskey(kwargs, :layout) && dim(kwargs[:layout]) == 3
         Axis3(f[1, 1])
     else
-        Axis(f[1, 1])
+        ax = Axis(f[1, 1])
+        ax.aspect = DataAspect()
+        ax
     end
 
     hidedecorations!(ax)
     hidespines!(ax)
-    ax.aspect = DataAspect()
 
     p = plot!(ax, path; kwargs...)
 
