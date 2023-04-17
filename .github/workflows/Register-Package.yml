@@ -1,0 +1,14 @@
+name: Register Package
+on:
+  workflow_dispatch:
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: julia-actions/setup-julia@v1
+      - uses: bsc-quantic/julia-register@v0.1.3
+        with:
+          registry: https://github.com/bsc-quantic/Registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
