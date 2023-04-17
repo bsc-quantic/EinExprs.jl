@@ -118,7 +118,7 @@ Explicit sum over `indices`.
 
 See [`sum!`](@ref) for inplace modification.
 """
-function Base.sum(expr::EinExpr, inds)
+function Base.sum(expr::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
     i = .!isdisjoint.((inds,), labels.(expr.args))
 
     subinds = labels.(expr.args[findall(i)])
