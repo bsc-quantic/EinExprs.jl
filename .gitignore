@@ -105,3 +105,4 @@ Manifest.toml
 
 # Custom rules
 .vscode/settings.json
+archive
