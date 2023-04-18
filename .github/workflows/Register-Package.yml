@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
-      - uses: bsc-quantic/julia-register@v0.2
+      - uses: bsc-quantic/julia-register@master
         with:
           registry: https://github.com/bsc-quantic/Registry
         env:
