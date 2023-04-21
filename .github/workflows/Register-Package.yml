@@ -1,10 +1,5 @@
 name: Register Package
 on:
-  push:
-    branches:
-      - "master"
-    paths:
-      - "Project.toml"
   workflow_dispatch:
 jobs:
   register:
