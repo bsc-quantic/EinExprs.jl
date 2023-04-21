@@ -22,7 +22,7 @@ MakieExt = "Makie"
 
 [compat]
 Combinatorics = "1.0"
-DataStructures = "0.18"
+DataStructures = ">=0.18,<1"
 GraphMakie = ">=0.5,<1"
 Graphs = "1.6"
 Makie = ">=0.19,<1"
