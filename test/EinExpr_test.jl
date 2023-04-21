@@ -1,6 +1,7 @@
 @testset "EinExpr" begin
     using Tensors
     using EinExprs: suminds
+    using LinearAlgebra
 
     @testset "identity" begin
         tensor = Tensor(rand(2, 3), (:i, :j))
@@ -54,6 +55,8 @@
 
         @test suminds(expr) == [:j]
         @test isempty(suminds(expr, parallel=true))
+
+        # TODO contract test?
     end
 
     @testset "diagonal" begin
@@ -88,6 +91,8 @@
 
         @test suminds(expr) == [:i]
         @test isempty(suminds(expr, parallel=true))
+
+        # TODO contract test?
     end
 
     @testset "outer product" begin
@@ -111,6 +116,15 @@
 
         @test isempty(suminds(expr))
         @test isempty(suminds(expr, parallel=true))
+
+        A = parent(contract(expr))
+        B = PermutedDimsArray(
+            reshape(
+                kron(parent.(reverse(tensors))...),
+                collect(Iterators.flatten(zip(size.(tensors)...)))...
+            ), (1, 3, 2, 4))
+
+        @test A ≈ B
     end
 
     @testset "inner product" begin
@@ -133,6 +147,8 @@
 
             @test suminds(expr) == [:i]
             @test suminds(expr, parallel=true) == [[:i]]
+
+            @test only(contract(expr)) ≈ dot(parent.(tensors)...)
         end
         @testset "Matrix" begin
             tensors = [
@@ -154,6 +170,8 @@
 
             @test suminds(expr) == [:i, :j]
             @test Set(Set.(suminds(expr, parallel=true))) == Set([Set([:i, :j])])
+
+            @test only(contract(expr)) ≈ dot(parent.(tensors)...)
         end
     end
 
@@ -178,6 +196,8 @@
 
         @test suminds(expr) == [:k]
         @test suminds(expr, parallel=true) == [[:k]]
+
+        @test contract(expr) ≈ *(parent.(tensors)...)
     end
 
     @testset "manual path" begin

@@ -171,3 +171,11 @@ function Base.iterate(expr::EinExpr, state=1)
 
     return next, (i, j...)
 end
+
+Tensors.contract(expr::EinExpr) = contract(map(expr.args) do subexpr
+        if subexpr isa EinExpr
+            contract(subexpr)
+        else
+            subexpr
+        end
+    end..., dims=suminds(expr))
