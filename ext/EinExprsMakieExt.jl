@@ -1,4 +1,4 @@
-module MakieExt
+module EinExprsMakieExt
 
 if isdefined(Base, :get_extension)
     using EinExprs

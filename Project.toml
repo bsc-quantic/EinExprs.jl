@@ -18,7 +18,7 @@ Tensors = "a57d67a0-4683-47ff-be60-6114e830558b"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [extensions]
-MakieExt = "Makie"
+EinExprsMakieExt = "Makie"
 
 [compat]
 Combinatorics = "1.0"
