@@ -8,4 +8,11 @@ end
 
 using ChainRulesCore
 
+function ChainRulesCore.frule((_, Δexpr), ::typeof(contract), expr)
+    c = contract(expr)
+    Δc = contract(Δexpr)
+
+    return c, Δc
+end
+
 end
