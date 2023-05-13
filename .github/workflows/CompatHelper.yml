@@ -25,7 +25,7 @@ jobs:
           import Pkg
           ENV["JULIA_PKG_SERVER"] = ""
           Pkg.Registry.add("General")
-          Pkg.Registry.add("https://github.com/bsc-quantic/Registry")
+          Pkg.Registry.add(RegistrySpec(url = "https://github.com/bsc-quantic/Registry.git"))
         shell: julia --color=yes {0}
       - name: Install CompatHelper
         run: |
