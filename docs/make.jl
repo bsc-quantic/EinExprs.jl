@@ -14,6 +14,12 @@ makedocs(
     sitename="EinExprs.jl",
     authors="Sergio Sánchez Ramírez and contributors",
     pages=Any[
-        "Home"=>"index.md"
+        "Home"=>"index.md",
+        "Einsum Expressions"=>"einexpr.md",
+        "Optimizers"=>[
+            "Exhaustive" => "optimizers/exhaustive.md",
+            "Greedy" => "optimizers/greedy.md",
+        ],
     ],
+    format=Documenter.HTML(; assets=["assets/style/images.css"]),
 )

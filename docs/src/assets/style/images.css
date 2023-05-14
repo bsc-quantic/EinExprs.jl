@@ -1,0 +1,12 @@
+article#documenter-page img {
+    display: block;
+    margin: auto;
+}
+
+img.invert-on-dark {
+    filter: none;
+}
+
+.theme--documenter-dark img.invert-on-dark {
+    filter: invert(1) hue-rotate(180deg);
+}
