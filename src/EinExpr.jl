@@ -31,7 +31,7 @@ end
 
 Return the number of indices of the `Tensor` resulting from contracting `expr`.
 """
-Base.ndims(expr::Expr) = length(labels(expr))
+Base.ndims(expr::EinExpr) = length(labels(expr))
 
 """
     size(expr::EinExpr[, index])
