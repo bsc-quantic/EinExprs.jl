@@ -27,6 +27,13 @@ function Tensors.labels(expr::EinExpr; all::Bool=false)
 end
 
 """
+    ndims(expr::EinExpr)
+
+Return the number of indices of the `Tensor` resulting from contracting `expr`.
+"""
+Base.ndims(expr::Expr) = length(labels(expr))
+
+"""
     size(expr::EinExpr[, index])
 
 Return the size of the `Tensor` resulting from contracting `expr`. If `index` is specified, return the size of such index.
