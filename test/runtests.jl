@@ -10,5 +10,6 @@ using EinExprs
 end
 
 @testset "Integration tests" verbose = true begin
+    include("ext/ChainRulesCore_test.jl")
     include("ext/Makie_test.jl")
 end
