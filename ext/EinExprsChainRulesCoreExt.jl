@@ -28,16 +28,28 @@ function ChainRulesCore.frule((_, ė), ::typeof(contract), e::EinExpr)
     return c, ċ
 end
 
-function ChainRulesCore.rrule(::typeof(contract), expr)
-    c = contract(expr)
+function ChainRulesCore.rrule(::typeof(contract), e)
+    c = contract(e)
 
-    function contract_pullback(Δexpr)
-        Δf = NoTangent()
-        Δ = map(enumerate(expr.args)) do arg # make it thunkable
-            # TODO
+    function contract_pullback(ē)
+        f̄ = NoTangent()
+
+        c̄ = map(eachindex(e.args)) do i # TODO make it thunkable
+            partials = copy(e.args)
+            popat!(partials, i)
+
+            # divide primals
+            map!(tensor -> 1 ./ tensor, partials, partials)
+
+            # multiply cotangent
+            insert!(partials, i, ē)
+
+            # compute
+            expr = EinExpr(partials, e.head)
+            contract(expr)
         end
 
-        return Δf, Δ...
+        return (f̄, c̄...)
     end
 
     return c, contract_pullback
