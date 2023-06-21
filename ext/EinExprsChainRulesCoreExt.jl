@@ -43,8 +43,8 @@ function ChainRulesCore.rrule(::typeof(contract), e)
             tensor = contract(expr)
 
             # insert singleton dimensions on summed indices
-            data = reshape(parent(tensor), map(labels(e.args[i])) do label
-                label ∈ labels(tensor) ? size(tensor, label) : 1
+            data = reshape(parent(tensor), map(enumerate(labels(e.args[i]))) do (i, index)
+                index ∉ labels(tensor) ? 1 : index ∈ labels(tensor)[1:i-1] ? 1 : size(tensor, index)
             end...)
 
             # repeat content on summed indices
