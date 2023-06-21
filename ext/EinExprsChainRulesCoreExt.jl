@@ -7,7 +7,7 @@ else
 end
 
 using ChainRulesCore
-using Tensors: Tensor, contract, labels
+using Tensors: Tensor, contract, labels, nonunique
 
 ChainRulesCore.ProjectTo(expr::EinExpr) = ProjectTo{EinExpr}(; head=expr.head, args=map(ProjectTo, expr.args))
 (project::ChainRulesCore.ProjectTo{EinExpr})(dx) = EinExpr(map(((proj_i, dx_i),) -> proj_i(dx_i), zip(project.args, dx.args)), project.head)
@@ -58,7 +58,21 @@ function ChainRulesCore.rrule(::typeof(contract), e)
                 size_data == 1 ? size_orig : 1
             end...)
 
-            Tensor(data, labels(e.args[i]))
+            tensor = Tensor(data, labels(e.args[i]))
+
+            # set offdiagonal elements to zero if Dirac delta is present
+            for index in nonunique(collect(labels(tensor)))
+                repeats = count(==(index), labels(tensor))
+
+                for slice in Iterators.filter(!allequal, Iterators.product(repeat([1:size(tensor, index)], repeats)...))
+                    offdelta = reduce(slice, init=tensor) do acc, i
+                        selectdim(acc, index, i)
+                    end
+                    broadcast!(() -> zero(eltype(data)), offdelta)
+                end
+            end
+
+            return tensor
         end
 
         return f̄, Tangent{EinExpr}(args=c̄)
