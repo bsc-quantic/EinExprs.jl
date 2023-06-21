@@ -7,10 +7,10 @@ else
 end
 
 using ChainRulesCore
-using Tensors: contract
+using Tensors: Tensor, contract, labels
 
 ChainRulesCore.ProjectTo(expr::EinExpr) = ProjectTo{EinExpr}(; head=expr.head, args=map(ProjectTo, expr.args))
-(project::ChainRulesCore.ProjectTo{EinExpr})(dx) = EinExpr(map((proj_i, dx_i) -> proj_i(dx_i), zip(project.args, dx.args)), project.head)
+(project::ChainRulesCore.ProjectTo{EinExpr})(dx) = EinExpr(map(((proj_i, dx_i),) -> proj_i(dx_i), zip(project.args, dx.args)), project.head)
 
 # TODO recursive call to chain rule of `Tensors.contract` with tensors?
 function ChainRulesCore.frule((_, ė), ::typeof(contract), e::EinExpr)
@@ -45,11 +45,23 @@ function ChainRulesCore.rrule(::typeof(contract), e)
             insert!(partials, i, ē)
 
             # compute
-            expr = EinExpr(partials, e.head)
-            contract(expr)
+            expr = EinExpr(partials, labels(e.args[i]))
+            tensor = contract(expr)
+
+            # insert singleton dimensions on summed indices
+            data = reshape(parent(tensor), map(labels(e.args[i])) do label
+                label ∈ labels(tensor) ? size(tensor, label) : 1
+            end...)
+
+            # repeat content on summed indices
+            data = repeat(data, map(size(data), size(e.args[i])) do size_data, size_orig
+                size_data == 1 ? size_orig : 1
+            end...)
+
+            Tensor(data, labels(e.args[i]))
         end
 
-        return (f̄, c̄...)
+        return f̄, Tangent{EinExpr}(args=c̄)
     end
 
     return c, contract_pullback
