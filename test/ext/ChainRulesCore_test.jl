@@ -10,7 +10,7 @@
         end
 
         @testset "diagonal" begin
-            expr = EinExpr([Tensor(rand(2, 2), (:i, :j))], [:i])
+            expr = EinExpr([Tensor(rand(2, 2), (:i, :i))], [:i])
             test_frule(contract, expr)
             test_rrule(contract, expr, check_inferred=false, check_thunked_output_tangent=false)
         end
