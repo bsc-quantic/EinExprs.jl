@@ -36,13 +36,7 @@ function ChainRulesCore.rrule(::typeof(contract), e)
 
         c̄ = map(eachindex(e.args)) do i # TODO make it thunkable
             partials = copy(e.args)
-            popat!(partials, i)
-
-            # divide primals
-            map!(tensor -> 1 ./ tensor, partials, partials)
-
-            # multiply cotangent
-            insert!(partials, i, ē)
+            partials[i] = ē
 
             # compute
             expr = EinExpr(partials, labels(e.args[i]))
