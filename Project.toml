@@ -27,6 +27,7 @@ EinExprsFiniteDifferencesExt = "FiniteDifferences"
 EinExprsMakieExt = "Makie"
 
 [compat]
+ChainRulesCore = "1"
 Combinatorics = "1.0"
 DataStructures = ">=0.18,<1"
 FiniteDifferences = "0.12"
