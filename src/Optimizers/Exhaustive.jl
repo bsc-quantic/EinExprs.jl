@@ -21,15 +21,15 @@ The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``
     outer::Bool = false
 end
 
-function einexpr(config::Exhaustive, expr; leader=expr)
+function einexpr(config::Exhaustive, expr; leader = expr)
     config.outer && throw("Exhaustive search with outer-products is not implemented yet")
 
-    if length(suminds(expr, parallel=true)) == 1
+    if length(suminds(expr, parallel = true)) == 1
         return config.metric(expr) < config.metric(leader) ? expr : leader
     end
 
     # NOTE `for index in suminds(expr)` is better for debugging
-    for inds in suminds(expr, parallel=true)
+    for inds in suminds(expr, parallel = true)
         # select tensors containing such inds
         targets = filter(x -> !isdisjoint(labels(x), inds), expr.args)
 
@@ -43,11 +43,11 @@ function einexpr(config::Exhaustive, expr; leader=expr)
         config.metric(candidate) >= config.metric(leader) && continue
 
         # recurse fixing candidate index
-        candidate = EinExpr([
-                candidate,
-                filter(x -> isdisjoint(labels(x), inds), expr.args)...,
-            ], expr.head)
-        leader = einexpr(config, candidate, leader=leader)
+        candidate = EinExpr(
+            [candidate, filter(x -> isdisjoint(labels(x), inds), expr.args)...],
+            expr.head,
+        )
+        leader = einexpr(config, candidate, leader = leader)
     end
 
     return leader

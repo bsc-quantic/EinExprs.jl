@@ -7,13 +7,13 @@ push!(LOAD_PATH, "$(@__DIR__)/..")
 using Documenter
 using EinExprs
 
-DocMeta.setdocmeta!(EinExprs, :DocTestSetup, :(using EinExprs); recursive=true)
+DocMeta.setdocmeta!(EinExprs, :DocTestSetup, :(using EinExprs); recursive = true)
 
 makedocs(
-    modules=[EinExprs],
-    sitename="EinExprs.jl",
-    authors="Sergio Sánchez Ramírez and contributors",
-    pages=Any[
+    modules = [EinExprs],
+    sitename = "EinExprs.jl",
+    authors = "Sergio Sánchez Ramírez and contributors",
+    pages = Any[
         "Home"=>"index.md",
         "Einsum Expressions"=>"einexpr.md",
         "Optimizers"=>[
@@ -21,5 +21,5 @@ makedocs(
             "Greedy" => "optimizers/greedy.md",
         ],
     ],
-    format=Documenter.HTML(; assets=["assets/style/images.css"]),
+    format = Documenter.HTML(; assets = ["assets/style/images.css"]),
 )

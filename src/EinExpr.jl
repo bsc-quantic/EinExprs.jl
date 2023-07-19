@@ -6,7 +6,7 @@ struct EinExpr
     head::NTuple{N,Symbol} where {N}
     args::Vector{Any}
 
-    function EinExpr(inputs, output=mapreduce(labels, symdiff, inputs))
+    function EinExpr(inputs, output = mapreduce(labels, symdiff, inputs))
         # TODO checks: same dim for index, valid indices
         output = Tuple(output)
         inputs = collect(inputs)
@@ -21,7 +21,7 @@ Base.:(==)(a::EinExpr, b::EinExpr) = a.head == b.head && a.args == b.args
 
 Return the indices of the `Tensor` resulting from contracting `expr`. If `all=true`, return a list of all the involved indices.
 """
-function Tensors.labels(expr::EinExpr; all::Bool=false)
+function Tensors.labels(expr::EinExpr; all::Bool = false)
     !all && return expr.head
     return mapreduce(collect ∘ labels, vcat, expr.args) |> unique |> Tuple
 end
@@ -53,7 +53,8 @@ end
 Return the child elements (i.e. `Tensor`s or `EinExpr`s) that contain `i` indices.
 """
 select(expr::EinExpr, i) = filter(∋(i) ∘ labels, expr.args)
-select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> select(expr, j), i)...)
+select(expr::EinExpr, i::Base.AbstractVecOrTuple) =
+    ∩(Iterators.map(j -> select(expr, j), i)...)
 
 """
     neighbours(expr, i)
@@ -61,7 +62,8 @@ select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> selec
 Return the indices neighbouring to `i`.
 """
 neighbours(expr::EinExpr, i) = setdiff(∪(labels.(select(expr, i))...), (i,))
-neighbours(expr::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(∪(labels.(select(expr, i))...), i)
+neighbours(expr::EinExpr, i::Base.AbstractVecOrTuple) =
+    setdiff(∪(labels.(select(expr, i))...), i)
 
 """
     path(expr::EinExpr)
@@ -83,8 +85,8 @@ Indices of summation of an `EinExpr`.
 suminds(expr) == [:j, :k, :l, :m, :n, :o, :p]
 ```
 """
-function suminds(expr::EinExpr; parallel::Bool=false)
-    !parallel && return setdiff(labels(expr, all=true), labels(expr)) |> collect
+function suminds(expr::EinExpr; parallel::Bool = false)
+    !parallel && return setdiff(labels(expr, all = true), labels(expr)) |> collect
 
     # annotate connections of indices
     edges = DefaultDict{Symbol,Set{UInt}}(() -> Set{UInt}())
@@ -103,8 +105,8 @@ function suminds(expr::EinExpr; parallel::Bool=false)
 
     # filter out open indices
     return filter(dual) do (neighbours, inds)
-               length(neighbours) >= 2
-           end |> values .|> collect |> collect
+        length(neighbours) >= 2
+    end |> values .|> collect |> collect
 end
 
 """
@@ -140,16 +142,18 @@ function Base.sum(expr::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
     subsuminds = setdiff(∩(subinds...), expr.head)
     suboutput = setdiff(Iterators.flatten(subinds), subsuminds)
 
-    return EinExpr((
-            EinExpr(expr.args[findall(i)], suboutput),
-            expr.args[findall(.!i)]...,
-        ), expr.head)
+    return EinExpr(
+        (EinExpr(expr.args[findall(i)], suboutput), expr.args[findall(.!i)]...),
+        expr.head,
+    )
 end
 
-Base.sum(inputs::Union{Tensor,EinExpr}...; inds=mapreduce(labels, symdiff, inputs)) = EinExpr(inputs, inds)
+Base.sum(inputs::Union{Tensor,EinExpr}...; inds = mapreduce(labels, symdiff, inputs)) =
+    EinExpr(inputs, inds)
 
-function Base.string(expr::EinExpr; recursive::Bool=false)
-    !recursive && return "$(join(map(x -> string.(labels(x)) |> join, expr.args), ","))->$(string.(labels(expr)) |> join)"
+function Base.string(expr::EinExpr; recursive::Bool = false)
+    !recursive &&
+        return "$(join(map(x -> string.(labels(x)) |> join, expr.args), ","))->$(string.(labels(expr)) |> join)"
 end
 
 # Iteration interface
@@ -159,7 +163,7 @@ Base.IteratorEltype(::Type{EinExpr}) = Base.HasEltype()
 Base.eltype(::EinExpr) = Union{<:Tensor,EinExpr}
 
 # TODO only return `EinExpr`s?
-function Base.iterate(expr::EinExpr, state=1)
+function Base.iterate(expr::EinExpr, state = 1)
     isnothing(state) && return nothing
 
     # iterate child level
@@ -188,9 +192,9 @@ function Base.iterate(expr::EinExpr, state=1)
 end
 
 Tensors.contract(expr::EinExpr) = contract(map(expr.args) do subexpr
-        if subexpr isa EinExpr
-            contract(subexpr)
-        else
-            subexpr
-        end
-    end..., dims=suminds(expr))
+    if subexpr isa EinExpr
+        contract(subexpr)
+    else
+        subexpr
+    end
+end..., dims = suminds(expr))

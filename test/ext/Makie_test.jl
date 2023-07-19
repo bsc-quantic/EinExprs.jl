@@ -27,7 +27,10 @@
         Tensor(ones((sizes[i] for i in [:b, :e])...), [:b, :e]),
         Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), [:g, :n, :l, :a]),
         Tensor(ones((sizes[i] for i in [:o, :i, :m, :c])...), [:o, :i, :m, :c]),
-        Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), [:k, :d, :h, :a, :n, :j]),
+        Tensor(
+            ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...),
+            [:k, :d, :h, :a, :n, :j],
+        ),
         Tensor(ones((sizes[i] for i in [:m, :f, :q])...), [:m, :f, :q]),
         Tensor(ones((sizes[i] for i in [:p, :k])...), [:p, :k]),
         Tensor(ones((sizes[i] for i in [:c, :e, :h])...), [:c, :e, :h]),
@@ -40,13 +43,13 @@
     @testset "plot!" begin
         f = Figure()
         @testset "(default)" plot!(f[1, 1], path)
-        @testset "with labels" plot!(f[1, 1], path; labels=true)
-        @testset "3D" plot!(f[1, 1], path; layout=Spring(dim=3))
+        @testset "with labels" plot!(f[1, 1], path; labels = true)
+        @testset "3D" plot!(f[1, 1], path; layout = Spring(dim = 3))
     end
 
     @testset "plot" begin
         @testset "(default)" plot(path)
-        @testset "with labels" plot(path; labels=true)
-        @testset "3D" plot(path; layout=Spring(dim=3))
+        @testset "with labels" plot(path; labels = true)
+        @testset "3D" plot(path; layout = Spring(dim = 3))
     end
 end

@@ -40,10 +40,7 @@
     end
 
     @testset "outer product" begin
-        tensors = [
-            Tensor(rand(2, 3), (:i, :j)),
-            Tensor(rand(4, 5), (:k, :l)),
-        ]
+        tensors = [Tensor(rand(2, 3), (:i, :j)), Tensor(rand(4, 5), (:k, :l))]
         expr = EinExpr(tensors)
 
         @test flops(expr) == prod(2:5)
@@ -51,10 +48,7 @@
     end
 
     @testset "inner product" begin
-        tensors = [
-            Tensor(rand(2), (:i,)),
-            Tensor(rand(2), (:i,)),
-        ]
+        tensors = [Tensor(rand(2), (:i,)), Tensor(rand(2), (:i,))]
         expr = EinExpr(tensors)
 
         @test flops(expr) == 2
@@ -62,10 +56,7 @@
     end
 
     @testset "matrix multiplication" begin
-        tensors = [
-            Tensor(rand(2, 3), (:i, :k)),
-            Tensor(rand(3, 4), (:k, :j)),
-        ]
+        tensors = [Tensor(rand(2, 3), (:i, :k)), Tensor(rand(3, 4), (:k, :j))]
         expr = EinExpr(tensors)
 
         @test flops(expr) == 2 * 3 * 4

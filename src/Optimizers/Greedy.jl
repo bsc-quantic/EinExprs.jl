@@ -28,8 +28,8 @@ function einexpr(config::Greedy, expr)
     # generate initial candidate contractions
     queue = MutableBinaryHeap{Tuple{Float64,Vector{Symbol}}}(Base.By(first))
 
-    handles = map(suminds(expr, parallel=true)) do inds
-        candidate = sum(select(expr, inds)..., inds=inds)
+    handles = map(suminds(expr, parallel = true)) do inds
+        candidate = sum(select(expr, inds)..., inds = inds)
         weight = config.metric(candidate)
         handle = push!(queue, (weight, inds))
         return sort(inds) => handle
@@ -46,8 +46,8 @@ function einexpr(config::Greedy, expr)
         sum!(expr, winner)
 
         # update candidate queue
-        for inds in filter(inds -> !isdisjoint(neigh, inds), suminds(expr, parallel=true))
-            candidate = sum(select(expr, inds)..., inds=inds)
+        for inds in filter(inds -> !isdisjoint(neigh, inds), suminds(expr, parallel = true))
+            candidate = sum(select(expr, inds)..., inds = inds)
             weight = config.metric(candidate)
 
             # update involved nodes
@@ -55,7 +55,10 @@ function einexpr(config::Greedy, expr)
                 update!(queue, handles[sort(inds)], (weight, inds))
             else
                 # if new parallel indices have appeared, delete old nodes and create new ones
-                for key in Iterators.map(sort, Iterators.filter(key -> !isdisjoint(inds, key), keys(handles)))
+                for key in Iterators.map(
+                    sort,
+                    Iterators.filter(key -> !isdisjoint(inds, key), keys(handles)),
+                )
                     # key = sort(key)
                     delete!(queue, handles[key])
                     delete!(handles, key)
