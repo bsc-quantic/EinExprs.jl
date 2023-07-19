@@ -27,10 +27,7 @@
         Tensor(ones((sizes[i] for i in [:b, :e])...), [:b, :e]),
         Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), [:g, :n, :l, :a]),
         Tensor(ones((sizes[i] for i in [:o, :i, :m, :c])...), [:o, :i, :m, :c]),
-        Tensor(
-            ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...),
-            [:k, :d, :h, :a, :n, :j],
-        ),
+        Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), [:k, :d, :h, :a, :n, :j]),
         Tensor(ones((sizes[i] for i in [:m, :f, :q])...), [:m, :f, :q]),
         Tensor(ones((sizes[i] for i in [:p, :k])...), [:p, :k]),
         Tensor(ones((sizes[i] for i in [:c, :e, :h])...), [:c, :e, :h]),

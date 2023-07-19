@@ -43,10 +43,7 @@ function einexpr(config::Exhaustive, expr; leader = expr)
         config.metric(candidate) >= config.metric(leader) && continue
 
         # recurse fixing candidate index
-        candidate = EinExpr(
-            [candidate, filter(x -> isdisjoint(labels(x), inds), expr.args)...],
-            expr.head,
-        )
+        candidate = EinExpr([candidate, filter(x -> isdisjoint(labels(x), inds), expr.args)...], expr.head)
         leader = einexpr(config, candidate, leader = leader)
     end
 

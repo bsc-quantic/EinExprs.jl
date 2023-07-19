@@ -9,25 +9,19 @@ end
 using ChainRulesCore
 using Tensors: Tensor, contract, labels, nonunique
 
-ChainRulesCore.ProjectTo(expr::EinExpr) =
-    ProjectTo{EinExpr}(; head = expr.head, args = map(ProjectTo, expr.args))
-(project::ChainRulesCore.ProjectTo{EinExpr})(dx) = EinExpr(
-    map(((proj_i, dx_i),) -> proj_i(dx_i), zip(project.args, dx.args)),
-    project.head,
-)
+ChainRulesCore.ProjectTo(expr::EinExpr) = ProjectTo{EinExpr}(; head = expr.head, args = map(ProjectTo, expr.args))
+(project::ChainRulesCore.ProjectTo{EinExpr})(dx) =
+    EinExpr(map(((proj_i, dx_i),) -> proj_i(dx_i), zip(project.args, dx.args)), project.head)
 
 # TODO recursive call to chain rule of `Tensors.contract` with tensors?
 function ChainRulesCore.frule((_, ė), ::typeof(contract), e::EinExpr)
     c = contract(e)
 
-    partials = Iterators.map(
-        ((i, arg),) -> EinExpr(begin
-            args = copy(e.args)
-            args[i] = arg
-            args
-        end, e.head),
-        enumerate(ė.args),
-    )
+    partials = Iterators.map(((i, arg),) -> EinExpr(begin
+        args = copy(e.args)
+        args[i] = arg
+        args
+    end, e.head), enumerate(ė.args))
 
     ċ = mapreduce(contract, +, partials)
 
@@ -52,15 +46,14 @@ function ChainRulesCore.rrule(::typeof(contract), e)
             data = reshape(
                 parent(tensor),
                 map(enumerate(labels(e.args[i]))) do (i, index)
-                    index ∉ labels(tensor) ? 1 :
-                    index ∈ labels(tensor)[1:i-1] ? 1 : size(tensor, index)
+                    index ∉ labels(tensor) ? 1 : index ∈ labels(tensor)[1:i-1] ? 1 : size(tensor, index)
                 end...,
             )
 
             # repeat content on summed indices
             data = repeat(data, map(size(data), size(e.args[i])) do size_data, size_orig
-                    size_data == 1 ? size_orig : 1
-                end...)
+                size_data == 1 ? size_orig : 1
+            end...)
 
             tensor = Tensor(data, labels(e.args[i]))
 
@@ -68,10 +61,7 @@ function ChainRulesCore.rrule(::typeof(contract), e)
             for index in nonunique(collect(labels(tensor)))
                 repeats = count(==(index), labels(tensor))
 
-                for slice in Iterators.filter(
-                    !allequal,
-                    Iterators.product(repeat([1:size(tensor, index)], repeats)...),
-                )
+                for slice in Iterators.filter(!allequal, Iterators.product(repeat([1:size(tensor, index)], repeats)...))
                     offdelta = reduce(slice, init = tensor) do acc, i
                         selectdim(acc, index, i)
                     end

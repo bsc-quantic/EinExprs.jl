@@ -53,8 +53,7 @@ end
 Return the child elements (i.e. `Tensor`s or `EinExpr`s) that contain `i` indices.
 """
 select(expr::EinExpr, i) = filter(∋(i) ∘ labels, expr.args)
-select(expr::EinExpr, i::Base.AbstractVecOrTuple) =
-    ∩(Iterators.map(j -> select(expr, j), i)...)
+select(expr::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> select(expr, j), i)...)
 
 """
     neighbours(expr, i)
@@ -62,8 +61,7 @@ select(expr::EinExpr, i::Base.AbstractVecOrTuple) =
 Return the indices neighbouring to `i`.
 """
 neighbours(expr::EinExpr, i) = setdiff(∪(labels.(select(expr, i))...), (i,))
-neighbours(expr::EinExpr, i::Base.AbstractVecOrTuple) =
-    setdiff(∪(labels.(select(expr, i))...), i)
+neighbours(expr::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(∪(labels.(select(expr, i))...), i)
 
 """
     path(expr::EinExpr)
@@ -142,14 +140,10 @@ function Base.sum(expr::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
     subsuminds = setdiff(∩(subinds...), expr.head)
     suboutput = setdiff(Iterators.flatten(subinds), subsuminds)
 
-    return EinExpr(
-        (EinExpr(expr.args[findall(i)], suboutput), expr.args[findall(.!i)]...),
-        expr.head,
-    )
+    return EinExpr((EinExpr(expr.args[findall(i)], suboutput), expr.args[findall(.!i)]...), expr.head)
 end
 
-Base.sum(inputs::Union{Tensor,EinExpr}...; inds = mapreduce(labels, symdiff, inputs)) =
-    EinExpr(inputs, inds)
+Base.sum(inputs::Union{Tensor,EinExpr}...; inds = mapreduce(labels, symdiff, inputs)) = EinExpr(inputs, inds)
 
 function Base.string(expr::EinExpr; recursive::Bool = false)
     !recursive &&

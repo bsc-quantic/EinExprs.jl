@@ -116,10 +116,7 @@
 
         A = parent(contract(expr))
         B = PermutedDimsArray(
-            reshape(
-                kron(parent.(reverse(tensors))...),
-                collect(Iterators.flatten(zip(size.(tensors)...)))...,
-            ),
+            reshape(kron(parent.(reverse(tensors))...), collect(Iterators.flatten(zip(size.(tensors)...)))...),
             (1, 3, 2, 4),
         )
 
@@ -216,10 +213,7 @@
             Tensor(ones((sizes[i] for i in [:b, :e])...), [:b, :e]),
             Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), [:g, :n, :l, :a]),
             Tensor(ones((sizes[i] for i in [:o, :i, :m, :c])...), [:o, :i, :m, :c]),
-            Tensor(
-                ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...),
-                [:k, :d, :h, :a, :n, :j],
-            ),
+            Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), [:k, :d, :h, :a, :n, :j]),
             Tensor(ones((sizes[i] for i in [:m, :f, :q])...), [:m, :f, :q]),
             Tensor(ones((sizes[i] for i in [:p, :k])...), [:p, :k]),
             Tensor(ones((sizes[i] for i in [:c, :e, :h])...), [:c, :e, :h]),
@@ -231,8 +225,7 @@
 
         @test sum(tensors..., inds = [:p, :j]) == expr
 
-        for inds in
-            [[:q], [:m], [:f, :i], [:g, :l], [:b], [:o], [:c, :e], [:n, :a, :d, :h], [:k]]
+        for inds in [[:q], [:m], [:f, :i], [:g, :l], [:b], [:o], [:c, :e], [:n, :a, :d, :h], [:k]]
             foo = sum(expr, inds)
             @test foo == sum!(expr, inds)
         end

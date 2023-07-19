@@ -24,10 +24,7 @@
         Tensor(ones((sizes[i] for i in [:b, :e])...), [:b, :e]),
         Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), [:g, :n, :l, :a]),
         Tensor(ones((sizes[i] for i in [:o, :i, :m, :c])...), [:o, :i, :m, :c]),
-        Tensor(
-            ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...),
-            [:k, :d, :h, :a, :n, :j],
-        ),
+        Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), [:k, :d, :h, :a, :n, :j]),
         Tensor(ones((sizes[i] for i in [:m, :f, :q])...), [:m, :f, :q]),
         Tensor(ones((sizes[i] for i in [:p, :k])...), [:p, :k]),
         Tensor(ones((sizes[i] for i in [:c, :e, :h])...), [:c, :e, :h]),
@@ -40,8 +37,5 @@
     # TODO traverse through the tree and check everything is ok
     @test flops(expr) == 48753
     # FIXME non-determinist behaviour on order
-    @test issetequal(
-        path(expr),
-        [[:q], [:m], [:f, :i], [:g, :l], [:b], [:o], [:c, :e], [:n, :a, :d, :h], [:k]],
-    )
+    @test issetequal(path(expr), [[:q], [:m], [:f, :i], [:g, :l], [:b], [:o], [:c, :e], [:n, :a, :d, :h], [:k]])
 end

@@ -16,7 +16,6 @@ const MAX_EDGE_WIDTH = 10.0
 const MAX_ARROW_SIZE = 35.0
 const MAX_NODE_SIZE = 40.0
 
-
 function Makie.plot(path::EinExpr; kwargs...)
     f = Figure()
     ax, p = plot!(f[1, 1], path; kwargs...)
@@ -50,13 +49,7 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
     )
     size_bar.height = Relative(5 / 6)
 
-    flops_bar = Colorbar(
-        f[1, 0],
-        get_node_plot(p),
-        label = L"\log_{10}(flops)",
-        flipaxis = false,
-        labelsize = 34,
-    )
+    flops_bar = Colorbar(f[1, 0], get_node_plot(p), label = L"\log_{10}(flops)", flipaxis = false, labelsize = 34)
     flops_bar.height = Relative(5 / 6)
 
     return Makie.AxisPlot(ax, p)
@@ -72,8 +65,7 @@ function Makie.plot!(
 )
     handles = IdDict(obj => i for (i, obj) in enumerate(path))
     graph = SimpleDiGraph([
-        Edge(handles[from], handles[to]) for
-        to in Iterators.filter(obj -> obj isa EinExpr, path) for from in to.args
+        Edge(handles[from], handles[to]) for to in Iterators.filter(obj -> obj isa EinExpr, path) for from in to.args
     ])
 
     log_size = log2.(length.(path))[1:end-1]
@@ -95,14 +87,7 @@ function Makie.plot!(
     get!(kwargs, :arrow_attr, (colorrange = (min_size, max_size), colormap = colormap))
     get!(kwargs, :edge_attr, (colorrange = (min_size, max_size), colormap = colormap))
     # TODO replace `to_colormap(:plasma)[begin:end-50]), kwargs...)` with a custom colormap
-    get!(
-        kwargs,
-        :node_attr,
-        (
-            colorrange = (min_flops, max_flops),
-            colormap = to_colormap(:plasma)[begin:end-50],
-        ),
-    )
+    get!(kwargs, :node_attr, (colorrange = (min_flops, max_flops), colormap = to_colormap(:plasma)[begin:end-50]))
 
     # configure labels
     labels == true && get!(() -> join.(EinExprs.labels.(path))[1:end-1], kwargs, :elabels)
