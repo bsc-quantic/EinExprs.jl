@@ -10,3 +10,36 @@ Base.view(path::EinExpr, cuttings::Pair{Symbol,<:Integer}...) =
         d, i = proj
         selectdim(acc, d, i)
     end
+
+function slices(
+    target::Function,
+    path::EinExpr;
+    size=nothing,
+    overhead=nothing,
+    slices=nothing,
+    temperature=0.01,
+    skip=Set{Symbol}()
+)
+    candidates = setdiff(labels(path, all=true), skip)
+    solution = Set{Symbol}()
+
+    current = (; slices=1, size=..., overhead=1.0)
+
+    checkpredicates() = !isnothing(size) && ... || !isnothing(slices) && ... || !isnothing(overhead) && ...
+
+    while checkpredicates()
+        winner = maximum(candidates) do index
+            # score + boltzmann sampling
+            target(...) - temperature * (log ∘ (-) ∘ log ∘ rand)
+        end
+
+        push!(winner, solution)
+        current = (;
+            slices=current.slices * size(path, winner),
+            size=...,
+            overhead=...
+        )
+    end
+
+    return solution
+end

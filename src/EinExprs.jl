@@ -8,6 +8,7 @@ include("Counters.jl")
 export flops, removedsize
 
 include("Slicing.jl")
+export slices
 
 include("Optimizers/Optimizers.jl")
 export Optimizer, einexpr
