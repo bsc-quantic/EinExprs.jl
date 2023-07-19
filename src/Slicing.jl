@@ -22,23 +22,24 @@ function slices(
 )
     candidates = setdiff(labels(path, all=true), skip)
     solution = Set{Symbol}()
+    current = (; slices=1, size=maximum(size, path), overhead=1.0)
 
-    current = (; slices=1, size=..., overhead=1.0)
-
-    checkpredicates() = !isnothing(size) && ... || !isnothing(slices) && ... || !isnothing(overhead) && ...
-
-    while checkpredicates()
+    sliced_path = path
+    while !(!isnothing(slices) && current.slices >= slices || !isnothing(size) && current.size <= size)
+        # temperature adds boltzmann like noise
         winner = maximum(candidates) do index
-            # score + boltzmann sampling
-            target(...) - temperature * (log ∘ (-) ∘ log ∘ rand)
+            target(sliced_path, index) - temperature * (log ∘ (-) ∘ log ∘ rand)()
         end
 
-        push!(winner, solution)
+        sliced_path = selectdim(sliced_path, winner, 1)
         current = (;
             slices=current.slices * size(path, winner),
-            size=...,
-            overhead=...
+            size=maximum(size, sliced_path),
+            overhead=flops(sliced_path) / flops(path)
         )
+
+        !isnothing(overhead) && current.overhead > overhead && break
+        push!(winner, solution)
     end
 
     return solution
