@@ -15,7 +15,7 @@ Base.view(path::EinExpr, cuttings::Pair{Symbol,<:Integer}...) =
     end
 
 function slices(
-    target::Function,
+    target,
     path::EinExpr;
     size = nothing,
     overhead = nothing,
