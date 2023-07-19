@@ -23,6 +23,7 @@ function slices(
     candidates = setdiff(labels(path, all=true), skip)
     solution = Set{Symbol}()
     current = (; slices=1, size=maximum(size, path), overhead=1.0)
+    original_flops = flops(path)
 
     sliced_path = path
     while !(!isnothing(slices) && current.slices >= slices || !isnothing(size) && current.size <= size)
@@ -35,7 +36,7 @@ function slices(
         current = (;
             slices=current.slices * size(path, winner),
             size=maximum(size, sliced_path),
-            overhead=flops(sliced_path) / flops(path)
+            overhead=flops(sliced_path) / original_flops
         )
 
         !isnothing(overhead) && current.overhead > overhead && break
