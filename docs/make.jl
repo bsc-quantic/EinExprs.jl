@@ -17,6 +17,7 @@ makedocs(
         "Home"=>"index.md",
         "Einsum Expressions"=>"einexpr.md",
         "Optimizers"=>["Exhaustive" => "optimizers/exhaustive.md", "Greedy" => "optimizers/greedy.md"],
+        "Alternatives"=>"alternatives.md",
     ],
     format = Documenter.HTML(; assets = ["assets/style/images.css"]),
 )
