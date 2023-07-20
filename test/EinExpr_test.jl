@@ -184,7 +184,7 @@
         @test suminds(expr) == [:k]
         @test suminds(expr, parallel = true) == [[:k]]
 
-        @test contract(expr) ≈ *(parent.(tensors)...)
+        @test parent(contract(expr)) ≈ *(parent.(tensors)...)
     end
 
     @testset "manual path" begin
