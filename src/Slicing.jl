@@ -11,7 +11,7 @@ Base.view(path::EinExpr, cuttings::Pair{Symbol,<:Integer}...) =
         selectdim(acc, d, i)
     end
 
-function slices(
+function findslices(
     scorer,
     path::EinExpr;
     size = nothing,
