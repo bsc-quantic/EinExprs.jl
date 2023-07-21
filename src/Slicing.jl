@@ -45,3 +45,31 @@ function slices(
 
     return solution
 end
+
+abstract type Scorer end
+
+Base.@kwdef struct FlopsScorer <: Scorer
+    weight::Float64 = 1e-3
+end
+
+function (cb::FlopsScorer)(path, index)
+    slice = selectdim(path, index, 1)
+
+    flops_reduction = mapreduce(flops, +, path) - mapreduce(flops, +, slice)
+    write_reduction = mapreduce(size, +, path) - mapreduce(size, +, slice)
+
+    log(flops_reduction + write_reduction * cb.weight + 1)
+end
+
+Base.@kwdef struct SizeScorer <: Scorer
+    weight::Float64 = 1e-3
+end
+
+function (cb::SizeScorer)(path, index)
+    slice = selectdim(path, index, 1)
+
+    flops_reduction = mapreduce(flops, +, path) - mapreduce(flops, +, slice)
+    write_reduction = mapreduce(size, +, path) - mapreduce(size, +, slice)
+
+    log(write_reduction + flops_reduction * cb.weight + 1)
+end
