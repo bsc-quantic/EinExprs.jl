@@ -1,7 +1,12 @@
 using Tensors: Tensor
 
 flops(::Tensor) = 0
-flops(expr::EinExpr) = mapreduce(i -> size(expr, i), *, [labels(expr)..., suminds(expr)...])
+flops(expr::EinExpr) =
+    if isempty(suminds(expr)) && length(expr.args) == 1
+        0
+    else
+        mapreduce(i -> size(expr, i), *, [labels(expr)..., suminds(expr)...])
+    end
 
 removedsize(::Tensor) = 0
 removedsize(expr::EinExpr) = mapreduce(prod ∘ size, +, expr.args) - prod(size(expr))
