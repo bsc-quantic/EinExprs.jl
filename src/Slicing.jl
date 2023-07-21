@@ -1,9 +1,6 @@
-Base.selectdim(path::EinExpr, index::Symbol, i) = EinExpr(
-    map(path.args) do sub
-        index ∈ __labels_children(sub) ? selectdim(sub, index, i) : sub
-    end,
-    filter(!=(index), path.head),
-)
+Base.selectdim(path::EinExpr, index::Symbol, i) = EinExpr(map(path.args) do sub
+    index ∈ __labels_children(sub) ? selectdim(sub, index, i) : sub
+end, filter(!=(index), path.head))
 
 __labels_children(x) = labels(x)
 __labels_children(path::EinExpr) = labels(path, all = true)
@@ -15,7 +12,7 @@ Base.view(path::EinExpr, cuttings::Pair{Symbol,<:Integer}...) =
     end
 
 function slices(
-    target,
+    scorer,
     path::EinExpr;
     size = nothing,
     overhead = nothing,
@@ -29,13 +26,10 @@ function slices(
     original_flops = flops(path)
 
     sliced_path = path
-    while !(
-        !isnothing(slices) && current.slices >= slices ||
-        !isnothing(size) && current.size <= size
-    )
+    while !(!isnothing(slices) && current.slices >= slices || !isnothing(size) && current.size <= size)
         # temperature adds boltzmann like noise
         winner = maximum(candidates) do index
-            target(sliced_path, index) - temperature * (log ∘ (-) ∘ log ∘ rand)()
+            scorer(sliced_path, index) - temperature * (log ∘ (-) ∘ log ∘ rand)()
         end
 
         sliced_path = selectdim(sliced_path, winner, 1)
