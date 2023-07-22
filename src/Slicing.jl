@@ -1,3 +1,16 @@
+"""
+    selectdim(path::EinExpr, index::Symbol, i)
+
+Project `index` to dimension `i` in a EinExpr. This is equivalent to tensor cutting aka slicing.
+
+# Arguments
+
+  - `path` Contraction path.
+  - `index` Index to cut.
+  - `i` Dimension of `index` to select.
+
+See also: [`view`](@ref).
+"""
 Base.selectdim(path::EinExpr, index::Symbol, i) = EinExpr(map(path.args) do sub
     index ∈ __labels_children(sub) ? selectdim(sub, index, i) : sub
 end, filter(!=(index), path.head))
@@ -5,12 +18,49 @@ end, filter(!=(index), path.head))
 __labels_children(x) = labels(x)
 __labels_children(path::EinExpr) = labels(path, all = true)
 
+"""
+    view(path::EinExpr, cuttings...)
+
+Project indices in contraction `path` to some of its dimensions. This is equivalent to:
+
+```julia
+reduce(cuttings) do path, (index, i)
+    selectdim(path, index, i)
+end
+```
+
+# Arguments
+
+  - `path` Target contraction path.
+  - `cuttings` List of `Pair{Symbol,Int}` representing the tensor cuttings aka slices.
+
+See also: [`selectdim`](@ref).
+"""
 Base.view(path::EinExpr, cuttings::Pair{Symbol,<:Integer}...) =
     reduce(cuttings, init = path) do acc, proj
         d, i = proj
         selectdim(acc, d, i)
     end
 
+"""
+    findslices(scorer, path::EinExpr; size, slices, overhead, temperature = 0.01, skip = labels(path))
+
+Search for indices to be cut/sliced such that the conditions given by `size`, `overhead` and `slices` are fulfilled.
+Reimplementation based on [`contengra`](https://github.com/jcmgray/cotengra)'s `SliceFinder` algorithm.
+
+# Arguments
+
+  - `scorer` Heuristic function (or functor) that accepts a path and a candidate index for cutting, and returns a score.
+  - `path` The contraction path target for tensor cutting aka slicing.
+
+# Keyword Arguments
+
+  - `size` If specified, the largest intermediate tensor of the slice won't surpass this size (in number of elements).
+  - `slices` If specified, there will be at least `slices` different slices when cutting all returnt indices.
+  - `overhead` If specified, the amount of redundant operations between a slice and the original contraction won't supass this ratio.
+  - `temperature` Temperature of the Boltzmann-like noise added for diffusing results.
+  - `skip` Indices not to be considered for slicing.
+"""
 function findslices(
     scorer,
     path::EinExpr;
@@ -58,6 +108,13 @@ end
 
 abstract type Scorer end
 
+"""
+    FlopsScorer
+
+# Keyword Arguments
+
+  - `weight`
+"""
 Base.@kwdef struct FlopsScorer <: Scorer
     weight::Float64 = 1e-3
 end
@@ -71,6 +128,13 @@ function (cb::FlopsScorer)(path, index)
     log(flops_reduction + write_reduction * cb.weight + 1)
 end
 
+"""
+    SizeScorer
+
+# Keyword Arguments
+
+  - `weight`
+"""
 Base.@kwdef struct SizeScorer <: Scorer
     weight::Float64 = 1e-3
 end
