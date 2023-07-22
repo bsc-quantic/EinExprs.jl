@@ -2,7 +2,9 @@ name: Documenter
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+    branches:
+      - "master"
 
   workflow_dispatch:
 
@@ -29,7 +31,7 @@ jobs:
         run: |
           using Pkg
           pkg"registry add https://github.com/bsc-quantic/Registry.git"
-        shell: julia --color=yes {0}
+        shell: julia {0}
       - name: Build package
         uses: julia-actions/julia-buildpkg@latest
       - name: Generate documentation
