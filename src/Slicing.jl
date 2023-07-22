@@ -18,29 +18,39 @@ function findslices(
     overhead = nothing,
     slices = nothing,
     temperature = 0.01,
-    skip = Set{Symbol}(),
+    skip = labels(path),
 )
-    candidates = setdiff(labels(path, all = true), skip)
+    all(isnothing, (size, overhead, slices)) &&
+        throw(ArgumentError("need to specify at least one size, overhead or slices target"))
+
+    candidates = Set(setdiff(mapreduce(labels, ∪, path), skip))
     solution = Set{Symbol}()
-    current = (; slices = 1, size = maximum(size, path), overhead = 1.0)
-    original_flops = flops(path)
+    current = (; slices = 1, size = maximum(prod ∘ Base.size, path), overhead = 1.0)
+    original_flops = mapreduce(flops, +, path)
 
     sliced_path = path
-    while !(!isnothing(slices) && current.slices >= slices || !isnothing(size) && current.size <= size)
+    while !isempty(candidates)
         # temperature adds boltzmann like noise
-        winner = maximum(candidates) do index
+        winner = argmax(candidates) do index
             scorer(sliced_path, index) - temperature * (log ∘ (-) ∘ log ∘ rand)()
         end
+        delete!(candidates, winner)
 
         sliced_path = selectdim(sliced_path, winner, 1)
+        cur_overhead =
+            prod(i -> Base.size(path, i), [solution..., winner]) * mapreduce(flops, +, sliced_path) / original_flops
+
+        !isnothing(overhead) && cur_overhead > overhead && break
+        push!(solution, winner)
+
         current = (;
-            slices = current.slices * size(path, winner),
-            size = maximum(size, sliced_path),
-            overhead = flops(sliced_path) / original_flops,
+            slices = current.slices * (prod ∘ Base.size)(path, winner),
+            size = maximum(prod ∘ Base.size, sliced_path),
+            overhead = cur_overhead,
         )
 
-        !isnothing(overhead) && current.overhead > overhead && break
-        push!(winner, solution)
+        !isnothing(slices) && current.slices >= slices && break
+        !isnothing(size) && current.size <= size && break
     end
 
     return solution
@@ -56,7 +66,7 @@ function (cb::FlopsScorer)(path, index)
     slice = selectdim(path, index, 1)
 
     flops_reduction = mapreduce(flops, +, path) - mapreduce(flops, +, slice)
-    write_reduction = mapreduce(size, +, path) - mapreduce(size, +, slice)
+    write_reduction = mapreduce(prod ∘ size, +, path) - mapreduce(prod ∘ size, +, slice)
 
     log(flops_reduction + write_reduction * cb.weight + 1)
 end
@@ -69,7 +79,7 @@ function (cb::SizeScorer)(path, index)
     slice = selectdim(path, index, 1)
 
     flops_reduction = mapreduce(flops, +, path) - mapreduce(flops, +, slice)
-    write_reduction = mapreduce(size, +, path) - mapreduce(size, +, slice)
+    write_reduction = mapreduce(prod ∘ size, +, path) - mapreduce(prod ∘ size, +, slice)
 
     log(write_reduction + flops_reduction * cb.weight + 1)
 end
