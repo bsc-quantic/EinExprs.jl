@@ -17,7 +17,7 @@ Exhaustive contraction path optimizers. It guarantees to find the optimal contra
 The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``\mathcal{O}(\exp(n))`` if `outer = false`.
 """
 @kwdef struct Exhaustive <: Optimizer
-    metric::Function = flops
+    metric::Function = path -> mapreduce(flops, +, path)
     outer::Bool = false
 end
 
