@@ -7,6 +7,7 @@ using EinExprs
     @testset "Optimizers" verbose = true begin
         include("Exhaustive_test.jl")
     end
+    include("Slicing_test.jl")
 end
 
 @testset "Integration tests" verbose = true begin
