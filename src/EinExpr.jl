@@ -40,12 +40,7 @@ Return the size of the `Tensor` resulting from contracting `expr`. If `index` is
 """
 Base.size(expr::EinExpr) = tuple((size(expr, i) for i in labels(expr))...)
 
-function Base.size(expr::EinExpr, i::Symbol)
-    target = findfirst(input -> i ∈ labels(input), expr.args)
-    isnothing(target) && throw(KeyError(i))
-
-    return size(expr.args[target], i)
-end
+Base.size(expr::EinExpr, i::Symbol) = Iterators.filter(∋(i) ∘ labels, expr) |> first |> x -> size(x, i)
 
 """
     select(expr, i)
