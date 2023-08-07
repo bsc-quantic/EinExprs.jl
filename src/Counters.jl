@@ -5,7 +5,7 @@ flops(expr::EinExpr) =
     if isempty(suminds(expr)) && length(expr.args) == 1
         0
     else
-        mapreduce(i -> size(expr, i), *, [labels(expr)..., suminds(expr)...])
+        mapreduce(i -> size(expr, i), *, [labels(expr)..., suminds(expr)...], init = one(BigInt))
     end
 
 removedsize(::Tensor) = 0
