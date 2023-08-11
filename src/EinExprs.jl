@@ -2,7 +2,7 @@ module EinExprs
 
 include("EinExpr.jl")
 export EinExpr
-export suminds, path, select
+export head, args, inds, leaves, branches, suminds, contractorder, select
 
 include("Counters.jl")
 export flops, removedsize
@@ -24,7 +24,7 @@ end
         @require FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000" include(
             "../ext/EinExprsFiniteDifferencesExt.jl",
         )
-        @require ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4" include("../ext/EinExprsChainRulesCoreExt.jl")
+        # @require ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4" include("../ext/EinExprsChainRulesCoreExt.jl")
     end
 end
 

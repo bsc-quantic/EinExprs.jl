@@ -35,18 +35,18 @@
         Tensor(ones((sizes[i] for i in [:d, :b, :o])...), [:d, :b, :o]),
     ]
 
-    path = einexpr(Greedy, EinExpr(tensors, [:p, :j]))
+    path = einexpr(Greedy, EinExpr([:p, :j], tensors))
 
     @testset "plot!" begin
         f = Figure()
         @testset "(default)" plot!(f[1, 1], path)
-        @testset "with labels" plot!(f[1, 1], path; labels = true)
+        @testset "with labels" plot!(f[1, 1], path; inds = true)
         @testset "3D" plot!(f[1, 1], path; layout = Spring(dim = 3))
     end
 
     @testset "plot" begin
         @testset "(default)" plot(path)
-        @testset "with labels" plot(path; labels = true)
+        @testset "with labels" plot(path; inds = true)
         @testset "3D" plot(path; layout = Spring(dim = 3))
     end
 end

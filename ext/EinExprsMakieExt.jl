@@ -60,7 +60,7 @@ function Makie.plot!(
     ax::Union{Axis,Axis3},
     path::EinExpr;
     colormap = to_colormap(:viridis)[begin:end-10],
-    labels = false,
+    inds = false,
     kwargs...,
 )
     handles = IdDict(obj => i for (i, obj) in enumerate(path))
@@ -90,7 +90,7 @@ function Makie.plot!(
     get!(kwargs, :node_attr, (colorrange = (min_flops, max_flops), colormap = to_colormap(:plasma)[begin:end-50]))
 
     # configure labels
-    labels == true && get!(() -> join.(EinExprs.labels.(path))[1:end-1], kwargs, :elabels)
+    inds == true && get!(() -> join.(head.(path))[1:end-1], kwargs, :elabels)
     get!(() -> repeat([:black], ne(graph)), kwargs, :elabels_color)
     get!(() -> log_size ./ max_size .* 5 .+ 12, kwargs, :elabels_textsize)
 

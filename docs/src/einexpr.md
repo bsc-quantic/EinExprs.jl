@@ -24,7 +24,11 @@ end
 But it has a cost of ``\prod_\alpha \dim(\alpha)`` where ``\alpha \in \{i,j,k,l,m,n,o,p\}`` which is of ``\mathcal{O}(\exp(n))`` time complexity.
 
 ```@docs
-EinExprs.labels(::EinExpr)
+EinExprs.head(::EinExpr)
+EinExprs.args
+EinExprs.inds
+EinExprs.leaves
+EinExprs.branches
 Base.size(::EinExpr)
 EinExprs.suminds
 EinExprs.path

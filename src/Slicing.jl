@@ -11,12 +11,12 @@ Project `index` to dimension `i` in a EinExpr. This is equivalent to tensor cutt
 
 See also: [`view`](@ref).
 """
-Base.selectdim(path::EinExpr, index::Symbol, i) = EinExpr(map(path.args) do sub
-    index ∈ __labels_children(sub) ? selectdim(sub, index, i) : sub
-end, filter(!=(index), path.head))
+Base.selectdim(path::EinExpr, index::Symbol, i) = EinExpr(filter(!=(index), head(path)), map(args(path)) do sub
+    index ∈ __inds_children(sub) ? selectdim(sub, index, i) : sub
+end)
 
-__labels_children(x) = labels(x)
-__labels_children(path::EinExpr) = labels(path, all = true)
+__inds_children(x) = head(x)
+__inds_children(path::EinExpr) = inds(path)
 
 """
     view(path::EinExpr, cuttings...)
@@ -43,7 +43,7 @@ Base.view(path::EinExpr, cuttings::Pair{Symbol,<:Integer}...) =
     end
 
 """
-    findslices(scorer, path::EinExpr; size, slices, overhead, temperature = 0.01, skip = labels(path))
+    findslices(scorer, path::EinExpr; size, slices, overhead, temperature = 0.01, skip = head(path))
 
 Search for indices to be cut/sliced such that the conditions given by `size`, `overhead` and `slices` are fulfilled.
 Reimplementation based on [`contengra`](https://github.com/jcmgray/cotengra)'s `SliceFinder` algorithm.
@@ -68,12 +68,12 @@ function findslices(
     overhead = nothing,
     slices = nothing,
     temperature = 0.01,
-    skip = labels(path),
+    skip = head(path),
 )
     all(isnothing, (size, overhead, slices)) &&
         throw(ArgumentError("need to specify at least one size, overhead or slices target"))
 
-    candidates = Set(setdiff(mapreduce(labels, ∪, path), skip))
+    candidates = Set(setdiff(mapreduce(head, ∪, path), skip))
     solution = Set{Symbol}()
     current = (; slices = 1, size = maximum(prod ∘ Base.size, path), overhead = 1.0)
     original_flops = mapreduce(flops, +, path)

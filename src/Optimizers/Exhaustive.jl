@@ -31,19 +31,19 @@ function einexpr(config::Exhaustive, expr; leader = expr)
     # NOTE `for index in suminds(expr)` is better for debugging
     for inds in suminds(expr, parallel = true)
         # select tensors containing such inds
-        targets = filter(x -> !isdisjoint(labels(x), inds), expr.args)
+        targets = filter(x -> !isdisjoint(head(x), inds), args(expr))
 
-        subinds = labels.(targets)
-        subsuminds = setdiff(∩(subinds...), expr.head)
+        subinds = head.(targets)
+        subsuminds = setdiff(∩(subinds...), head(expr))
         suboutput = setdiff(Iterators.flatten(subinds), subsuminds)
 
-        candidate = EinExpr(targets, suboutput)
+        candidate = EinExpr(suboutput, targets)
 
         # prune paths based on config.metric
         config.metric(candidate) >= config.metric(leader) && continue
 
         # recurse fixing candidate index
-        candidate = EinExpr([candidate, filter(x -> isdisjoint(labels(x), inds), expr.args)...], expr.head)
+        candidate = EinExpr(head(expr), [candidate, filter(x -> isdisjoint(head(x), inds), args(expr))...])
         leader = einexpr(config, candidate, leader = leader)
     end
 
