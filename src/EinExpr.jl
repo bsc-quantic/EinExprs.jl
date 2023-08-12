@@ -99,6 +99,13 @@ Base.size(tensor::Tensor, i) = size(tensor.array, i)
 Base.size(tensor::Tensor, index::Symbol) = size(tensor, findfirst(==(index), tensor.inds))
 
 """
+    collapse!(path::EinExpr)
+
+Collapses all sub-branches, merging all tensor leaves into the `args` field.
+"""
+collapse!(path) = path.args = leaves(path) |> collect
+
+"""
     select(path::EinExpr, i)
 
 Return the child elements that contain `i` indices.
