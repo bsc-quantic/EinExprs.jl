@@ -94,6 +94,10 @@ Return the size of the resulting tensor from contracting `path`. If `index` is s
 Base.size(path::EinExpr) = tuple((size(path, i) for i in head(path))...)
 Base.size(path::EinExpr, i::Symbol) = Iterators.filter(∋(i) ∘ inds, leaves(path)) |> first |> x -> size(x, i)
 
+Base.size(tensor::Tensor) = size(tensor.array)
+Base.size(tensor::Tensor, i) = size(tensor.array, i)
+Base.size(tensor::Tensor, index::Symbol) = size(tensor, findfirst(==(index), tensor.inds))
+
 """
     select(path::EinExpr, i)
 
