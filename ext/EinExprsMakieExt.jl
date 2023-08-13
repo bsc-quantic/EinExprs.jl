@@ -4,7 +4,9 @@ using EinExprs
 using Graphs
 using Makie
 using GraphMakie
-using NetworkLayout: dim
+
+# NOTE this is a hack! removes NetworkLayout dependency but can be unstable
+__networklayout_dim(x) = supertype(typeof(x)).parameters |> first
 
 # TODO rework size calculating algorithm
 const MAX_EDGE_WIDTH = 10.0
@@ -18,7 +20,7 @@ function Makie.plot(path::EinExpr; kwargs...)
 end
 
 function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
-    ax = if haskey(kwargs, :layout) && dim(kwargs[:layout]) == 3
+    ax = if haskey(kwargs, :layout) && __networklayout_dim(kwargs[:layout]) == 3
         Axis3(f[1, 1])
     else
         ax = Axis(f[1, 1])
