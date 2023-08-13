@@ -1,11 +1,6 @@
 module EinExprsFiniteDifferencesExt
 
-if isdefined(Base, :get_extension)
-    using EinExprs
-else
-    using ..EinExprs
-end
-
+using EinExprs
 using FiniteDifferences
 
 function FiniteDifferences.to_vec(expr::EinExpr)

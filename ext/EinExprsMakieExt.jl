@@ -1,11 +1,6 @@
 module EinExprsMakieExt
 
-if isdefined(Base, :get_extension)
-    using EinExprs
-else
-    using ..EinExprs
-end
-
+using EinExprs
 using Graphs
 using Makie
 using GraphMakie
