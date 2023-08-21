@@ -20,7 +20,7 @@ makedocs(
         "Slicing"=>"slicing.md",
         "Alternatives"=>"alternatives.md",
     ],
-    format = Documenter.HTML(; assets = ["assets/style/images.css"]),
+    format = Documenter.HTML(; assets = ["assets/style/images.css", "assets/favicon.ico"]),
 )
 
 deploydocs(repo = "github.com/bsc-quantic/EinExprs.jl.git", devbranch = "master", push_preview = true)
