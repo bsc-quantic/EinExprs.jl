@@ -10,7 +10,7 @@ using EinExprs
 DocMeta.setdocmeta!(EinExprs, :DocTestSetup, :(using EinExprs); recursive = true)
 
 makedocs(
-    modules = [EinExprs],
+    modules = [EinExprs, Base.get_extension(EinExprs, :EinExprsMakieExt)],
     sitename = "EinExprs.jl",
     authors = "Sergio Sánchez Ramírez and contributors",
     pages = Any[
