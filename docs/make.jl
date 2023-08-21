@@ -23,4 +23,4 @@ makedocs(
     format = Documenter.HTML(; assets = ["assets/style/images.css"]),
 )
 
-deploydocs(repo = "github.com/bsc-quantic/Tenet.jl.git", devbranch = "master", push_preview = true)
+deploydocs(repo = "github.com/bsc-quantic/EinExprs.jl.git", devbranch = "master", push_preview = true)
