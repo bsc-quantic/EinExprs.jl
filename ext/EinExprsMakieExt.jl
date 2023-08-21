@@ -1,15 +1,12 @@
 module EinExprsMakieExt
 
-if isdefined(Base, :get_extension)
-    using EinExprs
-else
-    using ..EinExprs
-end
-
+using EinExprs
 using Graphs
 using Makie
 using GraphMakie
-using NetworkLayout: dim
+
+# NOTE this is a hack! removes NetworkLayout dependency but can be unstable
+__networklayout_dim(x) = supertype(typeof(x)).parameters |> first
 
 # TODO rework size calculating algorithm
 const MAX_EDGE_WIDTH = 10.0
@@ -23,7 +20,7 @@ function Makie.plot(path::EinExpr; kwargs...)
 end
 
 function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
-    ax = if haskey(kwargs, :layout) && dim(kwargs[:layout]) == 3
+    ax = if haskey(kwargs, :layout) && __networklayout_dim(kwargs[:layout]) == 3
         Axis3(f[1, 1])
     else
         ax = Axis(f[1, 1])
@@ -60,7 +57,7 @@ function Makie.plot!(
     ax::Union{Axis,Axis3},
     path::EinExpr;
     colormap = to_colormap(:viridis)[begin:end-10],
-    labels = false,
+    inds = false,
     kwargs...,
 )
     handles = IdDict(obj => i for (i, obj) in enumerate(path))
@@ -90,7 +87,7 @@ function Makie.plot!(
     get!(kwargs, :node_attr, (colorrange = (min_flops, max_flops), colormap = to_colormap(:plasma)[begin:end-50]))
 
     # configure labels
-    labels == true && get!(() -> join.(EinExprs.labels.(path))[1:end-1], kwargs, :elabels)
+    inds == true && get!(() -> join.(head.(path))[1:end-1], kwargs, :elabels)
     get!(() -> repeat([:black], ne(graph)), kwargs, :elabels_color)
     get!(() -> log_size ./ max_size .* 5 .+ 12, kwargs, :elabels_textsize)
 

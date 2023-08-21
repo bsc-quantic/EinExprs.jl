@@ -20,68 +20,68 @@
     )
 
     expr = EinExpr(
+        [:p, :j],
         [
             EinExpr(
+                [:k, :j],
                 [
                     EinExpr(
+                        [:n, :a, :d, :h],
                         [
                             EinExpr(
+                                [:c, :n, :a, :e, :d],
                                 [
                                     EinExpr(
+                                        [:o, :c, :n, :a],
                                         [
                                             EinExpr(
+                                                [:g, :o, :c, :l],
                                                 [
                                                     EinExpr(
+                                                        [:f, :g, :o, :i, :c],
                                                         [
                                                             EinExpr(
+                                                                [:m, :f, :g],
                                                                 [
                                                                     Tensor(
                                                                         ones((sizes[i] for i in [:m, :f, :q])...),
-                                                                        [:m, :f, :q],
+                                                                        (:m, :f, :q),
                                                                     ),
                                                                     Tensor(
                                                                         ones((sizes[i] for i in [:g, :q])...),
-                                                                        [:g, :q],
+                                                                        (:g, :q),
                                                                     ),
                                                                 ],
-                                                                [:m, :f, :g],
                                                             ),
                                                             Tensor(
                                                                 ones((sizes[i] for i in [:o, :i, :m, :c])...),
-                                                                [:o, :i, :m, :c],
+                                                                (:o, :i, :m, :c),
                                                             ),
                                                         ],
-                                                        [:f, :g, :o, :i, :c],
                                                     ),
-                                                    Tensor(ones((sizes[i] for i in [:f, :l, :i])...), [:f, :l, :i]),
+                                                    Tensor(ones((sizes[i] for i in [:f, :l, :i])...), (:f, :l, :i)),
                                                 ],
-                                                [:g, :o, :c, :l],
                                             ),
-                                            Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), [:g, :n, :l, :a]),
+                                            Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), (:g, :n, :l, :a)),
                                         ],
-                                        [:o, :c, :n, :a],
                                     ),
                                     EinExpr(
-                                        [
-                                            Tensor(ones((sizes[i] for i in [:b, :e])...), [:b, :e]),
-                                            Tensor(ones((sizes[i] for i in [:d, :b, :o])...), [:d, :b, :o]),
-                                        ],
                                         [:e, :d, :o],
+                                        [
+                                            Tensor(ones((sizes[i] for i in [:b, :e])...), (:b, :e)),
+                                            Tensor(ones((sizes[i] for i in [:d, :b, :o])...), (:d, :b, :o)),
+                                        ],
                                     ),
                                 ],
-                                [:c, :n, :a, :e, :d],
                             ),
-                            Tensor(ones((sizes[i] for i in [:c, :e, :h])...), [:c, :e, :h]),
+                            Tensor(ones((sizes[i] for i in [:c, :e, :h])...), (:c, :e, :h)),
                         ],
-                        [:n, :a, :d, :h],
                     ),
-                    Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), [:k, :d, :h, :a, :n, :j]),
+                    Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), (:k, :d, :h, :a, :n, :j)),
                 ],
-                [:k, :j],
             ),
-            Tensor(ones((sizes[i] for i in [:p, :k])...), [:p, :k]),
+            Tensor(ones((sizes[i] for i in [:p, :k])...), (:p, :k)),
         ],
-        [:p, :j],
     )
 
     cuttings = findslices(FlopsScorer(), expr, slices = 1000)
