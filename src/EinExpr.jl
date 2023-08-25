@@ -1,25 +1,14 @@
 using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
-
-const Tensor{T,N,A} = @NamedTuple{array::A, inds::NTuple{N,Symbol}} where {T,N,A<:AbstractArray{T,N}}
-Tensor(array::A, inds) where {T,N,A<:AbstractArray{T,N}} = Tensor{T,N,A}((array, Tuple(inds)))
-
-Base.selectdim(tensor::Tensor, d::Integer, i) = Tensor(selectdim(tensor.array, d, i), inds(tensor))
-function Base.selectdim(tensor::Tensor, d::Integer, i::Integer)
-    data = selectdim(tensor.array, d, i)
-    indices = [index for (i, index) in enumerate(inds(tensor)) if i != d]
-    Tensor(data, indices)
-end
-
-Base.selectdim(tensor::Tensor, d::Symbol, i) = selectdim(tensor, findfirst(==(d), tensor.inds), i)
+using ImmutableArrays
 
 struct EinExpr
-    head::NTuple{N,Symbol} where {N}
+    head::ImmutableVector{Symbol,Vector{Symbol}}
     args::Vector{Any}
 
     function EinExpr(head, args)
         # TODO checks: same dim for index, valid indices
-        head = Tuple(head)
+        head = collect(head)
         args = collect(args)
         new(head, args)
     end

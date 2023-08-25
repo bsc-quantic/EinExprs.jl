@@ -42,11 +42,11 @@
         tensor = Tensor(rand(2, 3), (:i, :j))
         expr = EinExpr((:i,), [tensor])
 
-        @test expr.head == (:i,)
+        @test all(splat(==), zip(expr.head, [:i]))
         @test expr.args == [tensor]
 
-        @test head(expr) == (:i,)
-        @test inds(expr) == (:i, :j)
+        @test all(splat(==), zip(head(expr), (:i,)))
+        @test all(splat(==), zip(inds(expr), (:i, :j)))
 
         @test size(expr, :i) == 2
         @test size(expr, :j) == 3
@@ -62,11 +62,11 @@
         tensor = Tensor(rand(2, 2), (:i, :i))
         expr = EinExpr((:i,), [tensor])
 
-        @test expr.head == (:i,)
+        @test all(splat(==), zip(expr.head, (:i,)))
         @test expr.args == [tensor]
 
-        @test head(expr) == (:i,)
-        @test inds(expr) == head(expr)
+        @test all(splat(==), zip(head(expr), (:i,)))
+        @test all(splat(==), zip(inds(expr), head(expr)))
 
         @test size(expr, :i) == 2
         @test size(expr) == (2,)
@@ -77,13 +77,13 @@
 
     @testset "trace" begin
         tensor = Tensor(rand(2, 2), (:i, :i))
-        expr = EinExpr((), [tensor])
+        expr = EinExpr(Symbol[], [tensor])
 
         @test isempty(expr.head)
         @test expr.args == [tensor]
 
         @test isempty(head(expr))
-        @test inds(expr) == (:i,)
+        @test all(splat(==), zip(inds(expr), (:i,)))
 
         @test size(expr, :i) == 2
         @test size(expr) == ()
@@ -98,11 +98,11 @@
         tensors = [Tensor(rand(2, 3), (:i, :j)), Tensor(rand(4, 5), (:k, :l))]
         expr = EinExpr((:i, :j, :k, :l), tensors)
 
-        @test expr.head == (:i, :j, :k, :l)
+        @test all(splat(==), zip(expr.head, (:i, :j, :k, :l)))
         @test expr.args == tensors
 
-        @test head(expr) == Tuple(mapreduce(collect ∘ inds, vcat, tensors))
-        @test inds(expr) == head(expr)
+        @test all(splat(==), zip(head(expr), mapreduce(collect ∘ inds, vcat, tensors)))
+        @test all(splat(==), zip(inds(expr), head(expr)))
         @test ndims(expr) == 4
 
         for (i, d) in zip([:i, :j, :k, :l], [2, 3, 4, 5])
@@ -125,13 +125,13 @@
     @testset "inner product" begin
         @testset "Vector" begin
             tensors = [Tensor(rand(2), (:i,)), Tensor(rand(2), (:i,))]
-            expr = EinExpr((), tensors)
+            expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
             @test expr.args == tensors
 
             @test isempty(head(expr))
-            @test inds(expr) == (:i,)
+            @test all(splat(==), zip(inds(expr), (:i,)))
             @test ndims(expr) == 0
 
             @test size(expr, :i) == 2
@@ -144,13 +144,13 @@
         end
         @testset "Matrix" begin
             tensors = [Tensor(rand(2, 3), (:i, :j)), Tensor(rand(2, 3), (:i, :j))]
-            expr = EinExpr((), tensors)
+            expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
             @test expr.args == tensors
 
             @test isempty(head(expr))
-            @test inds(expr) == (:i, :j)
+            @test all(splat(==), zip(inds(expr), (:i, :j)))
             @test ndims(expr) == 0
 
             @test size(expr, :i) == 2
@@ -168,11 +168,11 @@
         tensors = [Tensor(rand(2, 3), (:i, :k)), Tensor(rand(3, 4), (:k, :j))]
         expr = EinExpr((:i, :j), tensors)
 
-        @test expr.head == (:i, :j)
+        @test all(splat(==), zip(expr.head, (:i, :j)))
         @test expr.args == tensors
 
-        @test head(expr) == (:i, :j)
-        @test inds(expr) == (:i, :k, :j)
+        @test all(splat(==), zip(head(expr), (:i, :j)))
+        @test all(splat(==), zip(inds(expr), (:i, :k, :j)))
         @test ndims(expr) == 2
 
         @test size(expr, :i) == 2

@@ -33,7 +33,7 @@
 
     @testset "trace" begin
         tensor = Tensor(rand(2, 2), (:i, :i))
-        expr = EinExpr((), [tensor])
+        expr = EinExpr(Symbol[], [tensor])
 
         @test flops(expr) == 2
         @test removedsize(expr) == 3
@@ -49,7 +49,7 @@
 
     @testset "inner product" begin
         tensors = [Tensor(rand(2), (:i,)), Tensor(rand(2), (:i,))]
-        expr = EinExpr((), tensors)
+        expr = EinExpr(Symbol[], tensors)
 
         @test flops(expr) == 2
         @test removedsize(expr) == 3
