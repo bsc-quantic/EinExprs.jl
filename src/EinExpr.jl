@@ -4,7 +4,7 @@ using ImmutableArrays
 
 struct EinExpr
     head::ImmutableVector{Symbol,Vector{Symbol}}
-    args::Vector{Any}
+    args::Vector{Union{Tensor,EinExpr}}
 
     function EinExpr(head, args)
         # TODO checks: same dim for index, valid indices
