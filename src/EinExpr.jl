@@ -32,7 +32,7 @@ Return the children of the `path`, which correspond to input tensors for the con
 See also: [`head`](@ref).
 """
 args(path::EinExpr) = path.args
-args(::Tensor) = ()
+args(::Tensor) = []
 
 """
     inds(path)
