@@ -52,8 +52,8 @@ If `i` is specified, then only return the ``i``-th tensor.
 
 See also: [`branches`](@ref).
 """
-leaves(path) = Iterators.filter(x -> x isa Tensor, path)
-leaves(path, i) = Iterators.drop(Iterators.filter(x -> x isa Tensor, path), i) |> first
+leaves(path) = Iterators.filter(Base.Fix2(isa, Tensor), path) |> first
+leaves(path, i) = Iterators.drop(Iterators.filter(Base.Fix2(isa, Tensor), path), i) |> first
 
 """
     branches(path::EinExpr[, i])
@@ -63,8 +63,8 @@ If `i` is specified, then only return the ``i``-th `EinExpr`.
 
 See also: [`leaves`](@ref).
 """
-branches(path) = Iterators.filter(x -> x isa EinExpr, path)
-branches(path, i) = Iterators.drop(Iterators.filter(x -> x isa EinExpr, path), i) |> first
+branches(path) = Iterators.filter(Base.Fix2(isa, EinExpr), path)
+branches(path, i) = Iterators.drop(Iterators.filter(Base.Fix2(isa, EinExpr), path), i) |> first
 
 Base.:(==)(a::EinExpr, b::EinExpr) = a.head == b.head && a.args == b.args
 
@@ -81,7 +81,7 @@ Base.ndims(path::EinExpr) = length(head(path))
 Return the size of the resulting tensor from contracting `path`. If `index` is specified, return the size of such index.
 """
 Base.size(path::EinExpr) = tuple((size(path, i) for i in head(path))...)
-Base.size(path::EinExpr, i::Symbol) = Iterators.filter(∋(i) ∘ inds, leaves(path)) |> first |> x -> size(x, i)
+Base.size(path::EinExpr, i::Symbol) = Iterators.filter(∋(i) ∘ inds, leaves(path)) |> first |> Base.Fix2(size, i)
 
 Base.size(tensor::Tensor) = size(tensor.array)
 Base.size(tensor::Tensor, i) = size(tensor.array, i)
