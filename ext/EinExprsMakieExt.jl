@@ -1,9 +1,11 @@
 module EinExprsMakieExt
 
 using EinExprs
+using EinExprs: Branches
 using Graphs
 using Makie
 using GraphMakie
+using AbstractTrees
 
 # NOTE this is a hack! removes NetworkLayout dependency but can be unstable
 __networklayout_dim(x) = supertype(typeof(x)).parameters |> first
@@ -60,13 +62,11 @@ function Makie.plot!(
     inds = false,
     kwargs...,
 )
-    handles = IdDict(obj => i for (i, obj) in enumerate(path))
-    graph = SimpleDiGraph([
-        Edge(handles[from], handles[to]) for to in Iterators.filter(obj -> obj isa EinExpr, path) for from in to.args
-    ])
+    handles = IdDict(obj => i for (i, obj) in enumerate(PostOrderDFS(path)))
+    graph = SimpleDiGraph([Edge(handles[from], handles[to]) for to in Branches(path) for from in to.args])
 
-    log_size = log2.(length.(path))[1:end-1]
-    log_flops = log10.(max.((1.0,), flops.(path)))
+    log_size = log2.(length.(PostOrderDFS(path)))[1:end-1]
+    log_flops = log10.(max.((1.0,), flops.(PostOrderDFS(path))))
 
     min_size, max_size = extrema(log_size)
     min_flops, max_flops = extrema(log_flops)
@@ -87,7 +87,7 @@ function Makie.plot!(
     get!(kwargs, :node_attr, (colorrange = (min_flops, max_flops), colormap = to_colormap(:plasma)[begin:end-50]))
 
     # configure labels
-    inds == true && get!(() -> join.(head.(path))[1:end-1], kwargs, :elabels)
+    inds == true && get!(() -> join.(head.(PostOrderDFS(path)))[1:end-1], kwargs, :elabels)
     get!(() -> repeat([:black], ne(graph)), kwargs, :elabels_color)
     get!(() -> log_size ./ max_size .* 5 .+ 12, kwargs, :elabels_textsize)
 

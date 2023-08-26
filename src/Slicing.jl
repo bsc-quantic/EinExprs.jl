@@ -1,3 +1,5 @@
+using AbstractTrees
+
 """
     selectdim(path::EinExpr, index::Symbol, i)
 
@@ -73,10 +75,10 @@ function findslices(
     all(isnothing, (size, overhead, slices)) &&
         throw(ArgumentError("need to specify at least one size, overhead or slices target"))
 
-    candidates = Set(setdiff(mapreduce(head, ∪, path), skip))
+    candidates = Set(setdiff(mapreduce(head, ∪, PostOrderDFS(path)), skip))
     solution = Set{Symbol}()
-    current = (; slices = 1, size = maximum(prod ∘ Base.size, path), overhead = 1.0)
-    original_flops = mapreduce(flops, +, path)
+    current = (; slices = 1, size = maximum(prod ∘ Base.size, PostOrderDFS(path)), overhead = 1.0)
+    original_flops = mapreduce(flops, +, Branches(path))
 
     sliced_path = path
     while !isempty(candidates)
@@ -88,14 +90,15 @@ function findslices(
 
         sliced_path = selectdim(sliced_path, winner, 1)
         cur_overhead =
-            prod(i -> Base.size(path, i), [solution..., winner]) * mapreduce(flops, +, sliced_path) / original_flops
+            prod(i -> Base.size(path, i), [solution..., winner]) * mapreduce(flops, +, Branches(sliced_path)) /
+            original_flops
 
         !isnothing(overhead) && cur_overhead > overhead && break
         push!(solution, winner)
 
         current = (;
             slices = current.slices * (prod ∘ Base.size)(path, winner),
-            size = maximum(prod ∘ Base.size, sliced_path),
+            size = maximum(prod ∘ Base.size, PostOrderDFS(sliced_path)),
             overhead = cur_overhead,
         )
 
@@ -122,8 +125,8 @@ end
 function (cb::FlopsScorer)(path, index)
     slice = selectdim(path, index, 1)
 
-    flops_reduction = mapreduce(flops, +, path) - mapreduce(flops, +, slice)
-    write_reduction = mapreduce(prod ∘ size, +, path) - mapreduce(prod ∘ size, +, slice)
+    flops_reduction = mapreduce(flops, +, PostOrderDFS(path)) - mapreduce(flops, +, PostOrderDFS(slice))
+    write_reduction = mapreduce(prod ∘ size, +, PostOrderDFS(path)) - mapreduce(prod ∘ size, +, PostOrderDFS(slice))
 
     log(flops_reduction + write_reduction * cb.weight + 1)
 end
@@ -142,8 +145,8 @@ end
 function (cb::SizeScorer)(path, index)
     slice = selectdim(path, index, 1)
 
-    flops_reduction = mapreduce(flops, +, path) - mapreduce(flops, +, slice)
-    write_reduction = mapreduce(prod ∘ size, +, path) - mapreduce(prod ∘ size, +, slice)
+    flops_reduction = mapreduce(flops, +, PostOrderDFS(path)) - mapreduce(flops, +, PostOrderDFS(slice))
+    write_reduction = mapreduce(prod ∘ size, +, PostOrderDFS(path)) - mapreduce(prod ∘ size, +, PostOrderDFS(slice))
 
     log(write_reduction + flops_reduction * cb.weight + 1)
 end

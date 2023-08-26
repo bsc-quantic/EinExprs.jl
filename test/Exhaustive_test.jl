@@ -35,7 +35,7 @@
     expr = einexpr(Exhaustive, EinExpr([:p, :j], tensors))
     @test expr isa EinExpr
     # TODO traverse through the tree and check everything is ok
-    @test mapreduce(flops, +, expr) == 48753
+    @test mapreduce(flops, +, EinExprs.Branches(expr)) == 48753
     # FIXME non-determinist behaviour on order
     @test issetequal(
         contractorder(expr),

@@ -1,6 +1,7 @@
 using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
 using ImmutableArrays
+using AbstractTrees
 
 struct EinExpr
     head::ImmutableVector{Symbol,Vector{Symbol}}
@@ -22,7 +23,6 @@ Return the indices of the resulting tensor from contracting `path`.
 See also: [`inds`](@ref), [`args`](@ref).
 """
 head(path::EinExpr) = path.head
-head(tensor::Tensor) = tensor.inds
 
 """
     args(path::EinExpr)
@@ -32,7 +32,6 @@ Return the children of the `path`, which correspond to input tensors for the con
 See also: [`head`](@ref).
 """
 args(path::EinExpr) = path.args
-args(::Tensor) = []
 
 """
     inds(path)
@@ -41,8 +40,7 @@ Return all the involved indices in `path`. If a tensor is passed, then it is equ
 
 See also: [`head`](@ref).
 """
-inds(path::EinExpr) = mapreduce(head, vcat, args(path)) |> unique
-inds(tensor::Tensor) = head(tensor)
+inds(path::EinExpr) = mapreduce(head, vcat, args(path)) |> unique # TODO ?
 
 """
     leaves(path::EinExpr[, i])
@@ -52,8 +50,10 @@ If `i` is specified, then only return the ``i``-th tensor.
 
 See also: [`branches`](@ref).
 """
-leaves(path) = Iterators.filter(Base.Fix2(isa, Tensor), path) |> first
-leaves(path, i) = Iterators.drop(Iterators.filter(Base.Fix2(isa, Tensor), path), i) |> first
+leaves(path) = Leaves(path) |> collect
+leaves(path, i) = Iterators.drop(Leaves(path), i - 1) |> first
+
+Branches(path) = Iterators.filter(Base.Fix2(isa, EinExpr), PostOrderDFS(path))
 
 """
     branches(path::EinExpr[, i])
@@ -63,8 +63,8 @@ If `i` is specified, then only return the ``i``-th `EinExpr`.
 
 See also: [`leaves`](@ref).
 """
-branches(path) = Iterators.filter(Base.Fix2(isa, EinExpr), path)
-branches(path, i) = Iterators.drop(Iterators.filter(Base.Fix2(isa, EinExpr), path), i) |> first
+branches(path) = Branches(path) |> collect
+branches(path, i) = Iterators.drop(Branches(path), i - 1) |> first
 
 Base.:(==)(a::EinExpr, b::EinExpr) = a.head == b.head && a.args == b.args
 
@@ -81,18 +81,14 @@ Base.ndims(path::EinExpr) = length(head(path))
 Return the size of the resulting tensor from contracting `path`. If `index` is specified, return the size of such index.
 """
 Base.size(path::EinExpr) = tuple((size(path, i) for i in head(path))...)
-Base.size(path::EinExpr, i::Symbol) = Iterators.filter(∋(i) ∘ inds, leaves(path)) |> first |> Base.Fix2(size, i)
-
-Base.size(tensor::Tensor) = size(tensor.array)
-Base.size(tensor::Tensor, i) = size(tensor.array, i)
-Base.size(tensor::Tensor, index::Symbol) = size(tensor, findfirst(==(index), tensor.inds))
+Base.size(path::EinExpr, i::Symbol) = Iterators.filter(∋(i) ∘ inds, Leaves(path)) |> first |> Base.Fix2(size, i)
 
 """
     collapse!(path::EinExpr)
 
 Collapses all sub-branches, merging all tensor leaves into the `args` field.
 """
-collapse!(path) = path.args = leaves(path) |> collect
+collapse!(path) = path.args = leaves(path)
 
 """
     select(path::EinExpr, i)
@@ -115,7 +111,7 @@ neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(∪(head.(select
 
 Transform `path` into a contraction order.
 """
-contractorder(path::EinExpr) = map(suminds, branches(path))
+contractorder(path::EinExpr) = map(suminds, Branches(path))
 
 @doc raw"""
     suminds(path[, parallel=false])
@@ -200,32 +196,16 @@ end
 Base.IteratorSize(::Type{EinExpr}) = Base.HasLength()
 Base.length(path::EinExpr) = sum(arg -> arg isa EinExpr ? length(arg) : 1, args(path)) + 1
 Base.IteratorEltype(::Type{EinExpr}) = Base.HasEltype()
-Base.eltype(::EinExpr) = Union{<:Tensor,EinExpr}
+Base.eltype(::EinExpr) = Union{Tensor,EinExpr}
 
-function Base.iterate(path::EinExpr, state = 1)
-    isnothing(state) && return nothing
+# AbstractTrees interface and traits
+AbstractTrees.children(path::EinExpr) = args(path)
+AbstractTrees.childtype(::Type{EinExpr}) = Union{Tensor,EinExpr}
+AbstractTrees.childrentype(::Type{EinExpr}) = Vector{Union{Tensor,EinExpr}}
+AbstractTrees.childstatetype(::Type{EinExpr}) = Int
+AbstractTrees.nodetype(::Type{EinExpr}) = Union{Tensor,EinExpr}
 
-    # iterate child level
-    i, j... = state
-    it = iterate(args(path), i)
-
-    # return itself on last iteration
-    isnothing(it) && return path, nothing
-
-    # recurse iteration
-    (next, statenext) = it
-
-    # if `next` is a tensor, return directly
-    !(next isa EinExpr) && return next, statenext
-
-    next, j = if isempty(j)
-        iterate(next)
-    else
-        iterate(next, j)
-    end
-
-    # if j === nothing, args(path) iteration has finished
-    isnothing(j) && return next, i + 1
-
-    return next, (i, j...)
-end
+AbstractTrees.ParentLinks(::Type{EinExpr}) = ImplicitParents()
+AbstractTrees.SiblingLinks(::Type{EinExpr}) = ImplicitSiblings()
+AbstractTrees.ChildIndexing(::Type{EinExpr}) = IndexedChildren()
+AbstractTrees.NodeType(::Type{EinExpr}) = NodeTypeUnknown() # TODO maybe we know? or not?
