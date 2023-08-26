@@ -40,7 +40,7 @@ Return all the involved indices in `path`. If a tensor is passed, then it is equ
 
 See also: [`head`](@ref).
 """
-inds(path::EinExpr) = mapreduce(head, vcat, args(path)) |> unique # TODO ?
+inds(path::EinExpr) = mapreduce(head, ∪, args(path); init = Set{Symbol}())
 
 """
     leaves(path::EinExpr[, i])
