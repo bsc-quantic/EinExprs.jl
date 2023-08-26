@@ -1,9 +1,8 @@
 @testset "EinExpr" begin
-    using EinExprs: Tensor
     using LinearAlgebra
 
     @testset "identity" begin
-        tensor = Tensor(rand(2, 3), (:i, :j))
+        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
         expr = EinExpr((:i, :j), [tensor])
 
         @test expr.head == head(tensor)
@@ -21,7 +20,7 @@
     end
 
     @testset "transpose" begin
-        tensor = Tensor(rand(2, 3), (:i, :j))
+        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
         expr = EinExpr((:j, :i), [tensor])
 
         @test expr.head == reverse(inds(tensor))
@@ -39,7 +38,7 @@
     end
 
     @testset "axis sum" begin
-        tensor = Tensor(rand(2, 3), (:i, :j))
+        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
         expr = EinExpr((:i,), [tensor])
 
         @test all(splat(==), zip(expr.head, [:i]))
@@ -59,7 +58,7 @@
     end
 
     @testset "diagonal" begin
-        tensor = Tensor(rand(2, 2), (:i, :i))
+        tensor = EinExpr([:i, :i], Dict(:i => 2))
         expr = EinExpr((:i,), [tensor])
 
         @test all(splat(==), zip(expr.head, (:i,)))
@@ -76,7 +75,7 @@
     end
 
     @testset "trace" begin
-        tensor = Tensor(rand(2, 2), (:i, :i))
+        tensor = EinExpr([:i, :i], Dict(:i => 2))
         expr = EinExpr(Symbol[], [tensor])
 
         @test isempty(expr.head)
@@ -95,7 +94,7 @@
     end
 
     @testset "outer product" begin
-        tensors = [Tensor(rand(2, 3), (:i, :j)), Tensor(rand(4, 5), (:k, :l))]
+        tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:k, :l), Dict(:k => 4, :l => 5))]
         expr = EinExpr((:i, :j, :k, :l), tensors)
 
         @test all(splat(==), zip(expr.head, (:i, :j, :k, :l)))
@@ -124,7 +123,7 @@
 
     @testset "inner product" begin
         @testset "Vector" begin
-            tensors = [Tensor(rand(2), (:i,)), Tensor(rand(2), (:i,))]
+            tensors = [EinExpr((:i,), Dict(:i => 2)), EinExpr((:i,), Dict(:i => 2))]
             expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
@@ -143,7 +142,7 @@
             # @test only(contract(expr)) ≈ dot(parent.(tensors)...)
         end
         @testset "Matrix" begin
-            tensors = [Tensor(rand(2, 3), (:i, :j)), Tensor(rand(2, 3), (:i, :j))]
+            tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:i, :j), Dict(:i => 2, :j => 3))]
             expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
@@ -165,7 +164,7 @@
     end
 
     @testset "matrix multiplication" begin
-        tensors = [Tensor(rand(2, 3), (:i, :k)), Tensor(rand(3, 4), (:k, :j))]
+        tensors = [EinExpr((:i, :k), Dict(:i => 2, :k => 3)), EinExpr((:k, :j), Dict(:k => 3, :j => 4))]
         expr = EinExpr((:i, :j), tensors)
 
         @test all(splat(==), zip(expr.head, (:i, :j)))
@@ -208,21 +207,21 @@
         )
 
         tensors = [
-            Tensor(ones((sizes[i] for i in [:f, :l, :i])...), (:f, :l, :i)),
-            Tensor(ones((sizes[i] for i in [:b, :e])...), (:b, :e)),
-            Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), (:g, :n, :l, :a)),
-            Tensor(ones((sizes[i] for i in [:o, :i, :m, :c])...), (:o, :i, :m, :c)),
-            Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), (:k, :d, :h, :a, :n, :j)),
-            Tensor(ones((sizes[i] for i in [:m, :f, :q])...), (:m, :f, :q)),
-            Tensor(ones((sizes[i] for i in [:p, :k])...), (:p, :k)),
-            Tensor(ones((sizes[i] for i in [:c, :e, :h])...), (:c, :e, :h)),
-            Tensor(ones((sizes[i] for i in [:g, :q])...), (:g, :q)),
-            Tensor(ones((sizes[i] for i in [:d, :b, :o])...), (:d, :b, :o)),
+            EinExpr([:f, :l, :i], filter(p -> p.first ∈ [:f, :l, :i], sizes)),
+            EinExpr([:b, :e], filter(p -> p.first ∈ [:b, :e], sizes)),
+            EinExpr([:g, :n, :l, :a], filter(p -> p.first ∈ [:g, :n, :l, :a], sizes)),
+            EinExpr([:o, :i, :m, :c], filter(p -> p.first ∈ [:o, :i, :m, :c], sizes)),
+            EinExpr([:k, :d, :h, :a, :n, :j], filter(p -> p.first ∈ [:k, :d, :h, :a, :n, :j], sizes)),
+            EinExpr([:m, :f, :q], filter(p -> p.first ∈ [:m, :f, :q], sizes)),
+            EinExpr([:p, :k], filter(p -> p.first ∈ [:p, :k], sizes)),
+            EinExpr([:c, :e, :h], filter(p -> p.first ∈ [:c, :e, :h], sizes)),
+            EinExpr([:g, :q], filter(p -> p.first ∈ [:g, :q], sizes)),
+            EinExpr([:d, :b, :o], filter(p -> p.first ∈ [:d, :b, :o], sizes)),
         ]
 
         expr = EinExpr([:p, :j], tensors)
 
-        @test sum(tensors..., inds = [:p, :j]) == expr
+        @test sum(tensors..., head = [:p, :j]) == expr
 
         for inds in [[:q], [:m], [:f, :i], [:g, :l], [:b], [:o], [:c, :e], [:n, :a, :d, :h], [:k]]
             foo = sum(expr, inds)

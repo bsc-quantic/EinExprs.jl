@@ -23,16 +23,16 @@
     )
 
     tensors = [
-        Tensor(ones((sizes[i] for i in [:f, :l, :i])...), [:f, :l, :i]),
-        Tensor(ones((sizes[i] for i in [:b, :e])...), [:b, :e]),
-        Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), [:g, :n, :l, :a]),
-        Tensor(ones((sizes[i] for i in [:o, :i, :m, :c])...), [:o, :i, :m, :c]),
-        Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), [:k, :d, :h, :a, :n, :j]),
-        Tensor(ones((sizes[i] for i in [:m, :f, :q])...), [:m, :f, :q]),
-        Tensor(ones((sizes[i] for i in [:p, :k])...), [:p, :k]),
-        Tensor(ones((sizes[i] for i in [:c, :e, :h])...), [:c, :e, :h]),
-        Tensor(ones((sizes[i] for i in [:g, :q])...), [:g, :q]),
-        Tensor(ones((sizes[i] for i in [:d, :b, :o])...), [:d, :b, :o]),
+        EinExpr([:f, :l, :i], filter(p -> p.first ∈ [:f, :l, :i], sizes)),
+        EinExpr([:b, :e], filter(p -> p.first ∈ [:b, :e], sizes)),
+        EinExpr([:g, :n, :l, :a], filter(p -> p.first ∈ [:g, :n, :l, :a], sizes)),
+        EinExpr([:o, :i, :m, :c], filter(p -> p.first ∈ [:o, :i, :m, :c], sizes)),
+        EinExpr([:k, :d, :h, :a, :n, :j], filter(p -> p.first ∈ [:k, :d, :h, :a, :n, :j], sizes)),
+        EinExpr([:m, :f, :q], filter(p -> p.first ∈ [:m, :f, :q], sizes)),
+        EinExpr([:p, :k], filter(p -> p.first ∈ [:p, :k], sizes)),
+        EinExpr([:c, :e, :h], filter(p -> p.first ∈ [:c, :e, :h], sizes)),
+        EinExpr([:g, :q], filter(p -> p.first ∈ [:g, :q], sizes)),
+        EinExpr([:d, :b, :o], filter(p -> p.first ∈ [:d, :b, :o], sizes)),
     ]
 
     path = einexpr(Greedy, EinExpr([:p, :j], tensors))

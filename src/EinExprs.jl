@@ -1,7 +1,5 @@
 module EinExprs
 
-include("Tensor.jl")
-
 include("EinExpr.jl")
 export EinExpr
 export head, args, inds, leaves, branches, collapse!, suminds, contractorder, select

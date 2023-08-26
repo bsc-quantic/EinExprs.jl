@@ -29,7 +29,7 @@ function einexpr(config::Greedy, expr)
     queue = MutableBinaryHeap{Tuple{Float64,Vector{Symbol}}}(Base.By(first))
 
     handles = map(suminds(expr, parallel = true)) do inds
-        candidate = sum(select(expr, inds)..., inds = inds)
+        candidate = sum(select(expr, inds)..., head = inds)
         weight = config.metric(candidate)
         handle = push!(queue, (weight, inds))
         return sort(inds) => handle
@@ -47,7 +47,7 @@ function einexpr(config::Greedy, expr)
 
         # update candidate queue
         for inds in filter(inds -> !isdisjoint(neigh, inds), suminds(expr, parallel = true))
-            candidate = sum(select(expr, inds)..., inds = inds)
+            candidate = sum(select(expr, inds)..., head = inds)
             weight = config.metric(candidate)
 
             # update involved nodes

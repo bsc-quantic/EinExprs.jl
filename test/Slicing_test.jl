@@ -43,44 +43,44 @@
                                                             EinExpr(
                                                                 [:m, :f, :g],
                                                                 [
-                                                                    Tensor(
-                                                                        ones((sizes[i] for i in [:m, :f, :q])...),
+                                                                    EinExpr(
                                                                         (:m, :f, :q),
+                                                                        Dict(i => sizes[i] for i in [:m, :f, :q]),
                                                                     ),
-                                                                    Tensor(
-                                                                        ones((sizes[i] for i in [:g, :q])...),
+                                                                    EinExpr(
                                                                         (:g, :q),
+                                                                        Dict(i => sizes[i] for i in [:g, :q]),
                                                                     ),
                                                                 ],
                                                             ),
-                                                            Tensor(
-                                                                ones((sizes[i] for i in [:o, :i, :m, :c])...),
+                                                            EinExpr(
                                                                 (:o, :i, :m, :c),
+                                                                Dict(i => sizes[i] for i in [:o, :i, :m, :c]),
                                                             ),
                                                         ],
                                                     ),
-                                                    Tensor(ones((sizes[i] for i in [:f, :l, :i])...), (:f, :l, :i)),
+                                                    EinExpr((:f, :l, :i), Dict(i => sizes[i] for i in [:f, :l, :i])),
                                                 ],
                                             ),
-                                            Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), (:g, :n, :l, :a)),
+                                            EinExpr((:g, :n, :l, :a), Dict(i => sizes[i] for i in [:g, :n, :l, :a])),
                                         ],
                                     ),
                                     EinExpr(
                                         [:e, :d, :o],
                                         [
-                                            Tensor(ones((sizes[i] for i in [:b, :e])...), (:b, :e)),
-                                            Tensor(ones((sizes[i] for i in [:d, :b, :o])...), (:d, :b, :o)),
+                                            EinExpr((:b, :e), Dict(i => sizes[i] for i in [:b, :e])),
+                                            EinExpr((:d, :b, :o), Dict(i => sizes[i] for i in [:d, :b, :o])),
                                         ],
                                     ),
                                 ],
                             ),
-                            Tensor(ones((sizes[i] for i in [:c, :e, :h])...), (:c, :e, :h)),
+                            EinExpr((:c, :e, :h), Dict(i => sizes[i] for i in [:c, :e, :h])),
                         ],
                     ),
-                    Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), (:k, :d, :h, :a, :n, :j)),
+                    EinExpr((:k, :d, :h, :a, :n, :j), Dict(i => sizes[i] for i in [:k, :d, :h, :a, :n, :j])),
                 ],
             ),
-            Tensor(ones((sizes[i] for i in [:p, :k])...), (:p, :k)),
+            EinExpr((:p, :k), Dict(sizes[i] for i in [:p, :k])),
         ],
     )
 
