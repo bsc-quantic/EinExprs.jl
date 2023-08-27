@@ -135,27 +135,7 @@ Indices of summation of an `EinExpr`.
 suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 ```
 """
-function suminds(path::EinExpr)
-    # annotate connections of indices
-    edges = DefaultDict{Symbol,Set{UInt}}(() -> Set{UInt}())
-    for arg in args(path)
-        for index in head(arg)
-            push!(edges[index], objectid(arg))
-        end
-    end
-
-    # compute dual of `edges` dictionary
-    dual = DefaultDict{Set{UInt},Vector{Symbol}}(() -> Vector{Symbol}())
-    for (index, neighbours) in edges
-        length(neighbours) < 2 && continue
-        push!(dual[neighbours], index)
-    end
-
-    # filter out open indices
-    return filter(dual) do (neighbours, inds)
-        length(neighbours) >= 2
-    end |> values |> Iterators.flatten |> collect
-end
+suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args), head(path))
 
 """
     sum!(path, indices)
