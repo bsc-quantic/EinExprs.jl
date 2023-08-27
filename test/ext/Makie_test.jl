@@ -35,7 +35,7 @@
         EinExpr([:d, :b, :o], filter(p -> p.first ∈ [:d, :b, :o], sizes)),
     ]
 
-    path = einexpr(Greedy, EinExpr([:p, :j], tensors))
+    path = einexpr(Exhaustive(), EinExpr([:p, :j], tensors))
 
     @testset "plot!" begin
         f = Figure()
