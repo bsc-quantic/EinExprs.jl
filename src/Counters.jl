@@ -1,5 +1,5 @@
 flops(expr::EinExpr) =
-    if length(expr.args) == 0
+    if length(expr.args) == 0 || length(expr.args) == 1 && isempty(suminds(expr))
         0
     else
         mapreduce(i -> size(expr, i), *, [head(expr)..., suminds(expr)...], init = one(BigInt))
