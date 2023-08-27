@@ -16,7 +16,7 @@
         @test size(expr) == (2, 3)
 
         @test isempty(suminds(expr))
-        @test_skip isempty(parsuminds(expr))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "transpose" begin
@@ -34,7 +34,7 @@
         @test size(expr) == (3, 2)
 
         @test isempty(suminds(expr))
-        @test_skip isempty(parsuminds(expr))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "axis sum" begin
@@ -52,7 +52,7 @@
         @test size(expr) == (2,)
 
         @test suminds(expr) == [:j]
-        @test_skip isempty(parsuminds(expr))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "diagonal" begin
@@ -69,7 +69,7 @@
         @test size(expr) == (2,)
 
         @test isempty(suminds(expr))
-        @test_skip isempty(parsuminds(expr))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "trace" begin
@@ -86,7 +86,7 @@
         @test size(expr) == ()
 
         @test suminds(expr) == [:i]
-        @test_skip isempty(parsuminds(expr))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "outer product" begin
@@ -106,7 +106,7 @@
         @test size(expr) == (2, 3, 4, 5)
 
         @test isempty(suminds(expr))
-        @test_skip isempty(parsuminds(expr))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "inner product" begin
@@ -125,7 +125,7 @@
             @test size(expr) == ()
 
             @test suminds(expr) == [:i]
-            @test_skip parsuminds(expr) == [[:i]]
+            @test parsuminds(expr) == [[:i]]
         end
         @testset "Matrix" begin
             tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:i, :j), Dict(:i => 2, :j => 3))]
@@ -143,7 +143,7 @@
             @test size(expr) == ()
 
             @test issetequal(suminds(expr), [:i, :j])
-            @test_skip Set(Set.(parsuminds(expr))) == Set([Set([:i, :j])])
+            @test Set(Set.(parsuminds(expr))) == Set([Set([:i, :j])])
         end
     end
 
@@ -164,7 +164,7 @@
         @test size(expr) == (2, 4)
 
         @test suminds(expr) == [:k]
-        @test_skip parsuminds(expr) == [[:k]]
+        @test parsuminds(expr) == [[:k]]
     end
 
     @testset "manual path" begin
