@@ -1,5 +1,6 @@
 using Base: @kwdef
 using DataStructures: MutableBinaryHeap, update!
+using Combinatorics
 
 """
     Greedy(; metric = removedsize, choose = pop!)
@@ -24,47 +25,38 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
     choose::Function = pop!
 end
 
-function einexpr(config::Greedy, expr)
+function einexpr(config::Greedy, path)
     # generate initial candidate contractions
-    queue = MutableBinaryHeap{Tuple{Float64,Vector{Symbol}}}(Base.By(first))
-
-    handles = map(parsuminds(expr)) do inds
-        candidate = sum(select(expr, inds)..., head = inds)
-        weight = config.metric(candidate)
-        handle = push!(queue, (weight, inds))
-        return sort(inds) => handle
-    end |> Dict
+    queue = MutableBinaryHeap{Tuple{Float64,EinExpr}}(
+        Base.By(first, Base.Reverse),
+        map(combinations(path.args, 2)) do (a, b)
+            candidate = sum([a, b]) # TODO don't sum output inds
+            weight = config.metric(candidate)
+            (weight, candidate)
+        end,
+    )
 
     while length(queue) > 1
-        # select candidate
+        # choose winner
         _, winner = config.choose(queue)
-        any(∉(suminds(expr)), winner) && continue
+
+        # discard winner if old
+        any(∉(args(path)), args(winner)) && continue
 
         # append winner to contraction path
-        neigh = neighbours(expr, winner)
-
-        sum!(expr, winner)
+        # TODO replace following lines for `sum!(path, ...)`
+        setdiff!(path.args, args(winner))
+        push!(path.args, winner)
 
         # update candidate queue
-        for inds in filter(inds -> !isdisjoint(neigh, inds), parsuminds(expr))
-            candidate = sum(select(expr, inds)..., head = inds)
+        for (a, b) in combinations(path.args, 2)
+            candidate = sum([a, b]) # TODO don't sum output inds
             weight = config.metric(candidate)
-
-            # update involved nodes
-            if inds ∈ keys(handles)
-                update!(queue, handles[sort(inds)], (weight, inds))
-            else
-                # if new parallel indices have appeared, delete old nodes and create new ones
-                for key in Iterators.map(sort, Iterators.filter(key -> !isdisjoint(inds, key), keys(handles)))
-                    # key = sort(key)
-                    delete!(queue, handles[key])
-                    delete!(handles, key)
-                end
-
-                handles[sort(inds)] = push!(queue, (weight, inds))
-            end
+            push!(queue, (weight, candidate))
         end
     end
 
-    return expr
+    path = path.args[1]
+
+    return path
 end

@@ -13,5 +13,7 @@
 
     @test path isa EinExpr
 
-    @test 92 <= mapreduce(flops, +, Branches(path)) < 872
+    @test mapreduce(flops, +, Branches(path)) == 100
+
+    @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:f], [:b, :d]]))
 end
