@@ -4,7 +4,7 @@ using EinExprs
 @testset "Unit tests" verbose = true begin
     include("EinExpr_test.jl")
     include("Counters_test.jl")
-    @testset "Optimizers" verbose = true begin
+    @testset "Optimizers" begin
         include("Naive_test.jl")
         include("Exhaustive_test.jl")
     end
