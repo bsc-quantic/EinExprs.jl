@@ -13,12 +13,14 @@ Project `index` to dimension `i` in a EinExpr. This is equivalent to tensor cutt
 
 See also: [`view`](@ref).
 """
-Base.selectdim(path::EinExpr, index::Symbol, i) = EinExpr(filter(!=(index), head(path)), map(args(path)) do sub
-    index ∈ __inds_children(sub) ? selectdim(sub, index, i) : sub
-end)
+function Base.selectdim(path::EinExpr, index::Symbol, i)
+    path = deepcopy(path)
 
-__inds_children(x) = head(x)
-__inds_children(path::EinExpr) = inds(path)
+    leave = Iterators.filter(∋(index) ∘ head, Leaves(path)) |> first
+    leave.size[index] = length(i)
+
+    return path
+end
 
 """
     view(path::EinExpr, cuttings...)
