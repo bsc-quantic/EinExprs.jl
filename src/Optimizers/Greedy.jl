@@ -28,7 +28,7 @@ function einexpr(config::Greedy, expr)
     # generate initial candidate contractions
     queue = MutableBinaryHeap{Tuple{Float64,Vector{Symbol}}}(Base.By(first))
 
-    handles = map(suminds(expr, parallel = true)) do inds
+    handles = map(parsuminds(expr)) do inds
         candidate = sum(select(expr, inds)..., head = inds)
         weight = config.metric(candidate)
         handle = push!(queue, (weight, inds))
@@ -46,7 +46,7 @@ function einexpr(config::Greedy, expr)
         sum!(expr, winner)
 
         # update candidate queue
-        for inds in filter(inds -> !isdisjoint(neigh, inds), suminds(expr, parallel = true))
+        for inds in filter(inds -> !isdisjoint(neigh, inds), parsuminds(expr))
             candidate = sum(select(expr, inds)..., head = inds)
             weight = config.metric(candidate)
 
