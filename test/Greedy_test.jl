@@ -1,4 +1,4 @@
-@testset "Exhaustive" begin
+@testset "Greedy" begin
     tensors = [
         EinExpr([:j, :b, :i, :h], Dict(i => 2 for i in [:j, :b, :i, :h])),
         EinExpr([:a, :c, :e, :f], Dict(i => 2 for i in [:a, :c, :e, :f])),
@@ -9,11 +9,11 @@
         EinExpr([:d, :g, :c], Dict(i => 2 for i in [:d, :g, :c])),
     ]
 
-    path = einexpr(Exhaustive, EinExpr(Symbol[], tensors))
+    path = einexpr(Greedy(), EinExpr(Symbol[], tensors))
 
     @test path isa EinExpr
 
-    @test mapreduce(flops, +, Branches(path)) == 92
+    @test mapreduce(flops, +, Branches(path)) == 100
 
-    @test all(splat(issetequal), zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:j], [:h, :i], [:b, :d]]))
+    @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:f], [:b, :d]]))
 end

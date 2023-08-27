@@ -1,4 +1,5 @@
 using Base: @kwdef
+using Combinatorics
 
 @doc raw"""
     Exhaustive(; outer = false)
@@ -17,35 +18,34 @@ Exhaustive contraction path optimizers. It guarantees to find the optimal contra
 The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``\mathcal{O}(\exp(n))`` if `outer = false`.
 """
 @kwdef struct Exhaustive <: Optimizer
-    metric::Function = path -> mapreduce(flops, +, Branches(path))
+    metric::Function = flops
     outer::Bool = false
 end
 
-function einexpr(config::Exhaustive, expr; leader = expr)
-    config.outer && throw("Exhaustive search with outer-products is not implemented yet")
+function einexpr(config::Exhaustive, path; cost = BigInt(0))
+    leader = (; path = einexpr(Naive(), path), cost = mapreduce(config.metric, +, PreOrderDFS(einexpr(Naive(), path))))
+    cache = Dict{Vector{ImmutableVector{Symbol,Vector{Symbol}}},BigInt}()
 
-    if length(suminds(expr, parallel = true)) == 1
-        return config.metric(expr) < config.metric(leader) ? expr : leader
+    function __einexpr_iterate(path, cost)
+        if length(path.args) <= 2
+            leader = (; path = path, cost = mapreduce(config.metric, +, PreOrderDFS(path)))
+            return
+        end
+
+        for (i, j) in combinations(args(path), 2)
+            !config.outer && isdisjoint(head(i), head(j)) && continue
+            candidate = sum([i, j])
+
+            # prune paths based on metric
+            new_cost = cost + get!(() -> config.metric(candidate), cache, head.(candidate.args))
+            new_cost >= leader.cost && continue
+
+            new_path = EinExpr(head(path), [candidate, filter(∉([i, j]), args(path))...])
+            __einexpr_iterate(new_path, new_cost)
+        end
     end
 
-    # NOTE `for index in suminds(expr)` is better for debugging
-    for inds in suminds(expr, parallel = true)
-        # select tensors containing such inds
-        targets = filter(x -> !isdisjoint(head(x), inds), args(expr))
+    __einexpr_iterate(path, cost)
 
-        subinds = head.(targets)
-        subsuminds = setdiff(∩(subinds...), head(expr))
-        suboutput = setdiff(Iterators.flatten(subinds), subsuminds)
-
-        candidate = EinExpr(suboutput, targets)
-
-        # prune paths based on config.metric
-        config.metric(candidate) >= config.metric(leader) && continue
-
-        # recurse fixing candidate index
-        candidate = EinExpr(head(expr), [candidate, filter(x -> isdisjoint(head(x), inds), args(expr))...])
-        leader = einexpr(config, candidate, leader = leader)
-    end
-
-    return leader
+    return leader.path
 end

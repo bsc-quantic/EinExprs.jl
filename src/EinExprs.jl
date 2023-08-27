@@ -1,10 +1,9 @@
 module EinExprs
 
-include("Tensor.jl")
-
 include("EinExpr.jl")
 export EinExpr
-export head, args, inds, leaves, branches, collapse!, suminds, contractorder, select
+export head, args, inds, suminds, parsuminds, collapse!, contractorder, select
+export Branches, branches, leaves
 
 include("Counters.jl")
 export flops, removedsize

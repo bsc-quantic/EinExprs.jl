@@ -5,13 +5,19 @@ using AbstractTrees
 
 struct EinExpr
     head::ImmutableVector{Symbol,Vector{Symbol}}
-    args::Vector{Union{Tensor,EinExpr}}
+    args::Vector{EinExpr}
+    size::Dict{Symbol,Int}
 
     function EinExpr(head, args)
         # TODO checks: same dim for index, valid indices
         head = collect(head)
         args = collect(args)
-        new(head, args)
+        new(head, args, Dict{Symbol,EinExpr}())
+    end
+
+    function EinExpr(head, size::AbstractDict{Symbol,Int})
+        issetequal(head, keys(size)) || throw(ArgumentError("Missing sizes for indices $(setdiff(head, keys(size)))"))
+        new(head, EinExpr[], size)
     end
 end
 
@@ -40,7 +46,7 @@ Return all the involved indices in `path`. If a tensor is passed, then it is equ
 
 See also: [`head`](@ref).
 """
-inds(path::EinExpr) = mapreduce(head, ∪, args(path); init = Set{Symbol}())
+inds(path::EinExpr) = mapreduce(parent ∘ head, ∪, Leaves(path)) |> collect
 
 """
     leaves(path::EinExpr[, i])
@@ -53,7 +59,7 @@ See also: [`branches`](@ref).
 leaves(path) = Leaves(path) |> collect
 leaves(path, i) = Iterators.drop(Leaves(path), i - 1) |> first
 
-Branches(path) = Iterators.filter(Base.Fix2(isa, EinExpr), PostOrderDFS(path))
+Branches(path) = Iterators.filter(!isempty ∘ args, PostOrderDFS(path))
 
 """
     branches(path::EinExpr[, i])
@@ -80,8 +86,11 @@ Base.ndims(path::EinExpr) = length(head(path))
 
 Return the size of the resulting tensor from contracting `path`. If `index` is specified, return the size of such index.
 """
-Base.size(path::EinExpr) = tuple((size(path, i) for i in head(path))...)
-Base.size(path::EinExpr, i::Symbol) = Iterators.filter(∋(i) ∘ inds, Leaves(path)) |> first |> Base.Fix2(size, i)
+Base.size(path::EinExpr) = (size(path, i) for i in head(path)) |> splat(tuple)
+Base.size(path::EinExpr, i::Symbol) =
+    Iterators.filter(∋(i) ∘ head, Leaves(path)) |> first |> Base.Fix2(getproperty, :size) |> Base.Fix2(getindex, i)
+
+Base.length(path::EinExpr) = (prod ∘ size)(path)
 
 """
     collapse!(path::EinExpr)
@@ -114,7 +123,7 @@ Transform `path` into a contraction order.
 contractorder(path::EinExpr) = map(suminds, Branches(path))
 
 @doc raw"""
-    suminds(path[, parallel=false])
+    suminds(path)
 
 Indices of summation of an `EinExpr`.
 
@@ -126,29 +135,11 @@ Indices of summation of an `EinExpr`.
 suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 ```
 """
-function suminds(path::EinExpr; parallel::Bool = false)
-    !parallel && return setdiff(inds(path), head(path)) |> collect
+suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args), head(path))
 
-    # annotate connections of indices
-    edges = DefaultDict{Symbol,Set{UInt}}(() -> Set{UInt}())
-    for input in args(path)
-        for index in head(input)
-            push!(edges[index], objectid(input))
-        end
-    end
-
-    # compute dual of `edges` dictionary
-    dual = DefaultDict{Set{UInt},Vector{Symbol}}(() -> Vector{Symbol}())
-    for (index, neighbours) in edges
-        length(neighbours) < 2 && continue
-        push!(dual[neighbours], index)
-    end
-
-    # filter out open indices
-    return filter(dual) do (neighbours, inds)
-        length(neighbours) >= 2
-    end |> values .|> collect |> collect
-end
+# TODO keep output inds
+parsuminds(path::EinExpr) =
+    Iterators.filter(!isempty, Iterators.map(((a, b),) -> suminds(sum([a, b])), combinations(path.args, 2))) |> collect
 
 """
     sum!(path, indices)
@@ -186,26 +177,24 @@ function Base.sum(path::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
     return EinExpr(head(path), (EinExpr(suboutput, args(path)[findall(i)]), args(path)[findall(.!i)]...))
 end
 
-Base.sum(inputs::Union{Tensor,EinExpr}...; inds = mapreduce(head, symdiff, inputs)) = EinExpr(inds, inputs)
+Base.sum(args::Vector{EinExpr}; head = mapreduce(head, symdiff, args)) = EinExpr(head, args)
 
 function Base.string(path::EinExpr; recursive::Bool = false)
     !recursive && return "$(join(map(x -> string.(head(x)) |> join, args(path)), ","))->$(string.(head(path)) |> join)"
 end
 
 # Iteration interface
-Base.IteratorSize(::Type{EinExpr}) = Base.HasLength()
-Base.length(path::EinExpr) = sum(arg -> arg isa EinExpr ? length(arg) : 1, args(path)) + 1
-Base.IteratorEltype(::Type{EinExpr}) = Base.HasEltype()
-Base.eltype(::EinExpr) = Union{Tensor,EinExpr}
+Base.IteratorEltype(::Type{<:TreeIterator{EinExpr}}) = Base.HasEltype()
+Base.eltype(::Type{<:TreeIterator{EinExpr}}) = EinExpr
 
 # AbstractTrees interface and traits
 AbstractTrees.children(path::EinExpr) = args(path)
-AbstractTrees.childtype(::Type{EinExpr}) = Union{Tensor,EinExpr}
-AbstractTrees.childrentype(::Type{EinExpr}) = Vector{Union{Tensor,EinExpr}}
+AbstractTrees.childtype(::Type{EinExpr}) = EinExpr
+AbstractTrees.childrentype(::Type{EinExpr}) = Vector{EinExpr}
 AbstractTrees.childstatetype(::Type{EinExpr}) = Int
-AbstractTrees.nodetype(::Type{EinExpr}) = Union{Tensor,EinExpr}
+AbstractTrees.nodetype(::Type{EinExpr}) = EinExpr
 
 AbstractTrees.ParentLinks(::Type{EinExpr}) = ImplicitParents()
 AbstractTrees.SiblingLinks(::Type{EinExpr}) = ImplicitSiblings()
 AbstractTrees.ChildIndexing(::Type{EinExpr}) = IndexedChildren()
-AbstractTrees.NodeType(::Type{EinExpr}) = NodeTypeUnknown() # TODO maybe we know? or not?
+AbstractTrees.NodeType(::Type{EinExpr}) = HasNodeType()

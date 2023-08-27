@@ -1,9 +1,8 @@
 @testset "EinExpr" begin
-    using EinExprs: Tensor
     using LinearAlgebra
 
     @testset "identity" begin
-        tensor = Tensor(rand(2, 3), (:i, :j))
+        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
         expr = EinExpr((:i, :j), [tensor])
 
         @test expr.head == head(tensor)
@@ -17,11 +16,11 @@
         @test size(expr) == (2, 3)
 
         @test isempty(suminds(expr))
-        @test isempty(suminds(expr, parallel = true))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "transpose" begin
-        tensor = Tensor(rand(2, 3), (:i, :j))
+        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
         expr = EinExpr((:j, :i), [tensor])
 
         @test expr.head == reverse(inds(tensor))
@@ -35,11 +34,11 @@
         @test size(expr) == (3, 2)
 
         @test isempty(suminds(expr))
-        @test isempty(suminds(expr, parallel = true))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "axis sum" begin
-        tensor = Tensor(rand(2, 3), (:i, :j))
+        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
         expr = EinExpr((:i,), [tensor])
 
         @test all(splat(==), zip(expr.head, [:i]))
@@ -53,13 +52,11 @@
         @test size(expr) == (2,)
 
         @test suminds(expr) == [:j]
-        @test isempty(suminds(expr, parallel = true))
-
-        # TODO contract test?
+        @test isempty(parsuminds(expr))
     end
 
     @testset "diagonal" begin
-        tensor = Tensor(rand(2, 2), (:i, :i))
+        tensor = EinExpr([:i, :i], Dict(:i => 2))
         expr = EinExpr((:i,), [tensor])
 
         @test all(splat(==), zip(expr.head, (:i,)))
@@ -72,11 +69,11 @@
         @test size(expr) == (2,)
 
         @test isempty(suminds(expr))
-        @test isempty(suminds(expr, parallel = true))
+        @test isempty(parsuminds(expr))
     end
 
     @testset "trace" begin
-        tensor = Tensor(rand(2, 2), (:i, :i))
+        tensor = EinExpr([:i, :i], Dict(:i => 2))
         expr = EinExpr(Symbol[], [tensor])
 
         @test isempty(expr.head)
@@ -89,13 +86,11 @@
         @test size(expr) == ()
 
         @test suminds(expr) == [:i]
-        @test isempty(suminds(expr, parallel = true))
-
-        # TODO contract test?
+        @test isempty(parsuminds(expr))
     end
 
     @testset "outer product" begin
-        tensors = [Tensor(rand(2, 3), (:i, :j)), Tensor(rand(4, 5), (:k, :l))]
+        tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:k, :l), Dict(:k => 4, :l => 5))]
         expr = EinExpr((:i, :j, :k, :l), tensors)
 
         @test all(splat(==), zip(expr.head, (:i, :j, :k, :l)))
@@ -111,20 +106,12 @@
         @test size(expr) == (2, 3, 4, 5)
 
         @test isempty(suminds(expr))
-        @test isempty(suminds(expr, parallel = true))
-
-        # A = parent(contract(expr))
-        # B = PermutedDimsArray(
-        #     reshape(kron(parent.(reverse(tensors))...), collect(Iterators.flatten(zip(size.(tensors)...)))...),
-        #     (1, 3, 2, 4),
-        # )
-
-        # @test A ≈ B
+        @test isempty(parsuminds(expr))
     end
 
     @testset "inner product" begin
         @testset "Vector" begin
-            tensors = [Tensor(rand(2), (:i,)), Tensor(rand(2), (:i,))]
+            tensors = [EinExpr((:i,), Dict(:i => 2)), EinExpr((:i,), Dict(:i => 2))]
             expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
@@ -138,12 +125,10 @@
             @test size(expr) == ()
 
             @test suminds(expr) == [:i]
-            @test suminds(expr, parallel = true) == [[:i]]
-
-            # @test only(contract(expr)) ≈ dot(parent.(tensors)...)
+            @test parsuminds(expr) == [[:i]]
         end
         @testset "Matrix" begin
-            tensors = [Tensor(rand(2, 3), (:i, :j)), Tensor(rand(2, 3), (:i, :j))]
+            tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:i, :j), Dict(:i => 2, :j => 3))]
             expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
@@ -157,15 +142,13 @@
             @test size(expr, :j) == 3
             @test size(expr) == ()
 
-            @test suminds(expr) == [:i, :j]
-            @test Set(Set.(suminds(expr, parallel = true))) == Set([Set([:i, :j])])
-
-            # @test only(contract(expr)) ≈ dot(parent.(tensors)...)
+            @test issetequal(suminds(expr), [:i, :j])
+            @test Set(Set.(parsuminds(expr))) == Set([Set([:i, :j])])
         end
     end
 
     @testset "matrix multiplication" begin
-        tensors = [Tensor(rand(2, 3), (:i, :k)), Tensor(rand(3, 4), (:k, :j))]
+        tensors = [EinExpr((:i, :k), Dict(:i => 2, :k => 3)), EinExpr((:k, :j), Dict(:k => 3, :j => 4))]
         expr = EinExpr((:i, :j), tensors)
 
         @test all(splat(==), zip(expr.head, (:i, :j)))
@@ -181,52 +164,21 @@
         @test size(expr) == (2, 4)
 
         @test suminds(expr) == [:k]
-        @test suminds(expr, parallel = true) == [[:k]]
-
-        # @test parent(contract(expr)) ≈ *(parent.(tensors)...)
+        @test parsuminds(expr) == [[:k]]
     end
 
     @testset "manual path" begin
-        sizes = Dict(
-            :o => 2,
-            :b => 2,
-            :p => 2,
-            :n => 2,
-            :j => 2,
-            :k => 2,
-            :d => 2,
-            :e => 2,
-            :c => 2,
-            :h => 2,
-            :i => 2,
-            :l => 2,
-            :m => 2,
-            :q => 2,
-            :a => 2,
-            :f => 2,
-            :g => 2,
-        )
-
         tensors = [
-            Tensor(ones((sizes[i] for i in [:f, :l, :i])...), (:f, :l, :i)),
-            Tensor(ones((sizes[i] for i in [:b, :e])...), (:b, :e)),
-            Tensor(ones((sizes[i] for i in [:g, :n, :l, :a])...), (:g, :n, :l, :a)),
-            Tensor(ones((sizes[i] for i in [:o, :i, :m, :c])...), (:o, :i, :m, :c)),
-            Tensor(ones((sizes[i] for i in [:k, :d, :h, :a, :n, :j])...), (:k, :d, :h, :a, :n, :j)),
-            Tensor(ones((sizes[i] for i in [:m, :f, :q])...), (:m, :f, :q)),
-            Tensor(ones((sizes[i] for i in [:p, :k])...), (:p, :k)),
-            Tensor(ones((sizes[i] for i in [:c, :e, :h])...), (:c, :e, :h)),
-            Tensor(ones((sizes[i] for i in [:g, :q])...), (:g, :q)),
-            Tensor(ones((sizes[i] for i in [:d, :b, :o])...), (:d, :b, :o)),
+            EinExpr([:j, :b, :i, :h], Dict(i => 2 for i in [:j, :b, :i, :h])),
+            EinExpr([:a, :c, :e, :f], Dict(i => 2 for i in [:a, :c, :e, :f])),
+            EinExpr([:j], Dict(i => 2 for i in [:j])),
+            EinExpr([:e, :a, :g], Dict(i => 2 for i in [:e, :a, :g])),
+            EinExpr([:f, :b], Dict(i => 2 for i in [:f, :b])),
+            EinExpr([:i, :h, :d], Dict(i => 2 for i in [:i, :h, :d])),
+            EinExpr([:d, :g, :c], Dict(i => 2 for i in [:d, :g, :c])),
         ]
 
-        expr = EinExpr([:p, :j], tensors)
-
-        @test sum(tensors..., inds = [:p, :j]) == expr
-
-        for inds in [[:q], [:m], [:f, :i], [:g, :l], [:b], [:o], [:c, :e], [:n, :a, :d, :h], [:k]]
-            foo = sum(expr, inds)
-            @test foo == sum!(expr, inds)
-        end
+        path = EinExpr(Symbol[], tensors)
+        @test issetequal(suminds(path), [:a, :b, :c, :d, :e, :f, :g, :h, :i, :j])
     end
 end
