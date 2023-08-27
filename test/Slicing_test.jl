@@ -80,7 +80,7 @@
                     EinExpr((:k, :d, :h, :a, :n, :j), Dict(i => sizes[i] for i in [:k, :d, :h, :a, :n, :j])),
                 ],
             ),
-            EinExpr((:p, :k), Dict(sizes[i] for i in [:p, :k])),
+            EinExpr((:p, :k), Dict(i => sizes[i] for i in [:p, :k])),
         ],
     )
 
