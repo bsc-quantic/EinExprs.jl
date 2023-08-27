@@ -123,7 +123,7 @@ Transform `path` into a contraction order.
 contractorder(path::EinExpr) = map(suminds, Branches(path))
 
 @doc raw"""
-    suminds(path[, parallel=false])
+    suminds(path)
 
 Indices of summation of an `EinExpr`.
 
@@ -135,14 +135,12 @@ Indices of summation of an `EinExpr`.
 suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 ```
 """
-function suminds(path::EinExpr; parallel::Bool = false)
-    !parallel && return setdiff(inds(path), head(path)) |> collect
-
+function suminds(path::EinExpr)
     # annotate connections of indices
     edges = DefaultDict{Symbol,Set{UInt}}(() -> Set{UInt}())
-    for input in args(path)
-        for index in head(input)
-            push!(edges[index], objectid(input))
+    for arg in args(path)
+        for index in head(arg)
+            push!(edges[index], objectid(arg))
         end
     end
 
@@ -156,7 +154,7 @@ function suminds(path::EinExpr; parallel::Bool = false)
     # filter out open indices
     return filter(dual) do (neighbours, inds)
         length(neighbours) >= 2
-    end |> values .|> collect |> collect
+    end |> values |> Iterators.flatten |> collect
 end
 
 """
