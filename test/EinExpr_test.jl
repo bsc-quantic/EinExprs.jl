@@ -180,13 +180,5 @@
 
         path = EinExpr(Symbol[], tensors)
         @test issetequal(suminds(path), [:a, :b, :c, :d, :e, :f, :g, :h, :i, :j])
-
-        path = einexpr(EinExprs.Naive(), EinExpr(Symbol[], tensors))
-        @test foldl((a, b) -> sum([a, b]), tensors) == path
-
-        @test all(
-            splat(issetequal),
-            zip(map(suminds, Branches(path)), [Symbol[], [:j], [:a, :e], [:f, :b], [:i, :h], [:d, :g, :c]]),
-        )
     end
 end

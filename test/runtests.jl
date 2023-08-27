@@ -5,6 +5,7 @@ using EinExprs
     include("EinExpr_test.jl")
     include("Counters_test.jl")
     @testset "Optimizers" verbose = true begin
+        include("Naive_test.jl")
         include("Exhaustive_test.jl")
     end
     include("Slicing_test.jl")
