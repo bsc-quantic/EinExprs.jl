@@ -137,7 +137,9 @@ suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 """
 suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args), head(path))
 
-parsuminds(path::EinExpr) = map(((a, b),) -> suminds(sum([a, b])), combinations(path.args, 2))
+# TODO keep output inds
+parsuminds(path::EinExpr) =
+    Iterators.filter(!isempty, Iterators.map(((a, b),) -> suminds(sum([a, b])), combinations(path.args, 2))) |> collect
 
 """
     sum!(path, indices)
