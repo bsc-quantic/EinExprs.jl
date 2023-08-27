@@ -7,6 +7,7 @@ using EinExprs
     @testset "Optimizers" begin
         include("Naive_test.jl")
         include("Exhaustive_test.jl")
+        include("Greedy_test.jl")
     end
     include("Slicing_test.jl")
 end
