@@ -193,7 +193,7 @@ function Base.sum(path::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
     return EinExpr(head(path), (EinExpr(suboutput, args(path)[findall(i)]), args(path)[findall(.!i)]...))
 end
 
-Base.sum(args::EinExpr...; head = mapreduce(head, symdiff, args)) = EinExpr(head, args)
+Base.sum(args::Vector{EinExpr}; head = mapreduce(head, symdiff, args)) = EinExpr(head, args)
 
 function Base.string(path::EinExpr; recursive::Bool = false)
     !recursive && return "$(join(map(x -> string.(head(x)) |> join, args(path)), ","))->$(string.(head(path)) |> join)"
