@@ -17,6 +17,12 @@
 
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
+
+        @test select(expr, :i) == [tensor]
+        @test select(expr, :j) == [tensor]
+
+        @test neighbours(expr, :i) == [:j]
+        @test neighbours(expr, :j) == [:i]
     end
 
     @testset "transpose" begin
@@ -35,6 +41,12 @@
 
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
+
+        @test select(expr, :i) == [tensor]
+        @test select(expr, :j) == [tensor]
+
+        @test neighbours(expr, :i) == [:j]
+        @test neighbours(expr, :j) == [:i]
     end
 
     @testset "axis sum" begin
@@ -53,6 +65,12 @@
 
         @test suminds(expr) == [:j]
         @test isempty(parsuminds(expr))
+
+        @test select(expr, :i) == [tensor]
+        @test select(expr, :j) == [tensor]
+
+        @test neighbours(expr, :i) == [:j]
+        @test neighbours(expr, :j) == [:i]
     end
 
     @testset "diagonal" begin
@@ -70,6 +88,10 @@
 
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
+
+        @test select(expr, :i) == [tensor]
+
+        @test isempty(neighbours(expr, :i))
     end
 
     @testset "trace" begin
@@ -87,6 +109,10 @@
 
         @test suminds(expr) == [:i]
         @test isempty(parsuminds(expr))
+
+        @test select(expr, :i) == [tensor]
+
+        @test isempty(neighbours(expr, :i))
     end
 
     @testset "outer product" begin
@@ -107,6 +133,14 @@
 
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
+
+        @test select(expr, :i) == select(expr, :j) == select(expr, [:i, :j]) == [tensors[1]]
+        @test select(expr, :k) == select(expr, :l) == select(expr, [:k, :l]) == [tensors[2]]
+
+        @test neighbours(expr, :i) == [:j]
+        @test neighbours(expr, :j) == [:i]
+        @test neighbours(expr, :k) == [:l]
+        @test neighbours(expr, :l) == [:k]
     end
 
     @testset "inner product" begin
@@ -126,6 +160,10 @@
 
             @test suminds(expr) == [:i]
             @test parsuminds(expr) == [[:i]]
+
+            @test select(expr, :i) == tensors
+
+            @test isempty(neighbours(expr, :i))
         end
         @testset "Matrix" begin
             tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:i, :j), Dict(:i => 2, :j => 3))]
@@ -144,6 +182,11 @@
 
             @test issetequal(suminds(expr), [:i, :j])
             @test Set(Set.(parsuminds(expr))) == Set([Set([:i, :j])])
+
+            @test select(expr, :i) == select(expr, :j) == select(expr, [:i, :j]) == tensors
+
+            @test neighbours(expr, :i) == [:j]
+            @test neighbours(expr, :j) == [:i]
         end
     end
 
@@ -165,6 +208,13 @@
 
         @test suminds(expr) == [:k]
         @test parsuminds(expr) == [[:k]]
+
+        @test select(expr, :i) == [tensors[1]]
+        @test select(expr, :j) == [tensors[2]]
+        @test select(expr, :k) == tensors
+
+        @test neighbours(expr, :i) == neighbours(expr, :j) == [:k]
+        @test neighbours(expr, :k) == [:i, :j]
     end
 
     @testset "manual path" begin
