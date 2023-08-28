@@ -59,6 +59,13 @@ See also: [`branches`](@ref).
 leaves(path) = Leaves(path) |> collect
 leaves(path, i) = Iterators.drop(Leaves(path), i - 1) |> first
 
+"""
+    Branches(path::EinExpr)
+
+Iterator that walks through the non-terminal nodes of the `path` tree.
+
+See also: [`branches`](@ref).
+"""
 Branches(path) = Iterators.filter(!isempty ∘ args, PostOrderDFS(path))
 
 """
@@ -67,7 +74,7 @@ Branches(path) = Iterators.filter(!isempty ∘ args, PostOrderDFS(path))
 Return the non-terminal branches of the `path`, which correspond to intermediate tensors result of contraction steps.
 If `i` is specified, then only return the ``i``-th `EinExpr`.
 
-See also: [`leaves`](@ref).
+See also: [`leaves`](@ref), [`Branches`](@ref).
 """
 branches(path) = Branches(path) |> collect
 branches(path, i) = Iterators.drop(Branches(path), i - 1) |> first
@@ -138,6 +145,11 @@ suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args), head(path))
 
 # TODO keep output inds
+"""
+    parsuminds(path)
+
+Indices of summation of possible pairwise tensors contractions between children of `path`.
+"""
 parsuminds(path::EinExpr) =
     Iterators.filter(!isempty, Iterators.map(((a, b),) -> suminds(sum([a, b])), combinations(path.args, 2))) |> collect
 

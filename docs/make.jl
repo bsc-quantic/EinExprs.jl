@@ -16,6 +16,7 @@ makedocs(
     pages = Any[
         "Home"=>"index.md",
         "Einsum Expressions"=>"einexpr.md",
+        "Resource counting"=>"counters.md",
         "Optimizers"=>["Exhaustive" => "optimizers/exhaustive.md", "Greedy" => "optimizers/greedy.md"],
         "Slicing"=>"slicing.md",
         "Alternatives"=>"alternatives.md",
