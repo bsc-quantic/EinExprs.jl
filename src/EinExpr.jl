@@ -105,7 +105,7 @@ collapse!(path) = path.args = leaves(path)
 Return the child elements that contain `i` indices.
 """
 select(path::EinExpr, i) = filter(∋(i) ∘ head, args(path))
-select(path::EinExpr, i::Base.AbstractVecOrTuple) = ∩(Iterators.map(j -> select(path, j), i)...)
+select(path::EinExpr, i::Base.AbstractVecOrTuple) = filter(Base.Fix1(⊆, collect(i)) ∘ head, args(path))
 
 """
     neighbours(path::EinExpr, i)
