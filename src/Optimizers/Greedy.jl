@@ -30,6 +30,7 @@ function einexpr(config::Greedy, path)
     queue = MutableBinaryHeap{Tuple{Float64,EinExpr}}(
         Base.By(first, Base.Reverse),
         map(combinations(path.args, 2)) do (a, b)
+            # TODO don't consider outer products
             candidate = sum([a, b]) # TODO don't sum output inds
             weight = config.metric(candidate)
             (weight, candidate)
@@ -43,17 +44,19 @@ function einexpr(config::Greedy, path)
         # discard winner if old
         any(∉(args(path)), args(winner)) && continue
 
-        # append winner to contraction path
-        # TODO replace following lines for `sum!(path, ...)`
+        # remove old intermediate tensors
         setdiff!(path.args, args(winner))
-        push!(path.args, winner)
 
         # update candidate queue
-        for (a, b) in combinations(path.args, 2)
-            candidate = sum([a, b]) # TODO don't sum output inds
+        for other in path.args
+            # TODO don't consider outer products
+            candidate = sum([winner, other]) # TODO don't sum output inds
             weight = config.metric(candidate)
             push!(queue, (weight, candidate))
         end
+
+        # append winner to contraction path
+        push!(path.args, winner)
     end
 
     path = path.args[1]
