@@ -112,8 +112,8 @@ select(path::EinExpr, i::Base.AbstractVecOrTuple) = filter(Base.Fix1(⊆, collec
 
 Return the indices neighbouring to `i`.
 """
-neighbours(path::EinExpr, i) = setdiff(∪(head.(select(path, i))...), (i,))
-neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(∪(head.(select(path, i))...), i)
+neighbours(path::EinExpr, i) = neighbours(path, (i,))
+neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(mapreduce(head, ∪, select(path, i), init = Symbol[]), i)
 
 """
     contractorder(path::EinExpr)
