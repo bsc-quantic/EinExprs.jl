@@ -16,4 +16,15 @@
     @test mapreduce(flops, +, Branches(path)) == 100
 
     @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:d], [:b, :f]]))
+
+    @testset "example: let unchanged" begin
+        tensors = [
+            EinExpr([:i, :j, :k], Dict(:i => 2, :j => 2, :k => 2)),
+            EinExpr([:k, :l, :m], Dict(:k => 2, :l => 2, :m => 2)),
+        ]
+
+        path = einexpr(Greedy(), EinExpr(Symbol[:i, :j, :l, :m], tensors))
+
+        @test suminds(path) == [:k]
+    end
 end

@@ -37,7 +37,7 @@ function einexpr(config::Greedy, path)
         end,
     )
 
-    while length(queue) > 1
+    while length(path.args) > 2 && length(queue) > 1
         # choose winner
         _, winner = config.choose(queue)
 
@@ -58,8 +58,6 @@ function einexpr(config::Greedy, path)
         # append winner to contraction path
         push!(path.args, winner)
     end
-
-    path = path.args[1]
 
     return path
 end
