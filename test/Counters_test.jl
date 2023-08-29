@@ -1,10 +1,13 @@
 @testset "Counters" begin
+    using EinExprs: removedrank
+
     @testset "identity" begin
         tensor = EinExpr((:i, :j), Dict(:i => 2, :j => 3))
         expr = EinExpr((:i, :j), [tensor])
 
         @test flops(expr) == 0
         @test removedsize(expr) == 0
+        @test removedrank(expr) == 0
     end
 
     @testset "transpose" begin
@@ -13,6 +16,7 @@
 
         @test flops(expr) == 0
         @test removedsize(expr) == 0
+        @test removedrank(expr) == 0
     end
 
     @testset "axis sum" begin
@@ -21,6 +25,7 @@
 
         @test flops(expr) == 6
         @test removedsize(expr) == 4
+        @test removedrank(expr) == 1
     end
 
     @testset "diagonal" begin
@@ -29,6 +34,7 @@
 
         @test flops(expr) == 0
         @test removedsize(expr) == 2
+        @test removedrank(expr) == 1
     end
 
     @testset "trace" begin
@@ -37,6 +43,7 @@
 
         @test flops(expr) == 2
         @test removedsize(expr) == 3
+        @test removedrank(expr) == 2
     end
 
     @testset "outer product" begin
@@ -45,6 +52,7 @@
 
         @test flops(expr) == prod(2:5)
         @test removedsize(expr) == -94
+        @test removedrank(expr) == -2
     end
 
     @testset "inner product" begin
@@ -53,6 +61,7 @@
 
         @test flops(expr) == 2
         @test removedsize(expr) == 3
+        @test removedrank(expr) == 1
     end
 
     @testset "matrix multiplication" begin
@@ -61,5 +70,6 @@
 
         @test flops(expr) == 2 * 3 * 4
         @test removedsize(expr) == 10
+        @test removedrank(expr) == 0
     end
 end
