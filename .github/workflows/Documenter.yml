@@ -1,8 +1,9 @@
 name: Documenter
 on:
   push:
-    branches: [master]
-    tags: [v*]
+    branches:
+      - master
+    tags: '*'
   pull_request:
   workflow_dispatch:
 
