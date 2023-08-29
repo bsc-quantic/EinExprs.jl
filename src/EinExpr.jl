@@ -142,7 +142,7 @@ Indices of summation of an `EinExpr`.
 suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 ```
 """
-suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args), head(path))
+suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args, init = Symbol[]), head(path))
 
 # TODO keep output inds
 """
