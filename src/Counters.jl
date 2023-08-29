@@ -22,4 +22,4 @@ removedsize(expr::EinExpr) = mapreduce(prod ∘ size, +, expr.args) - prod(size(
 
 Count the rank reduction after performing the contraction of the root of the `path` tree.
 """
-removedrank(expr::EinExpr) = mapreduce(ndims, maximum, expr.args) - ndims(expr)
+removedrank(expr::EinExpr) = mapreduce(ndims, max, expr.args) - ndims(expr)
