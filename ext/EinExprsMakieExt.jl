@@ -38,18 +38,24 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
     # plot colorbars
     # TODO configurable `labelsize`
     # TODO configurable alignments
-    size_bar = Colorbar(
+    Colorbar(
         f[1, 2],
-        get_edge_plot(p),
+        get_edge_plot(p);
         label = L"\log_{2}(size)",
         flipaxis = true,
         flip_vertical_label = true,
         labelsize = 34,
+        height = Relative(5 // 6),
     )
-    size_bar.height = Relative(5 / 6)
 
-    flops_bar = Colorbar(f[1, 0], get_node_plot(p), label = L"\log_{10}(flops)", flipaxis = false, labelsize = 34)
-    flops_bar.height = Relative(5 / 6)
+    Colorbar(
+        f[1, 0],
+        get_node_plot(p);
+        label = L"\log_{10}(flops)",
+        flipaxis = false,
+        labelsize = 34,
+        height = Relative(5 // 6),
+    )
 
     return Makie.AxisPlot(ax, p)
 end
@@ -81,10 +87,40 @@ function Makie.plot!(
     get!(kwargs, :edge_color, log_size)
     get!(kwargs, :node_color, log_flops)
 
-    get!(kwargs, :arrow_attr, (colorrange = (min_size, max_size), colormap = colormap))
-    get!(kwargs, :edge_attr, (colorrange = (min_size, max_size), colormap = colormap))
+    get!(
+        kwargs,
+        :arrow_attr,
+        (
+            colorrange = (min_size, max_size),
+            colormap = colormap,
+            colorscale = identity,
+            highclip = Makie.Automatic(),
+            lowclip = Makie.Automatic(),
+        ),
+    )
+    get!(
+        kwargs,
+        :edge_attr,
+        (
+            colorrange = (min_size, max_size),
+            colormap = colormap,
+            colorscale = identity,
+            highclip = Makie.Automatic(),
+            lowclip = Makie.Automatic(),
+        ),
+    )
     # TODO replace `to_colormap(:plasma)[begin:end-50]), kwargs...)` with a custom colormap
-    get!(kwargs, :node_attr, (colorrange = (min_flops, max_flops), colormap = to_colormap(:plasma)[begin:end-50]))
+    get!(
+        kwargs,
+        :node_attr,
+        (
+            colorrange = (min_flops, max_flops),
+            colormap = to_colormap(:plasma)[begin:end-50],
+            colorscale = identity,
+            highclip = Makie.Automatic(),
+            lowclip = Makie.Automatic(),
+        ),
+    )
 
     # configure labels
     inds == true && get!(() -> join.(head.(PostOrderDFS(path)))[1:end-1], kwargs, :elabels)
