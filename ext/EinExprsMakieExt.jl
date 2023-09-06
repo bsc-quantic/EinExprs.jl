@@ -41,20 +41,22 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
     Colorbar(
         f[1, 2],
         get_edge_plot(p);
-        label = L"\log_{2}(size)",
+        label = L"size",
         flipaxis = true,
         flip_vertical_label = true,
         labelsize = 34,
         height = Relative(5 // 6),
+        scale = log2,
     )
 
     Colorbar(
         f[1, 0],
         get_node_plot(p);
-        label = L"\log_{10}(flops)",
+        label = L"flops",
         flipaxis = false,
         labelsize = 34,
         height = Relative(5 // 6),
+        scale = log10,
     )
 
     return Makie.AxisPlot(ax, p)
@@ -71,29 +73,29 @@ function Makie.plot!(
     handles = IdDict(obj => i for (i, obj) in enumerate(PostOrderDFS(path)))
     graph = SimpleDiGraph([Edge(handles[from], handles[to]) for to in Branches(path) for from in to.args])
 
-    log_size = log2.(length.(PostOrderDFS(path)))[1:end-1]
-    log_flops = log10.(max.((1.0,), flops.(PostOrderDFS(path))))
+    lin_size = length.(PostOrderDFS(path))[1:end-1]
+    lin_flops = map(max, Iterators.repeated(1), Iterators.map(flops, PostOrderDFS(path)))
 
-    min_size, max_size = extrema(log_size)
-    min_flops, max_flops = extrema(log_flops)
+    log_size = log2.(lin_size)
+    log_flops = log10.(lin_flops)
 
     kwargs = Dict{Symbol,Any}(kwargs)
 
     # configure graphics
-    get!(() -> log_size ./ max_size .* MAX_EDGE_WIDTH, kwargs, :edge_width)
-    get!(() -> log_size ./ max_size .* MAX_ARROW_SIZE, kwargs, :arrow_size)
-    get!(() -> log_flops ./ max_flops .* MAX_NODE_SIZE, kwargs, :node_size)
+    get!(() -> log_size ./ maximum(log_size) .* MAX_EDGE_WIDTH, kwargs, :edge_width)
+    get!(() -> log_size ./ maximum(log_size) .* MAX_ARROW_SIZE, kwargs, :arrow_size)
+    get!(() -> log_flops ./ maximum(log_flops) .* MAX_NODE_SIZE, kwargs, :node_size)
 
-    get!(kwargs, :edge_color, log_size)
-    get!(kwargs, :node_color, log_flops)
+    get!(kwargs, :edge_color, lin_size)
+    get!(kwargs, :node_color, lin_flops)
 
     get!(
         kwargs,
         :arrow_attr,
         (
-            colorrange = (min_size, max_size),
+            colorrange = extrema(lin_size),
             colormap = colormap,
-            colorscale = identity,
+            colorscale = log2,
             highclip = Makie.Automatic(),
             lowclip = Makie.Automatic(),
         ),
@@ -102,9 +104,9 @@ function Makie.plot!(
         kwargs,
         :edge_attr,
         (
-            colorrange = (min_size, max_size),
+            colorrange = extrema(lin_size),
             colormap = colormap,
-            colorscale = identity,
+            colorscale = log2,
             highclip = Makie.Automatic(),
             lowclip = Makie.Automatic(),
         ),
@@ -114,9 +116,9 @@ function Makie.plot!(
         kwargs,
         :node_attr,
         (
-            colorrange = (min_flops, max_flops),
+            colorrange = extrema(lin_flops),
             colormap = to_colormap(:plasma)[begin:end-50],
-            colorscale = identity,
+            colorscale = log10,
             highclip = Makie.Automatic(),
             lowclip = Makie.Automatic(),
         ),
@@ -125,7 +127,7 @@ function Makie.plot!(
     # configure labels
     inds == true && get!(() -> join.(head.(PostOrderDFS(path)))[1:end-1], kwargs, :elabels)
     get!(() -> repeat([:black], ne(graph)), kwargs, :elabels_color)
-    get!(() -> log_size ./ max_size .* 5 .+ 12, kwargs, :elabels_textsize)
+    get!(() -> log_size ./ maximum(log_size) .* 5 .+ 12, kwargs, :elabels_textsize)
 
     # plot graph
     graphplot!(ax, graph; kwargs...)
