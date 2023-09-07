@@ -41,7 +41,7 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
     Colorbar(
         f[1, 2],
         get_edge_plot(p);
-        label = L"size",
+        label = "SIZE",
         flipaxis = true,
         flip_vertical_label = true,
         labelsize = 34,
@@ -52,7 +52,7 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
     Colorbar(
         f[1, 0],
         get_node_plot(p);
-        label = L"flops",
+        label = "FLOPS",
         flipaxis = false,
         labelsize = 34,
         height = Relative(5 // 6),
