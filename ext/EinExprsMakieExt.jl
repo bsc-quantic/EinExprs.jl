@@ -44,7 +44,7 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
         label = "SIZE",
         flipaxis = true,
         flip_vertical_label = true,
-        labelsize = 34,
+        labelsize = 24,
         height = Relative(5 // 6),
         scale = log2,
     )
@@ -54,7 +54,7 @@ function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
         get_node_plot(p);
         label = "FLOPS",
         flipaxis = false,
-        labelsize = 34,
+        labelsize = 24,
         height = Relative(5 // 6),
         scale = log10,
     )
