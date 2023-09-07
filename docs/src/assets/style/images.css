@@ -1,12 +1,24 @@
 article#documenter-page img {
-    display: block;
     margin: auto;
 }
 
 img.invert-on-dark {
+    display: block;
     filter: none;
 }
 
 .theme--documenter-dark img.invert-on-dark {
     filter: invert(1) hue-rotate(180deg);
+}
+
+.theme--documenter-dark img.light-mode-only {
+    display: none;
+}
+
+img.dark-mode-only {
+    display: none;
+}
+
+.theme--documenter-dark img.dark-mode-only {
+    display: block;
 }

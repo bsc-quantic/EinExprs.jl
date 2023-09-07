@@ -1,4 +1,7 @@
-# EinExprs.jl
+```@raw html
+<img class="light-mode-only" src="assets/logo.svg"/>
+<img class="dark-mode-only" src="assets/logo-dark.svg"/>
+```
 
 `EinExprs` is a Julia package that provides `EinExpr`s: symbolic expressions representing a Einstein summation. These summations may be used to represent contraction paths of large tensor networks.
 
