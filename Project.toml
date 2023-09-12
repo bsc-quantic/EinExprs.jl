@@ -13,10 +13,12 @@ ImmutableArrays = "667c17eb-ab9b-4487-935f-1c621bb82497"
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 
 [weakdeps]
+ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [extensions]
+EinExprsChainRulesCoreExt = "ChainRulesCore"
 EinExprsFiniteDifferencesExt = "FiniteDifferences"
 EinExprsMakieExt = "Makie"
 
