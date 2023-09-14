@@ -2,7 +2,7 @@ module EinExprs
 
 include("EinExpr.jl")
 export EinExpr
-export head, args, inds, suminds, parsuminds, collapse!, contractorder, select, neighbours
+export head, args, inds, hyperinds, suminds, parsuminds, collapse!, contractorder, select, neighbours
 export Branches, branches, leaves
 
 include("Counters.jl")

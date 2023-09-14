@@ -15,6 +15,7 @@
         @test size(expr, :j) == 3
         @test size(expr) == (2, 3)
 
+        @test isempty(hyperinds(expr))
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
@@ -39,6 +40,7 @@
         @test size(expr, :j) == 3
         @test size(expr) == (3, 2)
 
+        @test isempty(hyperinds(expr))
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
@@ -63,6 +65,7 @@
         @test size(expr, :j) == 3
         @test size(expr) == (2,)
 
+        @test isempty(hyperinds(expr))
         @test suminds(expr) == [:j]
         @test isempty(parsuminds(expr))
 
@@ -86,6 +89,7 @@
         @test size(expr, :i) == 2
         @test size(expr) == (2,)
 
+        @test isempty(hyperinds(expr))
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
@@ -107,6 +111,7 @@
         @test size(expr, :i) == 2
         @test size(expr) == ()
 
+        @test isempty(hyperinds(expr))
         @test suminds(expr) == [:i]
         @test isempty(parsuminds(expr))
 
@@ -131,6 +136,7 @@
         end
         @test size(expr) == (2, 3, 4, 5)
 
+        @test isempty(hyperinds(expr))
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
@@ -158,6 +164,7 @@
             @test size(expr, :i) == 2
             @test size(expr) == ()
 
+            @test isempty(hyperinds(expr))
             @test suminds(expr) == [:i]
             @test parsuminds(expr) == [[:i]]
 
@@ -180,6 +187,7 @@
             @test size(expr, :j) == 3
             @test size(expr) == ()
 
+            @test isempty(hyperinds(expr))
             @test issetequal(suminds(expr), [:i, :j])
             @test Set(Set.(parsuminds(expr))) == Set([Set([:i, :j])])
 
@@ -206,6 +214,7 @@
         @test size(expr, :k) == 3
         @test size(expr) == (2, 4)
 
+        @test isempty(hyperinds(expr))
         @test suminds(expr) == [:k]
         @test parsuminds(expr) == [[:k]]
 
@@ -215,6 +224,72 @@
 
         @test neighbours(expr, :i) == neighbours(expr, :j) == [:k]
         @test neighbours(expr, :k) == [:i, :j]
+    end
+
+    @testset "hyperindex contraction" begin
+        @testset "hyperindex is not summed" begin
+            tensors = [
+                EinExpr([:i, :β, :j], Dict(i => 2 for i in [:i, :β, :j])),
+                EinExpr([:k, :β], Dict(i => 2 for i in [:k, :β])),
+                EinExpr([:β, :l, :m], Dict(i => 2 for i in [:β, :l, :m])),
+            ]
+
+            expr = EinExpr([:i, :j, :k, :l, :m, :β], tensors)
+
+            @test all(splat(==), zip(expr.head, (:i, :j, :k, :l, :m, :β)))
+            @test expr.args == tensors
+
+            @test issetequal(head(expr), (:i, :j, :k, :l, :m, :β))
+            @test issetequal(inds(expr), (:i, :j, :k, :l, :m, :β))
+            @test ndims(expr) == 6
+
+            @test all(i -> size(expr, i) == 2, inds(expr))
+            @test size(expr) == tuple(fill(2, 6)...)
+
+            @test issetequal(hyperinds(expr), [:β])
+            @test isempty(suminds(expr))
+            @test_broken isempty(parsuminds(expr))
+
+            @test select(expr, :i) == [tensors[1]]
+            @test select(expr, :j) == [tensors[1]]
+            @test select(expr, :k) == [tensors[2]]
+            @test select(expr, :β) == tensors
+
+            @test issetequal(neighbours(expr, :i), [:j, :β])
+            @test issetequal(neighbours(expr, :β), [:i, :j, :k, :l, :m])
+        end
+
+        @testset "hyperindex is summed" begin
+            tensors = [
+                EinExpr([:i, :β, :j], Dict(i => 2 for i in [:i, :β, :j])),
+                EinExpr([:k, :β], Dict(i => 2 for i in [:k, :β])),
+                EinExpr([:β, :l, :m], Dict(i => 2 for i in [:β, :l, :m])),
+            ]
+
+            expr = EinExpr([:i, :j, :k, :l, :m], tensors)
+
+            @test all(splat(==), zip(expr.head, (:i, :j, :k, :l, :m)))
+            @test expr.args == tensors
+
+            @test issetequal(head(expr), (:i, :j, :k, :l, :m))
+            @test issetequal(inds(expr), (:i, :j, :k, :l, :m, :β))
+            @test ndims(expr) == 5
+
+            @test all(i -> size(expr, i) == 2, inds(expr))
+            @test size(expr) == tuple(fill(2, 5)...)
+
+            @test issetequal(hyperinds(expr), [:β])
+            @test issetequal(suminds(expr), [:β])
+            @test issetequal(parsuminds(expr), [[:β]])
+
+            @test select(expr, :i) == [tensors[1]]
+            @test select(expr, :j) == [tensors[1]]
+            @test select(expr, :k) == [tensors[2]]
+            @test select(expr, :β) == tensors
+
+            @test issetequal(neighbours(expr, :i), [:j, :β])
+            @test issetequal(neighbours(expr, :β), [:i, :j, :k, :l, :m])
+        end
     end
 
     @testset "manual path" begin
@@ -229,6 +304,7 @@
         ]
 
         path = EinExpr(Symbol[], tensors)
+        @test isempty(hyperinds(path))
         @test issetequal(suminds(path), [:a, :b, :c, :d, :e, :f, :g, :h, :i, :j])
     end
 end
