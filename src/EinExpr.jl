@@ -192,7 +192,21 @@ function Base.sum(path::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
     return EinExpr(head(path), (EinExpr(suboutput, args(path)[findall(i)]), args(path)[findall(.!i)]...))
 end
 
-Base.sum(args::Vector{EinExpr}; head = mapreduce(head, symdiff, args)) = EinExpr(head, args)
+"""
+    sum(tensors::Vector{EinExpr}; skip = Symbol[])
+
+Create an `EinExpr` from other `EinExpr`s.
+
+# Keyword arguments
+
+  - `skip` Specifies indices to be skipped from summation.
+"""
+function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
+    _hyper = hyperinds(EinExpr(Symbol[], args))
+    _head = mapreduce(head, (a, b) -> symdiff(a, b) ∪ ∩(_hyper, a, b) ∪ ∩(skip, a, b), args)
+    _head = setdiff(_head, setdiff(_hyper, skip))
+    EinExpr(_head, args)
+end
 
 function Base.string(path::EinExpr; recursive::Bool = false)
     !recursive && return "$(join(map(x -> string.(head(x)) |> join, args(path)), ","))->$(string.(head(path)) |> join)"

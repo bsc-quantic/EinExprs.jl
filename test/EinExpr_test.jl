@@ -234,7 +234,7 @@
                 EinExpr([:β, :l, :m], Dict(i => 2 for i in [:β, :l, :m])),
             ]
 
-            expr = EinExpr([:i, :j, :k, :l, :m, :β], tensors)
+            expr = sum(tensors, skip = [:β])
 
             @test all(splat(==), zip(expr.head, (:i, :j, :k, :l, :m, :β)))
             @test expr.args == tensors
@@ -266,7 +266,7 @@
                 EinExpr([:β, :l, :m], Dict(i => 2 for i in [:β, :l, :m])),
             ]
 
-            expr = EinExpr([:i, :j, :k, :l, :m], tensors)
+            expr = sum(tensors)
 
             @test all(splat(==), zip(expr.head, (:i, :j, :k, :l, :m)))
             @test expr.args == tensors

@@ -22,4 +22,17 @@
         splat(issetequal),
         zip(map(suminds, Branches(path)), [Symbol[], [:j], [:a, :e], [:f, :b], [:i, :h], [:d, :g, :c]]),
     )
+
+    @testset "hyperedges" begin
+        a = EinExpr([:i, :β, :j], Dict(i => 2 for i in [:i, :β, :j]))
+        b = EinExpr([:k, :β], Dict(i => 2 for i in [:k, :β]))
+        c = EinExpr([:β, :l, :m], Dict(i => 2 for i in [:β, :l, :m]))
+
+        path = einexpr(EinExprs.Naive(), sum([a, b, c], skip = [:β]))
+        @test all(∋(:β) ∘ head, branches(path))
+
+        path = einexpr(EinExprs.Naive(), sum([a, b, c], skip = Symbol[]))
+        @test all(∋(:β) ∘ head, branches(path)[1:end-1])
+        @test all(!∋(:β) ∘ head, branches(path)[end:end])
+    end
 end

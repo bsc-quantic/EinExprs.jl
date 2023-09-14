@@ -34,7 +34,7 @@ function einexpr(config::Exhaustive, path; cost = BigInt(0))
 
         for (i, j) in combinations(args(path), 2)
             !config.outer && isdisjoint(head(i), head(j)) && continue
-            candidate = sum([i, j])
+            candidate = sum([i, j], skip = path.head ∪ hyperinds(path))
 
             # prune paths based on metric
             new_cost = cost + get!(() -> config.metric(candidate), cache, head.(candidate.args))

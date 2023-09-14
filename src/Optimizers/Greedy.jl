@@ -31,7 +31,7 @@ function einexpr(config::Greedy, path)
         Base.By(first, Base.Reverse),
         map(combinations(path.args, 2)) do (a, b)
             # TODO don't consider outer products
-            candidate = sum([a, b]) # TODO don't sum output inds
+            candidate = sum([a, b], skip = path.head ∪ hyperinds(path))
             weight = config.metric(candidate)
             (weight, candidate)
         end,
@@ -50,7 +50,7 @@ function einexpr(config::Greedy, path)
         # update candidate queue
         for other in path.args
             # TODO don't consider outer products
-            candidate = sum([winner, other]) # TODO don't sum output inds
+            candidate = sum([winner, other], skip = path.head ∪ hyperinds(path))
             weight = config.metric(candidate)
             push!(queue, (weight, candidate))
         end
