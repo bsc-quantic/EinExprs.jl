@@ -37,7 +37,9 @@ function einexpr(config::Exhaustive, path; cost = BigInt(0))
             candidate = sum([i, j], skip = path.head ∪ hyperinds(path))
 
             # prune paths based on metric
-            new_cost = cost + get!(() -> config.metric(candidate), cache, head.(candidate.args))
+            new_cost = cost + get!(cache, head.(candidate.args)) do
+                config.metric(candidate)
+            end
             new_cost >= leader.cost && continue
 
             new_path = EinExpr(head(path), [candidate, filter(∉([i, j]), args(path))...])
