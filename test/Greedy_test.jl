@@ -15,7 +15,7 @@
 
     @test mapreduce(flops, +, Branches(path)) == 100
 
-    @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:d], [:b, :f]]))
+    @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:f], [:b, :d]]))
 
     @testset "example: let unchanged" begin
         tensors = [
