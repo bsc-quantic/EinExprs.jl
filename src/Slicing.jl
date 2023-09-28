@@ -16,8 +16,9 @@ See also: [`view`](@ref).
 function Base.selectdim(path::EinExpr, index::Symbol, i)
     path = deepcopy(path)
 
-    leave = Iterators.filter(∋(index) ∘ head, Leaves(path)) |> first
+    for leave in Iterators.filter(∋(index) ∘ head, Leaves(path))
     leave.size[index] = length(i)
+    end
 
     return path
 end
