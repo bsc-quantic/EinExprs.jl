@@ -17,7 +17,27 @@ function Base.selectdim(path::EinExpr, index::Symbol, i)
     path = deepcopy(path)
 
     for leave in Iterators.filter(∋(index) ∘ head, Leaves(path))
-    leave.size[index] = length(i)
+        leave.size[index] = length(i)
+    end
+
+    return path
+end
+
+function Base.selectdim(path::EinExpr, index::Symbol, _::Integer)
+    path = deepcopy(path)
+
+    index ∈ head(path) && (path = EinExpr(filter(!=(index), path.head), path.args))
+
+    for branch in Branches(path)
+        for arg in Iterators.filter(∋(index) ∘ head, branch.args)
+            replace!(
+                branch.args,
+                arg => EinExpr(
+                    filter(!=(index), arg.head),
+                    isempty(arg.args) ? filter(p -> p.first != index, arg.size) : arg.args,
+                ),
+            )
+        end
     end
 
     return path
