@@ -11,6 +11,7 @@ Greedy contraction path solver. Greedily selects contractions that maximize a me
 
   - `metric` is a function that evaluates candidate pairwise tensor contractions. Defaults to [`removedsize`](@ref).
   - `choose` is a function that extracts a pairwise tensor contraction between candidates. Defaults to candidate that maximize `metric` using `pop!`.
+  - `outer` If `true`, consider outer products as candidates. Defaults to `false`.
 
 # Implementation
 
@@ -23,13 +24,16 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
 @kwdef struct Greedy <: Optimizer
     metric::Function = removedsize
     choose::Function = pop!
+    outer::Bool = false
 end
 
 function einexpr(config::Greedy, path)
     # generate initial candidate contractions
     queue = MutableBinaryHeap{Tuple{Float64,EinExpr}}(
         Base.By(first, Base.Reverse),
-        map(combinations(path.args, 2)) do (a, b)
+        map(
+            Iterators.filter(((a, b),) -> config.outer || !isdisjoint(a.head, b.head), combinations(path.args, 2)),
+        ) do (a, b)
             # TODO don't consider outer products
             candidate = sum([a, b], skip = path.head ∪ hyperinds(path))
             weight = config.metric(candidate)
@@ -48,7 +52,7 @@ function einexpr(config::Greedy, path)
         setdiff!(path.args, args(winner))
 
         # update candidate queue
-        for other in path.args
+        for other in Iterators.filter(other -> config.outer || !isdisjoint(winner.head, other.head), path.args)
             # TODO don't consider outer products
             candidate = sum([winner, other], skip = path.head ∪ hyperinds(path))
             weight = config.metric(candidate)
