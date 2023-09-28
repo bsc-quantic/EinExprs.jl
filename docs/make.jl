@@ -22,6 +22,8 @@ makedocs(
         "Alternatives"=>"alternatives.md",
     ],
     format = Documenter.HTML(; assets = ["assets/style/images.css", "assets/favicon.ico"], sidebar_sitename = false),
+    checkdocs = :exports,
+    warnonly = true,
 )
 
 deploydocs(repo = "github.com/bsc-quantic/EinExprs.jl.git", devbranch = "master", push_preview = true)
