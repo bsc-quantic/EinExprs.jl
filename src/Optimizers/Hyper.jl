@@ -8,7 +8,8 @@ end
 
 
 function get_hypergraph(path)
-    all_indices = inds(path) # Assume unique indices across all tensors
+    # assume unique indices across all tensors
+    all_indices = mapreduce(head, ∪, path)
 
     # Create incidence matrix
     incidence_matrix = spzeros(Int64, length(path.args), length(all_indices))
