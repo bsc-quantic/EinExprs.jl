@@ -1,15 +1,21 @@
 using SparseArrays
 using KaHyPar
 
-@kwdef struct HyperGraphPartitioning <: Optimizer
-    metric::Function = removedsize
-    outer::Bool = false
+@kwdef struct HypergraphPartitioning <: Optimizer
+    parts=2
+    parts_decay=0.5
+    random_strength=0.01
+    cutoff=2
+    max_iterations=100
 end
+
+EinExprs.einexpr(config::HypergraphPartitioning, path; kwargs...) =
+    iterative_partition(path; parts=config.parts, parts_decay=config.parts_decay, random_strength=config.random_strength, cutoff=config.cutoff, max_iterations=config.max_iterations)
 
 
 function get_hypergraph(path)
     # assume unique indices across all tensors
-    all_indices = mapreduce(head, ∪, path)
+    all_indices = mapreduce(head, ∪, path.args)
 
     # Create incidence matrix
     incidence_matrix = spzeros(Int64, length(path.args), length(all_indices))
@@ -33,60 +39,58 @@ function get_hypergraph(path)
     return hypergraph
 end
 
-function partition_hypergraph(hypergraph::KaHyPar.HyperGraph; parts=2, parts_decay=0.5, random_strength=0.01)
-    # Create a context for KaHyPar
-    context = KaHyPar.kahypar_context_new()
+function iterative_partition(expr::EinExpr; parts=2, parts_decay=0.5, random_strength=0.01, cutoff=2, max_iterations=100)
+    iteration_count = 0
 
-    # Load default configuration
-    config_file_path = KaHyPar.default_configuration
-    KaHyPar.kahypar_configure_context_from_file(context, config_file_path)
+    while true
+        # Check for base cases
+        @show expr.args
+        if expr.args == EinExpr[]
+            println("Base case reached: No children in the expression.")
+            break
+        end
 
-    # Calculate the relative subgraph size
-    subsize = hypergraph.n_vertices
-    N = hypergraph.n_vertices  # Assuming N is the total number of vertices in the entire graph
-    s = subsize / N
+        if iteration_count >= max_iterations
+            println("Max iterations reached.")
+            break
+        end
 
-    # Determine the number of partitions based on the relative subgraph size
-    kparts = max(Int(s^parts_decay * parts), 2)
+        # Convert the EinExpr to a hypergraph
+        hypergraph = get_hypergraph(expr)
+        println("Hypergraph size: ", hypergraph.n_vertices)
 
-    # Perform the partitioning
-    partitioning_result = KaHyPar.partition(hypergraph, kparts; configuration=config_file_path)
+        # Check if hypergraph size is below the cutoff
+        if hypergraph.n_vertices <= cutoff
+            println("Hypergraph size below cutoff.")
+            break
+        end
 
-    # Clean up the context
-    KaHyPar.kahypar_context_free(context)
+        # Partition the hypergraph
+        # The result is a vector of partition ids for each vertex
+        partitioning_result = partition_hypergraph(hypergraph, parts=parts, parts_decay=parts_decay, random_strength=random_strength)
 
-    return partitioning_result
-end
+        # Get unique partitions
+        unique_partitions = unique(partitioning_result)
 
-function recursive_partition(expr::EinExpr; parts=2, parts_decay=0.5, random_strength=0.01, cutoff=2, max_iterations=10)
-    # Convert the EinExpr to a hypergraph
-    hypergraph = get_hypergraph(expr)
-    println("Hypergraph size: ", hypergraph.n_vertices)
+        @show partitioning_result, unique_partitions
 
-    # Base case: if the hypergraph is small enough, we stop the recursion
-    if hypergraph.n_vertices <= cutoff
-        println("Base case")
-        return expr
+        # Contract nodes based on the partitioning
+        new_exprs = [partition_to_einexpr(part_id, partitioning_result, expr) for part_id in unique_partitions]
+        combined_expr = sum(new_exprs)
+
+        @show inds(combined_expr), length(combined_expr.args)
+        @show inds(expr), length(expr.args)
+
+        # Update the expression for the next iteration
+        expr = combined_expr
+
+        # Increment the iteration count
+        iteration_count += 1
     end
 
-    if max_iterations == 0
-        println("Max iterations reached")
-        return expr
-    end
-
-    # Partition the hypergraph
-    partitioning_result = partition_hypergraph(hypergraph, parts=parts, parts_decay=parts_decay, random_strength=random_strength)
-
-    # Get unique partitions
-    unique_partitions = unique(partitioning_result)
-
-    # Contract nodes based on the partitioning
-    new_exprs = [partition_to_einexpr(part_id, partitioning_result, expr) for part_id in unique_partitions]
-    combined_expr = sum(new_exprs)
-
-    # Recursively call the function on the combined EinExpr
-    return recursive_partition(combined_expr, parts=parts, parts_decay=parts_decay, random_strength=random_strength, cutoff=cutoff, max_iterations=max_iterations-1)
+    return expr
 end
+
 
 function partition_to_einexpr(partition_id::Int, partition_result::Vector{Int}, original_path::EinExpr)
     # Identify the tensor indices that belong to the specific partition_id
