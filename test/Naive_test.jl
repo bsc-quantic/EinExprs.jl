@@ -16,7 +16,7 @@
     @test foldl((a, b) -> sum([a, b]), tensors) == path
 
     # TODO traverse through the tree and check everything is ok
-    @test mapreduce(Base.Fix2(flops, sizedict), +, Branches(path)) == 872
+    @test mapreduce(flops(sizedict), +, Branches(path)) == 872
 
     # FIXME non-determinist behaviour on order
     @test all(

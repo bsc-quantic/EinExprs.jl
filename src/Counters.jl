@@ -25,3 +25,8 @@ end
 Count the rank reduction after performing the contraction of the root of the `path` tree.
 """
 removedrank(expr::EinExpr, _) = mapreduce(ndims, max, expr.args) - ndims(expr)
+
+for f in [:flops, :removedsize]
+    @eval $f(sizedict::Dict{Symbol}) = Base.Fix2($f, sizedict)
+end
+removedrank(::Dict) = Base.Fix2(removedrank, nothing)

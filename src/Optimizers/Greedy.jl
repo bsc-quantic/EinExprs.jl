@@ -28,7 +28,7 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
 end
 
 function einexpr(config::Greedy, path, sizedict)
-    metric = Base.Fix2(config.metric, sizedict)
+    metric = config.metric(sizedict)
 
     # generate initial candidate contractions
     queue = MutableBinaryHeap{Tuple{Float64,EinExpr}}(

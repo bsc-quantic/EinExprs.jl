@@ -23,7 +23,7 @@ The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``
 end
 
 function einexpr(config::Exhaustive, path, sizedict; cost = BigInt(0))
-    metric = Base.Fix2(config.metric, sizedict)
+    metric = config.metric(sizedict)
 
     leader =
         (; path = einexpr(Naive(), path), cost = mapreduce(metric, +, Branches(einexpr(Naive(), path), inverse = true)))

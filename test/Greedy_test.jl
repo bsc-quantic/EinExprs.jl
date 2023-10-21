@@ -14,7 +14,7 @@
 
     @test path isa EinExpr
 
-    @test mapreduce(Base.Fix2(flops, sizedict), +, Branches(path)) == 100
+    @test mapreduce(flops(sizedict), +, Branches(path)) == 100
 
     @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:f], [:b, :d]]))
 
