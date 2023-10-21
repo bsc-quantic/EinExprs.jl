@@ -25,12 +25,13 @@ end
 function einexpr(config::Exhaustive, path, sizedict; cost = BigInt(0))
     metric = Base.Fix2(config.metric, sizedict)
 
-    leader = (; path = einexpr(Naive(), path), cost = mapreduce(metric, +, PreOrderDFS(einexpr(Naive(), path))))
+    leader =
+        (; path = einexpr(Naive(), path), cost = mapreduce(metric, +, Branches(einexpr(Naive(), path), inverse = true)))
     cache = Dict{ImmutableVector{Symbol,Vector{Symbol}},BigInt}()
 
     function __einexpr_iterate(path, cost)
         if length(path.args) <= 2
-            leader = (; path = path, cost = mapreduce(metric, +, PreOrderDFS(path)))
+            leader = (; path = path, cost = mapreduce(metric, +, Branches(path, inverse = true)))
             return
         end
 
