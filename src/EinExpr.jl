@@ -2,31 +2,16 @@ using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
 using AbstractTrees
 
-struct EinExpr
-    head::Vector{Symbol}
-    args::Vector{EinExpr}
-    size::Dict{Symbol,Int}
-
-    # TODO checks: same dim for index, valid indices
-    EinExpr(head, args) = new(head, args, Dict{Symbol,EinExpr}())
-
-    function EinExpr(head::AbstractVector{Symbol}, size::AbstractDict{Symbol,Int})
-        head ⊆ keys(size) || throw(ArgumentError("Missing sizes for indices $(setdiff(head, keys(size)))"))
-        new(head, EinExpr[], size)
-    end
+Base.@kwdef struct EinExpr
+    head::ImmutableVector{Symbol,Vector{Symbol}}
+    args::Vector{EinExpr} = EinExpr[]
 end
+
+EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}) = EinExpr(head, map(EinExpr, args))
 
 EinExpr(head::NTuple, args) = EinExpr(collect(head), args)
 EinExpr(head, args::NTuple) = EinExpr(head, collect(args))
 EinExpr(head::NTuple, args::NTuple) = EinExpr(collect(head), collect(args))
-
-function EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}, sizes)
-    args = map(args) do arg
-        sizedict = filter(∈(arg) ∘ first, sizes)
-        EinExpr(arg, sizedict)
-    end
-    EinExpr(head, args)
-end
 
 """
     head(path::EinExpr)
@@ -100,11 +85,8 @@ Base.ndims(path::EinExpr) = length(head(path))
 
 Return the size of the resulting tensor from contracting `path`. If `index` is specified, return the size of such index.
 """
-Base.size(path::EinExpr) = (size(path, i) for i in head(path)) |> splat(tuple)
-Base.size(path::EinExpr, i::Symbol) =
-    Iterators.filter(∋(i) ∘ head, Leaves(path)) |> first |> Base.Fix2(getproperty, :size) |> Base.Fix2(getindex, i)
-
-Base.length(path::EinExpr) = (prod ∘ size)(path)
+Base.size(path::EinExpr, sizedict) = (sizedict[i] for i in head(path)) |> splat(tuple)
+Base.length(path::EinExpr, sizedict) = (prod ∘ size)(path, sizedict)
 
 """
     collapse!(path::EinExpr)

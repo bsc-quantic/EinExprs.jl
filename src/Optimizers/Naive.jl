@@ -1,5 +1,7 @@
 struct Naive <: Optimizer end
 
+einexpr(::Naive, path, _) = einexpr(Naive(), path)
+
 function einexpr(::Naive, path)
     hist = Dict(i => count(∋(i) ∘ head, path.args) for i in hyperinds(path))
 

@@ -88,7 +88,8 @@ Reimplementation based on [`contengra`](https://github.com/jcmgray/cotengra)'s `
 """
 function findslices(
     scorer,
-    path::EinExpr;
+    path::EinExpr,
+    sizedict;
     size = nothing,
     overhead = nothing,
     slices = nothing,
@@ -100,8 +101,8 @@ function findslices(
 
     candidates = Set(setdiff(mapreduce(head, ∪, PostOrderDFS(path)), skip))
     solution = Set{Symbol}()
-    current = (; slices = 1, size = maximum(prod ∘ Base.size, PostOrderDFS(path)), overhead = 1.0)
-    original_flops = mapreduce(flops, +, Branches(path; inverse = true))
+    current = (; slices = 1, size = maximum(Base.Fix2(length, sizedict), PostOrderDFS(path)), overhead = 1.0)
+    original_flops = mapreduce(flops, +, Branches(path))
 
     sliced_path = path
     while !isempty(candidates)
@@ -113,15 +114,15 @@ function findslices(
 
         sliced_path = selectdim(sliced_path, winner, 1)
         cur_overhead =
-            prod(i -> Base.size(path, i), [solution..., winner]) *
-            mapreduce(flops, +, Branches(sliced_path; inverse = true)) / original_flops
+            prod(i -> sizedict[i], [solution..., winner]) *
+            mapreduce(Base.Fix2(flops, sizedict), +, Branches(sliced_path)) / original_flops
 
         !isnothing(overhead) && cur_overhead > overhead && break
         push!(solution, winner)
 
         current = (;
-            slices = current.slices * (prod ∘ Base.size)(path, winner),
-            size = maximum(prod ∘ Base.size, PostOrderDFS(sliced_path)),
+            slices = current.slices * Base.Fix2(length, sizedict)(path, winner),
+            size = maximum(Base.Fix2(length, sizedict), PostOrderDFS(sliced_path)),
             overhead = cur_overhead,
         )
 

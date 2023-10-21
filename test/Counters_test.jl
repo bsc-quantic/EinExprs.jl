@@ -1,75 +1,77 @@
 @testset "Counters" begin
     using EinExprs: removedrank
 
-    @testset "identity" begin
-        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
-        expr = EinExpr([:i, :j], [tensor])
+    sizedict = Dict(:i => 2, :j => 3, :k => 4, :l => 5)
 
-        @test flops(expr) == 0
-        @test removedsize(expr) == 0
-        @test removedrank(expr) == 0
+    @testset "identity" begin
+        tensor = EinExpr((:i, :j))
+        expr = EinExpr((:i, :j), [tensor])
+
+        @test flops(expr, sizedict) == 0
+        @test removedsize(expr, sizedict) == 0
+        @test removedrank(expr, sizedict) == 0
     end
 
     @testset "transpose" begin
-        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
+        tensor = EinExpr((:i, :j))
         expr = EinExpr([:j, :i], [tensor])
 
-        @test flops(expr) == 0
-        @test removedsize(expr) == 0
-        @test removedrank(expr) == 0
+        @test flops(expr, sizedict) == 0
+        @test removedsize(expr, sizedict) == 0
+        @test removedrank(expr, sizedict) == 0
     end
 
     @testset "axis sum" begin
-        tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
-        expr = EinExpr([:i], [tensor])
+        tensor = EinExpr((:i, :j))
+        expr = EinExpr((:i,), [tensor])
 
-        @test flops(expr) == 6
-        @test removedsize(expr) == 4
-        @test removedrank(expr) == 1
+        @test flops(expr, sizedict) == 6
+        @test removedsize(expr, sizedict) == 4
+        @test removedrank(expr, sizedict) == 1
     end
 
     @testset "diagonal" begin
-        tensor = EinExpr([:i, :i], Dict(:i => 2))
-        expr = EinExpr([:i], [tensor])
+        tensor = EinExpr((:i, :i))
+        expr = EinExpr((:i,), [tensor])
 
-        @test flops(expr) == 0
-        @test removedsize(expr) == 2
-        @test removedrank(expr) == 1
+        @test flops(expr, sizedict) == 0
+        @test removedsize(expr, sizedict) == 2
+        @test removedrank(expr, sizedict) == 1
     end
 
     @testset "trace" begin
-        tensor = EinExpr([:i, :i], Dict(:i => 2))
+        tensor = EinExpr((:i, :i))
         expr = EinExpr(Symbol[], [tensor])
 
-        @test flops(expr) == 2
-        @test removedsize(expr) == 3
-        @test removedrank(expr) == 2
+        @test flops(expr, sizedict) == 2
+        @test removedsize(expr, sizedict) == 3
+        @test removedrank(expr, sizedict) == 2
     end
 
     @testset "outer product" begin
-        tensors = [EinExpr([:i, :j], Dict(:i => 2, :j => 3)), EinExpr([:k, :l], Dict(:k => 4, :l => 5))]
-        expr = EinExpr([:i, :j, :k, :l], tensors)
+        tensors = [EinExpr((:i, :j)), EinExpr((:k, :l))]
+        expr = EinExpr((:i, :j, :k, :l), tensors)
 
-        @test flops(expr) == prod(2:5)
-        @test removedsize(expr) == -94
-        @test removedrank(expr) == -2
+        @test flops(expr, sizedict) == prod(2:5)
+        @test removedsize(expr, sizedict) == -94
+        @test removedrank(expr, sizedict) == -2
     end
 
     @testset "inner product" begin
-        tensors = [EinExpr([:i], Dict(:i => 2)), EinExpr([:i], Dict(:i => 2))]
+        tensors = [EinExpr((:i,)), EinExpr((:i,))]
         expr = EinExpr(Symbol[], tensors)
 
-        @test flops(expr) == 2
-        @test removedsize(expr) == 3
-        @test removedrank(expr) == 1
+        @test flops(expr, sizedict) == 2
+        @test removedsize(expr, sizedict) == 3
+        @test removedrank(expr, sizedict) == 1
     end
 
     @testset "matrix multiplication" begin
-        tensors = [EinExpr([:i, :k], Dict(:i => 2, :k => 3)), EinExpr([:k, :j], Dict(:k => 3, :j => 4))]
-        expr = EinExpr([:i, :j], tensors)
+        tensors = [EinExpr((:i, :j)), EinExpr((:j, :k))]
+        expr = EinExpr((:i, :k), tensors)
 
-        @test flops(expr) == 2 * 3 * 4
-        @test removedsize(expr) == 10
-        @test removedrank(expr) == 0
+        @test flops(expr, sizedict) == 2 * 3 * 4
+        @test removedsize(expr, sizedict) == 10
+        @test removedrank(expr, sizedict) == 0
     end
 end
