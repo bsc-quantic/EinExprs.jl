@@ -8,18 +8,18 @@ struct EinExpr
     args::Vector{EinExpr}
     size::Dict{Symbol,Int}
 
-    function EinExpr(head, args)
-        # TODO checks: same dim for index, valid indices
-        head = collect(head)
-        args = collect(args)
-        new(head, args, Dict{Symbol,EinExpr}())
-    end
+    # TODO checks: same dim for index, valid indices
+    EinExpr(head, args) = new(head, args, Dict{Symbol,EinExpr}())
 
     function EinExpr(head, size::AbstractDict{Symbol,Int})
         issetequal(head, keys(size)) || throw(ArgumentError("Missing sizes for indices $(setdiff(head, keys(size)))"))
         new(head, EinExpr[], size)
     end
 end
+
+EinExpr(head::NTuple, args) = EinExpr(collect(head), args)
+EinExpr(head, args::NTuple) = EinExpr(head, collect(args))
+EinExpr(head::NTuple, args::NTuple) = EinExpr(collect(head), collect(args))
 
 function EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}, sizes)
     args = map(args) do arg
@@ -128,7 +128,8 @@ select(path::EinExpr, i::Base.AbstractVecOrTuple) = filter(Base.Fix1(⊆, collec
 Return the indices neighbouring to `i`.
 """
 neighbours(path::EinExpr, i) = neighbours(path, (i,))
-neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(mapreduce(head, ∪, select(path, i), init = Symbol[]), i)
+neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) =
+    setdiff(mapreduce(head, union!, select(path, i), init = Symbol[]), i)
 
 """
     contractorder(path::EinExpr)
@@ -137,8 +138,13 @@ Transform `path` into a contraction order.
 """
 contractorder(path::EinExpr) = map(suminds, Branches(path))
 
-hyperinds(path::EinExpr) =
-    map(first, Iterators.filter(>(2) ∘ last, Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), inds(path))))
+hyperinds(path::EinExpr) = map(
+    first,
+    Iterators.filter(
+        >(2) ∘ last,
+        Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), Iterators.flatmap(head, args(path))),
+    ),
+)
 
 @doc raw"""
     suminds(path)
@@ -153,7 +159,7 @@ Indices of summation of an `EinExpr`.
 suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 ```
 """
-suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args, init = Symbol[]), head(path))
+suminds(path::EinExpr) = setdiff(mapreduce(head, union!, path.args, init = Symbol[]), head(path))
 
 # TODO keep output inds
 """
@@ -212,7 +218,7 @@ Create an `EinExpr` from other `EinExpr`s.
 function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
     _hyper = hyperinds(EinExpr(Symbol[], args))
     _head = mapreduce(head, (a, b) -> symdiff(a, b) ∪ ∩(_hyper, a, b) ∪ ∩(skip, a, b), args)
-    _head = setdiff(_head, setdiff(_hyper, skip))
+    setdiff!(_head, setdiff!(_hyper, skip))
     EinExpr(_head, args)
 end
 
