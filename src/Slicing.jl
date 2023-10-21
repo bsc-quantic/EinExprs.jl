@@ -102,7 +102,7 @@ function findslices(
     candidates = Set(setdiff(mapreduce(head, ∪, PostOrderDFS(path)), skip))
     solution = Set{Symbol}()
     current = (; slices = 1, size = maximum(Base.Fix2(length, sizedict), PostOrderDFS(path)), overhead = 1.0)
-    original_flops = mapreduce(flops, +, Branches(path; inverse = true))
+    original_flops = mapreduce(Base.Fix2(flops, sizedict), +, Branches(path; inverse = true))
 
     sliced_path = path
     while !isempty(candidates)
