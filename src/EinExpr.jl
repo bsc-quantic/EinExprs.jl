@@ -21,6 +21,14 @@ struct EinExpr
     end
 end
 
+function EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}, sizes)
+    args = map(args) do arg
+        sizedict = filter(∈(arg) ∘ first, sizes)
+        EinExpr(arg, sizedict)
+    end
+    EinExpr(head, args)
+end
+
 """
     head(path::EinExpr)
 
@@ -210,6 +218,7 @@ end
 
 function Base.string(path::EinExpr; recursive::Bool = false)
     !recursive && return "$(join(map(x -> string.(head(x)) |> join, args(path)), ","))->$(string.(head(path)) |> join)"
+    map(string, Branches(path))
 end
 
 # Iteration interface
