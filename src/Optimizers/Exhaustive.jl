@@ -25,8 +25,8 @@ end
 function einexpr(config::Exhaustive, path, sizedict; cost = BigInt(0))
     metric = Base.Fix2(config.metric, sizedict)
 
-    leader = (; path = einexpr(Naive(), path), cost = mapreduce(config.metric, +, Branches(einexpr(Naive(), path))))
-    cache = Dict{Vector{ImmutableVector{Symbol,Vector{Symbol}}},BigInt}()
+    leader = (; path = einexpr(Naive(), path), cost = mapreduce(metric, +, Branches(einexpr(Naive(), path))))
+    cache = Dict{ImmutableVector{Symbol,Vector{Symbol}},BigInt}()
 
     function __einexpr_iterate(path, cost)
         if length(path.args) <= 2
@@ -39,7 +39,7 @@ function einexpr(config::Exhaustive, path, sizedict; cost = BigInt(0))
             candidate = sum([i, j], skip = path.head ∪ hyperinds(path))
 
             # prune paths based on metric
-            new_cost = cost + get!(cache, head.(candidate.args)) do
+            new_cost = cost + get!(cache, head(candidate)) do
                 metric(candidate)
             end
             new_cost >= leader.cost && continue
