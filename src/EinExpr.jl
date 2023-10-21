@@ -74,7 +74,7 @@ Iterator that walks through the non-terminal nodes of the `path` tree.
 
 See also: [`branches`](@ref).
 """
-Branches(path) = Iterators.filter(!isempty ∘ args, PostOrderDFS(path))
+Branches(path; inverse = false) = Iterators.filter(!isempty ∘ args, (inverse ? PreOrderDFS : PostOrderDFS)(path))
 
 """
     branches(path::EinExpr[, i])
@@ -84,8 +84,8 @@ If `i` is specified, then only return the ``i``-th `EinExpr`.
 
 See also: [`leaves`](@ref), [`Branches`](@ref).
 """
-branches(path) = Branches(path) |> collect
-branches(path, i) = Iterators.drop(Branches(path), i - 1) |> first
+branches(path; inverse = false) = Branches(path; inverse) |> collect
+branches(path, i; inverse = false) = Iterators.drop(Branches(path; inverse), i - 1) |> first
 
 Base.:(==)(a::EinExpr, b::EinExpr) = a.head == b.head && a.args == b.args
 

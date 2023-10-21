@@ -23,12 +23,15 @@ The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``
 end
 
 function einexpr(config::Exhaustive, path; cost = BigInt(0))
-    leader = (; path = einexpr(Naive(), path), cost = mapreduce(config.metric, +, PreOrderDFS(einexpr(Naive(), path))))
+    leader = (;
+        path = einexpr(Naive(), path),
+        cost = mapreduce(config.metric, +, Branches(einexpr(Naive(), path), inverse = true)),
+    )
     cache = Dict{ImmutableVector{Symbol,Vector{Symbol}},BigInt}()
 
     function __einexpr_iterate(path, cost)
         if length(path.args) <= 2
-            leader = (; path = path, cost = mapreduce(config.metric, +, PreOrderDFS(path)))
+            leader = (; path = path, cost = mapreduce(config.metric, +, Branches(path, inverse = true)))
             return
         end
 

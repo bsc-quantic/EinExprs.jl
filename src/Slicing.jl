@@ -101,7 +101,7 @@ function findslices(
     candidates = Set(setdiff(mapreduce(head, ∪, PostOrderDFS(path)), skip))
     solution = Set{Symbol}()
     current = (; slices = 1, size = maximum(prod ∘ Base.size, PostOrderDFS(path)), overhead = 1.0)
-    original_flops = mapreduce(flops, +, Branches(path))
+    original_flops = mapreduce(flops, +, Branches(path; inverse = true))
 
     sliced_path = path
     while !isempty(candidates)
@@ -113,8 +113,8 @@ function findslices(
 
         sliced_path = selectdim(sliced_path, winner, 1)
         cur_overhead =
-            prod(i -> Base.size(path, i), [solution..., winner]) * mapreduce(flops, +, Branches(sliced_path)) /
-            original_flops
+            prod(i -> Base.size(path, i), [solution..., winner]) *
+            mapreduce(flops, +, Branches(sliced_path; inverse = true)) / original_flops
 
         !isnothing(overhead) && cur_overhead > overhead && break
         push!(solution, winner)
