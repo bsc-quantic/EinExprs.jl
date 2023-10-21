@@ -7,6 +7,7 @@ Base.@kwdef struct EinExpr
     args::Vector{EinExpr} = EinExpr[]
 end
 
+EinExpr(head) = EinExpr(head, EinExpr[])
 EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}) = EinExpr(head, map(EinExpr, args))
 
 EinExpr(head::NTuple, args) = EinExpr(collect(head), args)
