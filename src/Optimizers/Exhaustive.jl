@@ -24,30 +24,20 @@ end
 
 function einexpr(config::Exhaustive, path, sizedict; cost = BigInt(0))
     metric = config.metric(sizedict)
-
-    leader =
-        (; path = einexpr(Naive(), path), cost = mapreduce(metric, +, Branches(einexpr(Naive(), path), inverse = true)))
+    leader = Ref{NamedTuple{(:path, :cost),Tuple{EinExpr,BigInt}}}((;
+        path = einexpr(Naive(), path),
+        cost = mapreduce(metric, +, Branches(einexpr(Naive(), path), inverse = true), init = BigInt(0))::BigInt,
+    ))
     cache = Dict{ImmutableVector{Symbol,Vector{Symbol}},BigInt}()
+    __einexpr_exhaustive_it(path, cost, metric, config.outer, leader, cache)
+    return leader[].path
+end
 
-    function __einexpr_iterate(path, cost)
-        if length(path.args) <= 2
-            leader = (; path = path, cost = mapreduce(metric, +, Branches(path, inverse = true)))
-            return
-        end
-
-        for (i, j) in combinations(args(path), 2)
-            !config.outer && isdisjoint(head(i), head(j)) && continue
-            candidate = sum([i, j], skip = path.head ∪ hyperinds(path))
-
-            # prune paths based on metric
-            new_cost = cost + get!(cache, head(candidate)) do
-                metric(candidate)
-            end
-            new_cost >= leader.cost && continue
-
-            new_path = EinExpr(head(path), [candidate, filter(∉([i, j]), args(path))...])
-            __einexpr_iterate(new_path, new_cost)
-        end
+function __einexpr_exhaustive_it(path, cost, metric, outer, leader, cache)
+    if length(path.args) <= 2
+        leader[] =
+            (; path = path, cost = mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))::BigInt)
+        return
     end
 
     for (i, j) in combinations(args(path), 2)
