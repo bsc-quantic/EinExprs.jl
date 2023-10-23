@@ -7,7 +7,7 @@ flops(expr::EinExpr, sizedict) =
     if length(expr.args) == 0 || length(expr.args) == 1 && isempty(suminds(expr))
         0
     else
-        mapreduce(i -> sizedict[i], *, Iterators.flatten((head(expr), suminds(expr))), init = one(BigInt))
+        mapreduce(Base.Fix1(getindex, sizedict), *, Iterators.flatten((head(expr), suminds(expr))), init = one(BigInt))
     end
 
 """
