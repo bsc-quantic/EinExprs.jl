@@ -250,17 +250,23 @@ Create an `EinExpr` from other `EinExpr`s.
   - `skip` Specifies indices to be skipped from summation.
 """
 function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
-    _head = collect(head(first(args)))
-    for arg in Iterators.rest(args, 2)
-        for i in head(arg)
-            if i ∈ _head
-                i ∉ skip && filter!(==(i), _head)
-                continue
+    _head = Symbol[]
+    _counts = Int[]
+    for arg in args
+        for index in head(arg)
+            i = findfirst(Base.Fix1(===, index), _head)
+            if isnothing(i)
+                push!(_head, index)
+                push!(_counts, 1)
             else
-                push!(_head, i)
+                _counts[i] += 1
             end
         end
     end
+
+    _head = map(first, Iterators.filter(zip(_head, _counts)) do (index, count)
+        count == 1 || index ∈ skip
+    end)
     EinExpr(_head, args)
 end
 
