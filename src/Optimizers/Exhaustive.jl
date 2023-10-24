@@ -33,9 +33,11 @@ function einexpr(config::Exhaustive, path; cost = BigInt(0))
 end
 
 function __einexpr_exhaustive_it(path, cost, metric, outer, leader, cache)
-    if length(path.args) <= 2
-        leader[] =
-            (; path = path, cost = mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))::BigInt)
+    if length(path.args) == 1
+        # remove identity einsum (i.e. "i...->i...")
+        path = path.args[1]
+
+        leader[] = (; path, cost = mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))::BigInt)
         return
     end
 
