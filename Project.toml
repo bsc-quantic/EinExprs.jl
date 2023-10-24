@@ -16,11 +16,13 @@ Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+TensorOperations = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
 
 [extensions]
 EinExprsChainRulesCoreExt = "ChainRulesCore"
 EinExprsFiniteDifferencesExt = "FiniteDifferences"
 EinExprsMakieExt = "Makie"
+EinExprsTensorOperationsExt = "TensorOperations"
 
 [compat]
 AbstractTrees = "0.4"
@@ -33,3 +35,4 @@ ImmutableArrays = "1.0.1"
 Makie = "0.19"
 Memoize = "0.4"
 julia = "1.9"
+TensorOperations = "4"
