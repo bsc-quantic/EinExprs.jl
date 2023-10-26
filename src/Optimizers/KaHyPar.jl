@@ -2,7 +2,7 @@ using AbstractTrees
 using SparseArrays
 using KaHyPar
 
-@kwdef struct HypergraphPartitioning <: Optimizer
+@kwdef struct HyPar <: Optimizer
     parts = 2
     parts_decay = 0.5
     random_strength = 0.01
@@ -10,7 +10,7 @@ using KaHyPar
     max_iterations = 100
 end
 
-function EinExprs.einexpr(config::HypergraphPartitioning, path)
+function EinExprs.einexpr(config::HyPar, path)
     inds = mapreduce(head, ∪, path.args)
     indexmap = Dict(Iterators.map(splat(Pair) ∘ reverse, enumerate(inds)))
 
