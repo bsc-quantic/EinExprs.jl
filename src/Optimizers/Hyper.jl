@@ -1,63 +1,36 @@
+using AbstractTrees
 using SparseArrays
 using KaHyPar
 
 @kwdef struct HypergraphPartitioning <: Optimizer
-    parts=2
-    parts_decay=0.5
-    random_strength=0.01
-    cutoff=2
-    max_iterations=100
+    parts = 2
+    parts_decay = 0.5
+    random_strength = 0.01
+    cutoff = 2
+    max_iterations = 100
 end
 
-EinExprs.einexpr(config::HypergraphPartitioning, path; kwargs...) =
-    iterative_partition(path; parts=config.parts, parts_decay=config.parts_decay, random_strength=config.random_strength, cutoff=config.cutoff, max_iterations=config.max_iterations)
+function EinExprs.einexpr(config::HypergraphPartitioning, path)
+    inds = mapreduce(head, ∪, path.args)
+    indexmap = Dict(Iterators.map(splat(Pair) ∘ reverse, enumerate(inds)))
 
+    I = Iterators.flatmap(tensor -> fill(1, ndims(tensor)), path.args) |> collect
+    J = Iterators.flatmap(tensor -> Iterators.map(Base.Fix1(getindex, indexmap), head(tensor)), path.args) |> collect
+    V = fill(1, length(I))
+    incidence_matrix = sparse(I, J, V)
 
-function get_hypergraph(path)
-    # assume unique indices across all tensors
-    all_indices = mapreduce(head, ∪, path.args)
+    # NOTE indices in `inds` should be in the same order as unique indices appear by iterating on `path.args` because `∪` retains order
+    edge_weights = map(Base.Fix1(size, path), inds)
+    vertex_weights = ones(Int, length(path.args))
 
-    # Create incidence matrix
-    incidence_matrix = spzeros(Int64, length(path.args), length(all_indices))
-
-    for (i, tensor) in enumerate(path.args)
-        for idx in tensor.head
-            j = findfirst(==(idx), all_indices)
-            incidence_matrix[i, j] = 1
-        end
-    end
-
-    # Vertex weights (assuming equal weight for all tensors)
-    vertex_weights = ones(Int64, length(path.args))
-
-    # Hyperedge weights set to the size of the index
-    edge_weights = [size(path, idx) for idx in all_indices]
-
-    # Create hypergraph
     hypergraph = KaHyPar.HyperGraph(incidence_matrix, vertex_weights, edge_weights)
 
-    return hypergraph
-end
-
-function iterative_partition(expr::EinExpr; parts=2, parts_decay=0.5, random_strength=0.01, cutoff=2, max_iterations=100)
-    iteration_count = 0
-
-    while true
-        # Check for base cases
-        @show expr.args
-        if expr.args == EinExpr[]
-            println("Base case reached: No children in the expression.")
-            break
-        end
-
-        if iteration_count >= max_iterations
-            println("Max iterations reached.")
-            break
-        end
+    for iteration in 1:config.max_iterations
+        # base case: no more children
+        path.args == EinExpr[] && break
 
         # Convert the EinExpr to a hypergraph
-        hypergraph = get_hypergraph(expr)
-        println("Hypergraph size: ", hypergraph.n_vertices)
+        hypergraph = get_hypergraph(path)
 
         # Check if hypergraph size is below the cutoff
         if hypergraph.n_vertices <= cutoff
@@ -67,30 +40,26 @@ function iterative_partition(expr::EinExpr; parts=2, parts_decay=0.5, random_str
 
         # Partition the hypergraph
         # The result is a vector of partition ids for each vertex
-        partitioning_result = partition_hypergraph(hypergraph, parts=parts, parts_decay=parts_decay, random_strength=random_strength)
+        partitioning_result = partition_hypergraph(
+            hypergraph,
+            parts = parts,
+            parts_decay = parts_decay,
+            random_strength = random_strength,
+        )
 
         # Get unique partitions
         unique_partitions = unique(partitioning_result)
 
-        @show partitioning_result, unique_partitions
-
         # Contract nodes based on the partitioning
-        new_exprs = [partition_to_einexpr(part_id, partitioning_result, expr) for part_id in unique_partitions]
+        new_exprs = [partition_to_einexpr(part_id, partitioning_result, path) for part_id in unique_partitions]
         combined_expr = sum(new_exprs)
 
-        @show inds(combined_expr), length(combined_expr.args)
-        @show inds(expr), length(expr.args)
-
         # Update the expression for the next iteration
-        expr = combined_expr
-
-        # Increment the iteration count
-        iteration_count += 1
+        path = combined_expr
     end
 
-    return expr
+    return path
 end
-
 
 function partition_to_einexpr(partition_id::Int, partition_result::Vector{Int}, original_path::EinExpr)
     # Identify the tensor indices that belong to the specific partition_id
