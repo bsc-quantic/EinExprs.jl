@@ -14,7 +14,7 @@
 
         @test path isa EinExpr
 
-        @test mapreduce(flops, +, Branches(path))
+        @test mapreduce(flops, +, Branches(path)) == 108
     end
 
     @testset begin
