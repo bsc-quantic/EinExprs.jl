@@ -8,6 +8,7 @@ using EinExprs
         include("Naive_test.jl")
         include("Exhaustive_test.jl")
         include("Greedy_test.jl")
+        include("KaHyPar_test.jl")
     end
     include("Slicing_test.jl")
 end
