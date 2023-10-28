@@ -1,10 +1,9 @@
 using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
-using ImmutableArrays
 using AbstractTrees
 
 struct EinExpr
-    head::ImmutableVector{Symbol,Vector{Symbol}}
+    head::Vector{Symbol}
     args::Vector{EinExpr}
     size::Dict{Symbol,Int}
 
