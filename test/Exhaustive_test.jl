@@ -13,9 +13,9 @@
 
     @test path isa EinExpr
 
-    @test mapreduce(flops, +, Branches(path)) == 92
+    @test mapreduce(flops, +, Branches(path)) == 90
 
-    @test all(splat(issetequal), zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:j], [:h, :i], [:b, :d]]))
+    @test all(splat(issetequal), zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:d], [:b, :i, :h], [:j]]))
 
     @testset "hyperedges" begin
         a = EinExpr([:i, :β, :j], Dict(i => 2 for i in [:i, :β, :j]))

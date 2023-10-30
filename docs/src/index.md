@@ -5,7 +5,7 @@
 
 `EinExprs` is a Julia package that provides `EinExpr`s: symbolic expressions representing a Einstein summation. These summations may be used to represent contraction paths of large tensor networks.
 
-It is a complete redesign of [`OptimizedEinsum`](https://github.com/bsc-quantic/OptimizedEinsum.jl), which indeed was a Julia fork of [`opt_einsum`](https://github.com/dgasmith/opt_einsum). It is design to work with [`Tenet`](https://github.com/bsc-quantic/Tenet.jl) but thanks to the modular structure, it can be used without it.
+It is a complete redesign of [`OptimizedEinsum`](https://github.com/bsc-quantic/OptimizedEinsum.jl), which indeed was a Julia fork of [`opt_einsum`](https://github.com/dgasmith/opt_einsum). It powers [`Tenet`](https://github.com/bsc-quantic/Tenet.jl) but can easily be adapted to work with other packages.
 
 1. [Einsum Expressions](@ref)
 2. [Optimizers](@ref exhaustive_optimizer)

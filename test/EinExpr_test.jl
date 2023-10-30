@@ -3,7 +3,7 @@
 
     @testset "identity" begin
         tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
-        expr = EinExpr((:i, :j), [tensor])
+        expr = EinExpr([:i, :j], [tensor])
 
         @test expr.head == head(tensor)
         @test expr.args == [tensor]
@@ -28,7 +28,7 @@
 
     @testset "transpose" begin
         tensor = EinExpr([:i, :j], Dict(:i => 2, :j => 3))
-        expr = EinExpr((:j, :i), [tensor])
+        expr = EinExpr([:j, :i], [tensor])
 
         @test expr.head == reverse(inds(tensor))
         @test expr.args == [tensor]
@@ -59,7 +59,7 @@
         @test expr.args == [tensor]
 
         @test all(splat(==), zip(head(expr), (:i,)))
-        @test all(splat(==), zip(inds(expr), (:i, :j)))
+        @test all(splat(==), zip(inds(expr), [:i, :j]))
 
         @test size(expr, :i) == 2
         @test size(expr, :j) == 3
@@ -121,8 +121,8 @@
     end
 
     @testset "outer product" begin
-        tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:k, :l), Dict(:k => 4, :l => 5))]
-        expr = EinExpr((:i, :j, :k, :l), tensors)
+        tensors = [EinExpr([:i, :j], Dict(:i => 2, :j => 3)), EinExpr([:k, :l], Dict(:k => 4, :l => 5))]
+        expr = EinExpr([:i, :j, :k, :l], tensors)
 
         @test all(splat(==), zip(expr.head, (:i, :j, :k, :l)))
         @test expr.args == tensors
@@ -151,7 +151,7 @@
 
     @testset "inner product" begin
         @testset "Vector" begin
-            tensors = [EinExpr((:i,), Dict(:i => 2)), EinExpr((:i,), Dict(:i => 2))]
+            tensors = [EinExpr([:i], Dict(:i => 2)), EinExpr([:i], Dict(:i => 2))]
             expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
@@ -173,14 +173,14 @@
             @test isempty(neighbours(expr, :i))
         end
         @testset "Matrix" begin
-            tensors = [EinExpr((:i, :j), Dict(:i => 2, :j => 3)), EinExpr((:i, :j), Dict(:i => 2, :j => 3))]
+            tensors = [EinExpr([:i, :j], Dict(:i => 2, :j => 3)), EinExpr([:i, :j], Dict(:i => 2, :j => 3))]
             expr = EinExpr(Symbol[], tensors)
 
             @test isempty(expr.head)
             @test expr.args == tensors
 
             @test isempty(head(expr))
-            @test all(splat(==), zip(inds(expr), (:i, :j)))
+            @test all(splat(==), zip(inds(expr), [:i, :j]))
             @test ndims(expr) == 0
 
             @test size(expr, :i) == 2
@@ -199,13 +199,13 @@
     end
 
     @testset "matrix multiplication" begin
-        tensors = [EinExpr((:i, :k), Dict(:i => 2, :k => 3)), EinExpr((:k, :j), Dict(:k => 3, :j => 4))]
-        expr = EinExpr((:i, :j), tensors)
+        tensors = [EinExpr([:i, :k], Dict(:i => 2, :k => 3)), EinExpr([:k, :j], Dict(:k => 3, :j => 4))]
+        expr = EinExpr([:i, :j], tensors)
 
-        @test all(splat(==), zip(expr.head, (:i, :j)))
+        @test all(splat(==), zip(expr.head, [:i, :j]))
         @test expr.args == tensors
 
-        @test all(splat(==), zip(head(expr), (:i, :j)))
+        @test all(splat(==), zip(head(expr), [:i, :j]))
         @test all(splat(==), zip(inds(expr), (:i, :k, :j)))
         @test ndims(expr) == 2
 
@@ -235,9 +235,6 @@
             ]
 
             expr = sum(tensors, skip = [:β])
-
-            @test all(splat(==), zip(expr.head, (:i, :j, :k, :l, :m, :β)))
-            @test expr.args == tensors
 
             @test issetequal(head(expr), (:i, :j, :k, :l, :m, :β))
             @test issetequal(inds(expr), (:i, :j, :k, :l, :m, :β))

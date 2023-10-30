@@ -1,24 +1,31 @@
 using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
-using ImmutableArrays
 using AbstractTrees
 
 struct EinExpr
-    head::ImmutableVector{Symbol,Vector{Symbol}}
+    head::Vector{Symbol}
     args::Vector{EinExpr}
     size::Dict{Symbol,Int}
 
-    function EinExpr(head, args)
-        # TODO checks: same dim for index, valid indices
-        head = collect(head)
-        args = collect(args)
-        new(head, args, Dict{Symbol,EinExpr}())
-    end
+    # TODO checks: same dim for index, valid indices
+    EinExpr(head, args) = new(head, args, Dict{Symbol,EinExpr}())
 
     function EinExpr(head, size::AbstractDict{Symbol,Int})
         issetequal(head, keys(size)) || throw(ArgumentError("Missing sizes for indices $(setdiff(head, keys(size)))"))
         new(head, EinExpr[], size)
     end
+end
+
+EinExpr(head::NTuple, args) = EinExpr(collect(head), args)
+EinExpr(head, args::NTuple) = EinExpr(head, collect(args))
+EinExpr(head::NTuple, args::NTuple) = EinExpr(collect(head), collect(args))
+
+function EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}, sizes)
+    args = map(args) do arg
+        sizedict = filter(∈(arg) ∘ first, sizes)
+        EinExpr(arg, sizedict)
+    end
+    EinExpr(head, args)
 end
 
 """
@@ -66,7 +73,7 @@ Iterator that walks through the non-terminal nodes of the `path` tree.
 
 See also: [`branches`](@ref).
 """
-Branches(path) = Iterators.filter(!isempty ∘ args, PostOrderDFS(path))
+Branches(path; inverse = false) = Iterators.filter(!isempty ∘ args, (inverse ? PreOrderDFS : PostOrderDFS)(path))
 
 """
     branches(path::EinExpr[, i])
@@ -76,8 +83,8 @@ If `i` is specified, then only return the ``i``-th `EinExpr`.
 
 See also: [`leaves`](@ref), [`Branches`](@ref).
 """
-branches(path) = Branches(path) |> collect
-branches(path, i) = Iterators.drop(Branches(path), i - 1) |> first
+branches(path; inverse = false) = Branches(path; inverse) |> collect
+branches(path, i; inverse = false) = Iterators.drop(Branches(path; inverse), i - 1) |> first
 
 Base.:(==)(a::EinExpr, b::EinExpr) = a.head == b.head && a.args == b.args
 
@@ -120,7 +127,8 @@ select(path::EinExpr, i::Base.AbstractVecOrTuple) = filter(Base.Fix1(⊆, collec
 Return the indices neighbouring to `i`.
 """
 neighbours(path::EinExpr, i) = neighbours(path, (i,))
-neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) = setdiff(mapreduce(head, ∪, select(path, i), init = Symbol[]), i)
+neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) =
+    setdiff(mapreduce(head, union!, select(path, i), init = Symbol[]), i)
 
 """
     contractorder(path::EinExpr)
@@ -129,8 +137,13 @@ Transform `path` into a contraction order.
 """
 contractorder(path::EinExpr) = map(suminds, Branches(path))
 
-hyperinds(path::EinExpr) =
-    map(first, Iterators.filter(>(2) ∘ last, Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), inds(path))))
+hyperinds(path::EinExpr) = map(
+    first,
+    Iterators.filter(
+        >(2) ∘ last,
+        Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), Iterators.flatmap(head, args(path))),
+    ),
+)
 
 @doc raw"""
     suminds(path)
@@ -145,7 +158,41 @@ Indices of summation of an `EinExpr`.
 suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 ```
 """
-suminds(path::EinExpr) = setdiff(mapreduce(head, ∪, path.args, init = Symbol[]), head(path))
+suminds(path::EinExpr) = filter!(∉(head(path)), flatunique(head, path.args))
+
+@generated function flatunique(f::Base.Callable, itr)
+    if Iterators.IteratorEltype(itr) isa Iterators.EltypeUnknown
+        return :(flatunique(Any, f, itr))
+    end
+
+    argtype = eltype(itr)
+    world = Base.get_world_counter()
+    interp = Core.Compiler.NativeInterpreter(world)
+
+    # tt = Core.Compiler.signature_type(f, (argtype,))
+    tt = Tuple{f,argtype}
+    match = only(Core.Compiler._methods_by_ftype(tt, 1, world))
+
+    fouttype = Core.Compiler.typeinf_type(interp, match.method, Tuple{argtype}, match.sparams)
+    if Iterators.IteratorEltype(fouttype) isa Iterators.EltypeUnknown
+        return :(flatunique(Any, f, itr))
+    end
+
+    T = eltype(fouttype)
+
+    return :(flatunique($T, f, itr))
+end
+
+function flatunique(::Type{T}, f, itr) where {T}
+    u = T[]
+    for x in itr
+        for y in f(x)
+            y ∉ u && push!(u, y)
+        end
+    end
+
+    return u
+end
 
 # TODO keep output inds
 """
@@ -202,14 +249,29 @@ Create an `EinExpr` from other `EinExpr`s.
   - `skip` Specifies indices to be skipped from summation.
 """
 function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
-    _hyper = hyperinds(EinExpr(Symbol[], args))
-    _head = mapreduce(head, (a, b) -> symdiff(a, b) ∪ ∩(_hyper, a, b) ∪ ∩(skip, a, b), args)
-    _head = setdiff(_head, setdiff(_hyper, skip))
+    _head = Symbol[]
+    _counts = Int[]
+    for arg in args
+        for index in head(arg)
+            i = findfirst(Base.Fix1(===, index), _head)
+            if isnothing(i)
+                push!(_head, index)
+                push!(_counts, 1)
+            else
+                _counts[i] += 1
+            end
+        end
+    end
+
+    _head = map(first, Iterators.filter(zip(_head, _counts)) do (index, count)
+        count == 1 || index ∈ skip
+    end)
     EinExpr(_head, args)
 end
 
 function Base.string(path::EinExpr; recursive::Bool = false)
     !recursive && return "$(join(map(x -> string.(head(x)) |> join, args(path)), ","))->$(string.(head(path)) |> join)"
+    map(string, Branches(path))
 end
 
 # Iteration interface
