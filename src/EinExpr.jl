@@ -10,7 +10,7 @@ struct EinExpr
     # TODO checks: same dim for index, valid indices
     EinExpr(head, args) = new(head, args, Dict{Symbol,EinExpr}())
 
-    function EinExpr(head, size::AbstractDict{Symbol,Int})
+    function EinExpr(head::AbstractVector{Symbol}, size::AbstractDict{Symbol,Int})
         issetequal(head, keys(size)) || throw(ArgumentError("Missing sizes for indices $(setdiff(head, keys(size)))"))
         new(head, EinExpr[], size)
     end
