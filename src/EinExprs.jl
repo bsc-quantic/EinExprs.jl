@@ -13,6 +13,6 @@ export findslices, FlopsScorer, SizeScorer
 
 include("Optimizers/Optimizers.jl")
 export Optimizer, einexpr
-export Exhaustive, Greedy
+export Exhaustive, Greedy, HyPar
 
 end
