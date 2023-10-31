@@ -5,11 +5,13 @@ using KaHyPar
 @kwdef struct HyPar <: Optimizer
     parts = 2
     imbalance = 0.03
-    cutoff = 2
+    stop = path -> length(path.args) <= 2
     configuration::Union{Nothing,Symbol,String} = nothing
 end
 
 function EinExprs.einexpr(config::HyPar, path)
+    config.stop(path) && return path
+
     inds = mapreduce(head, ∪, path.args)
     indexmap = Dict(Iterators.map(splat(Pair) ∘ reverse, enumerate(inds)))
 
@@ -23,9 +25,6 @@ function EinExprs.einexpr(config::HyPar, path)
     vertex_weights = ones(Int, length(path.args))
 
     hypergraph = KaHyPar.HyperGraph(incidence_matrix, vertex_weights, edge_weights)
-
-    # stop on cutoff
-    hypergraph.n_vertices <= config.cutoff && return path
 
     partitions =
         KaHyPar.partition(hypergraph, config.parts; imbalance = config.imbalance, configuration = config.configuration)
