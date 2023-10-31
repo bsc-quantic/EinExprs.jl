@@ -31,7 +31,10 @@ function EinExprs.einexpr(config::HyPar, path)
         KaHyPar.partition(hypergraph, config.parts; imbalance = config.imbalance, configuration = config.configuration)
 
     args = map(unique(partitions)) do partition
-        expr = sum(path.args[partitions.==partition], skip = path.head)
+        selection = partitions .== partition
+        count(selection) == 1 && return only(path.args[selection])
+
+        expr = sum(path.args[selection], skip = path.head)
         einexpr(config, expr)
     end
 
