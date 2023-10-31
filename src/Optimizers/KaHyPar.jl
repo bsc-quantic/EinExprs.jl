@@ -5,7 +5,7 @@ using KaHyPar
 @kwdef struct HyPar <: Optimizer
     parts = 2
     imbalance = 0.03
-    stop = path -> length(path.args) <= 2
+    stop::Function = <=(2) ∘ length ∘ Base.Fix1(getfield, :args)
     configuration::Union{Nothing,Symbol,String} = nothing
 end
 
