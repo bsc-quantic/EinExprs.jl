@@ -3,8 +3,8 @@ using SparseArrays
 using KaHyPar
 
 @kwdef struct HyPar <: Optimizer
-    parts = 2
-    imbalance = 0.03
+    parts::Int = 2
+    imbalance::Float32 = 0.03
     stop::Function = <=(2) ∘ length ∘ Base.Fix1(getfield, :args)
     configuration::Union{Nothing,Symbol,String} = nothing
 end
