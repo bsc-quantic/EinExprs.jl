@@ -19,8 +19,8 @@
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
-        @test select(expr, :i) == [tensor]
-        @test select(expr, :j) == [tensor]
+        @test select(expr, :i) == [expr, tensor]
+        @test select(expr, :j) == [expr, tensor]
 
         @test neighbours(expr, :i) == [:j]
         @test neighbours(expr, :j) == [:i]
@@ -44,8 +44,8 @@
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
-        @test select(expr, :i) == [tensor]
-        @test select(expr, :j) == [tensor]
+        @test select(expr, :i) == [expr, tensor]
+        @test select(expr, :j) == [expr, tensor]
 
         @test neighbours(expr, :i) == [:j]
         @test neighbours(expr, :j) == [:i]
@@ -69,7 +69,7 @@
         @test suminds(expr) == [:j]
         @test isempty(parsuminds(expr))
 
-        @test select(expr, :i) == [tensor]
+        @test select(expr, :i) == [expr, tensor]
         @test select(expr, :j) == [tensor]
 
         @test neighbours(expr, :i) == [:j]
@@ -93,7 +93,7 @@
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
-        @test select(expr, :i) == [tensor]
+        @test select(expr, :i) == [expr, tensor]
 
         @test isempty(neighbours(expr, :i))
     end
@@ -140,8 +140,8 @@
         @test isempty(suminds(expr))
         @test isempty(parsuminds(expr))
 
-        @test select(expr, :i) == select(expr, :j) == select(expr, [:i, :j]) == [tensors[1]]
-        @test select(expr, :k) == select(expr, :l) == select(expr, [:k, :l]) == [tensors[2]]
+        @test select(expr, :i) == select(expr, :j) == select(expr, [:i, :j]) == [expr, tensors[1]]
+        @test select(expr, :k) == select(expr, :l) == select(expr, [:k, :l]) == [expr, tensors[2]]
 
         @test neighbours(expr, :i) == [:j]
         @test neighbours(expr, :j) == [:i]
@@ -218,8 +218,8 @@
         @test suminds(expr) == [:k]
         @test parsuminds(expr) == [[:k]]
 
-        @test select(expr, :i) == [tensors[1]]
-        @test select(expr, :j) == [tensors[2]]
+        @test select(expr, :i) == [expr, tensors[1]]
+        @test select(expr, :j) == [expr, tensors[2]]
         @test select(expr, :k) == tensors
 
         @test neighbours(expr, :i) == neighbours(expr, :j) == [:k]
@@ -247,10 +247,10 @@
             @test isempty(suminds(expr))
             @test_broken isempty(parsuminds(expr))
 
-            @test select(expr, :i) == [tensors[1]]
-            @test select(expr, :j) == [tensors[1]]
-            @test select(expr, :k) == [tensors[2]]
-            @test select(expr, :β) == tensors
+            @test select(expr, :i) == [expr, tensors[1]]
+            @test select(expr, :j) == [expr, tensors[1]]
+            @test select(expr, :k) == [expr, tensors[2]]
+            @test select(expr, :β) == [expr, tensors...]
 
             @test issetequal(neighbours(expr, :i), [:j, :β])
             @test issetequal(neighbours(expr, :β), [:i, :j, :k, :l, :m])
@@ -279,9 +279,9 @@
             @test issetequal(suminds(expr), [:β])
             @test issetequal(parsuminds(expr), [[:β]])
 
-            @test select(expr, :i) == [tensors[1]]
-            @test select(expr, :j) == [tensors[1]]
-            @test select(expr, :k) == [tensors[2]]
+            @test select(expr, :i) == [expr, tensors[1]]
+            @test select(expr, :j) == [expr, tensors[1]]
+            @test select(expr, :k) == [expr, tensors[2]]
             @test select(expr, :β) == tensors
 
             @test issetequal(neighbours(expr, :i), [:j, :β])

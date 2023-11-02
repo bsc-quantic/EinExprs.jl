@@ -128,7 +128,7 @@ Return the indices neighbouring to `i`.
 """
 neighbours(path::EinExpr, i) = neighbours(path, (i,))
 neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) =
-    setdiff(mapreduce(head, union!, select(path, i), init = Symbol[]), i)
+    setdiff(mapreduce(head, union!, Iterators.filter(node -> i ⊆ head(node), Leaves(path)), init = Symbol[]), i)
 
 """
     contractorder(path::EinExpr)
