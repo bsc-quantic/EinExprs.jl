@@ -7,8 +7,8 @@ using KaHyPar
     imbalance::Float32 = 0.03
     stop::Function = <=(2) ∘ length ∘ Base.Fix1(getfield, :args)
     configuration::Union{Nothing,Symbol,String} = nothing
-    edge_weight_scaling::Function = (ind_size) -> 1000 * Int(round(log2(ind_size)))
-    vertex_weight_scaling::Function = (prod_size) -> 1000 * Int(round(log2(prod_size)))
+    edge_scaler::Function = (ind_size) -> 1000 * (Int ∘ round ∘ log2)(ind_size)
+    vertex_scaler::Function = (prod_size) -> 1000 * (Int ∘ round ∘ log2)(prod_size)
 end
 
 function EinExprs.einexpr(config::HyPar, path)
@@ -23,8 +23,8 @@ function EinExprs.einexpr(config::HyPar, path)
     incidence_matrix = sparse(I, J, V)
 
     # NOTE indices in `inds` should be in the same order as unique indices appear by iterating on `path.args` because `∪` retains order
-    edge_weights = map(ind -> config.edge_weight_scaling(size(path, ind)), inds)
-    vertex_weights = map(tensor -> config.vertex_weight_scaling(prod(size(tensor))), path.args)
+    edge_weights = map(ind -> (config.edge_scaler ∘ size)(path, ind), inds)
+    vertex_weights = map(tensor -> (config.vertex_scaler ∘ length)(tensor), path.args)
 
     hypergraph = KaHyPar.HyperGraph(incidence_matrix, vertex_weights, edge_weights)
 
