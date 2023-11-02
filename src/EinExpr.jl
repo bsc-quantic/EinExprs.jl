@@ -160,27 +160,17 @@ suminds(path) == [:j, :k, :l, :m, :n, :o, :p]
 """
 suminds(path::EinExpr) = filter!(∉(head(path)), flatunique(head, path.args))
 
-@generated function flatunique(f::Base.Callable, itr)
+@generated function flatunique(f, itr)
     if Iterators.IteratorEltype(itr) isa Iterators.EltypeUnknown
         return :(flatunique(Any, f, itr))
     end
 
-    argtype = eltype(itr)
-    world = Base.get_world_counter()
-    interp = Core.Compiler.NativeInterpreter(world)
-
-    # tt = Core.Compiler.signature_type(f, (argtype,))
-    tt = Tuple{f,argtype}
-    match = only(Core.Compiler._methods_by_ftype(tt, 1, world))
-
-    fouttype = Core.Compiler.typeinf_type(interp, match.method, Tuple{argtype}, match.sparams)
+    fouttype = Base.promote_op(f.instance, eltype(itr))
     if Iterators.IteratorEltype(fouttype) isa Iterators.EltypeUnknown
         return :(flatunique(Any, f, itr))
     end
 
-    T = eltype(fouttype)
-
-    return :(flatunique($T, f, itr))
+    return :(flatunique($(eltype(fouttype)), f, itr))
 end
 
 function flatunique(::Type{T}, f, itr) where {T}
