@@ -10,7 +10,7 @@
             EinExpr([:d, :g, :c], Dict(i => 2 for i in [:d, :g, :c])),
         ]
 
-        path = einexpr(HyPar(imbakance=0.42), EinExpr(Symbol[], tensors))
+        path = einexpr(HyPar(imbalance=0.42), EinExpr(Symbol[], tensors))
 
         @test path isa EinExpr
 
