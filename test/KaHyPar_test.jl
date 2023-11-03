@@ -41,10 +41,10 @@
             EinExpr([:a, :C, :d], Dict(:a => 3, :d => 6, :C => 4)),
         ]
 
-        path = einexpr(HyPar, EinExpr(Symbol[], tensors))
+        path = einexpr(HyPar(imbalance=0.45), EinExpr(Symbol[], tensors))
 
         @test path isa EinExpr
 
-        @test mapreduce(flops, +, Branches(path)) == 31653164
+        @test mapreduce(flops, +, Branches(path)) == 19099592
     end
 end
