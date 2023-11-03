@@ -23,8 +23,8 @@ function EinExprs.einexpr(config::HyPar, path)
     incidence_matrix = sparse(I, J, V)
 
     # NOTE indices in `inds` should be in the same order as unique indices appear by iterating on `path.args` because `∪` retains order
-    edge_weights = map(ind -> (config.edge_scaler ∘ size)(path, ind), inds)
-    vertex_weights = map(tensor -> (config.vertex_scaler ∘ length)(tensor), path.args)
+        edge_weights = map(ind -> (config.edge_scaler ∘ Base.Fix1(size, path))(ind), inds)
+        vertex_weights = map(config.vertex_scaler ∘ length, path.args)
 
     hypergraph = KaHyPar.HyperGraph(incidence_matrix, vertex_weights, edge_weights)
 
