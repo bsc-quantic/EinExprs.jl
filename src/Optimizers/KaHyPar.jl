@@ -1,6 +1,7 @@
 using AbstractTrees
 using SparseArrays
 using KaHyPar
+using Suppressor
 
 @kwdef struct HyPar <: Optimizer
     parts::Int = 2
@@ -28,8 +29,12 @@ function EinExprs.einexpr(config::HyPar, path)
 
     hypergraph = KaHyPar.HyperGraph(incidence_matrix, vertex_weights, edge_weights)
 
-    partitions =
-        KaHyPar.partition(hypergraph, config.parts; imbalance = config.imbalance, configuration = config.configuration)
+    partitions = @suppress KaHyPar.partition(
+        hypergraph,
+        config.parts;
+        imbalance = config.imbalance,
+        configuration = config.configuration,
+    )
 
     args = map(unique(partitions)) do partition
         selection = partitions .== partition
