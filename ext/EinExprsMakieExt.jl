@@ -82,8 +82,18 @@ function Makie.plot!(
     kwargs = Dict{Symbol,Any}(kwargs)
 
     # configure graphics
-    get!(() -> log_size ./ maximum(log_size) .* MAX_EDGE_WIDTH, kwargs, :edge_width)
-    get!(() -> log_size ./ maximum(log_size) .* MAX_ARROW_SIZE, kwargs, :arrow_size)
+    get!(kwargs, :edge_width) do
+        map(log_size ./ maximum(log_size) .* MAX_EDGE_WIDTH) do x
+            iszero(x) ? 4.0 : x
+        end
+    end
+
+    get!(kwargs, :arrow_size) do
+        map(log_size ./ maximum(log_size) .* MAX_ARROW_SIZE) do x
+            iszero(x) ? 30.0 : x
+        end
+    end
+
     get!(() -> log_flops ./ maximum(log_flops) .* MAX_NODE_SIZE, kwargs, :node_size)
 
     get!(kwargs, :edge_color, lin_size)
