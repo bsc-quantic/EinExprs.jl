@@ -28,7 +28,7 @@ function einexpr(config::Exhaustive, path, sizedict; cost = BigInt(0))
         path = einexpr(Naive(), path),
         cost = mapreduce(metric, +, Branches(einexpr(Naive(), path), inverse = true), init = BigInt(0))::BigInt,
     ))
-    cache = Dict{ImmutableVector{Symbol,Vector{Symbol}},BigInt}()
+    cache = Dict{Vector{Symbol},BigInt}()
     __einexpr_exhaustive_it(path, cost, metric, config.outer, leader, cache)
     return leader[].path
 end

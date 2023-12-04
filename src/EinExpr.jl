@@ -3,7 +3,7 @@ using DataStructures: DefaultDict
 using AbstractTrees
 
 Base.@kwdef struct EinExpr
-    head::ImmutableVector{Symbol,Vector{Symbol}}
+    head::Vector{Symbol}
     args::Vector{EinExpr} = EinExpr[]
 end
 
