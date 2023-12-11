@@ -10,6 +10,7 @@ using Suppressor
     configuration::Union{Nothing,Symbol,String} = nothing
     edge_scaler::Function = Base.Fix1(*, 1000) ∘ Int ∘ round ∘ log2
     vertex_scaler::Function = Base.Fix1(*, 1000) ∘ Int ∘ round ∘ log2
+    seed::Int = 0
 end
 
 function EinExprs.einexpr(config::HyPar, path)
@@ -28,6 +29,7 @@ function EinExprs.einexpr(config::HyPar, path)
     vertex_weights = map(config.vertex_scaler ∘ length, path.args)
 
     hypergraph = KaHyPar.HyperGraph(incidence_matrix, vertex_weights, edge_weights)
+    KaHyPar.kahypar_set_seed(hypergraph.context, config.seed)
 
     partitions = @suppress KaHyPar.partition(
         hypergraph,
