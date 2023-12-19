@@ -22,8 +22,8 @@ flops(expr::EinExpr, size) = flops(SizedEinExpr(expr, size))
 
 Count the amount of memory that will be freed after performing the contraction of the root of the `path` tree.
 """
-function removedsize(sexpr::SizedEinExpr)
-    mapreduce(prod ∘ Base.Fix2(size, sexpr.size), +, sexpr.args) - prod(size(sexpr, sexpr.size))
+removedsize(sexpr::SizedEinExpr) = -length(sexpr) + mapreduce(+, sexpr.args) do arg
+    length(SizedEinExpr(arg, sexpr.size))
 end
 
 removedsize(expr::EinExpr, size) = removedsize(SizedEinExpr(expr, size))
