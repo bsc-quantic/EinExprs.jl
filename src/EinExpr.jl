@@ -32,6 +32,8 @@ See also: [`head`](@ref).
 """
 args(path::EinExpr) = path.args
 
+nargs(path::EinExpr) = length(path.args)
+
 """
     inds(path)
 

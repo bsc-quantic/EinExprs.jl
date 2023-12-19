@@ -5,6 +5,9 @@ export EinExpr
 export head, args, inds, hyperinds, suminds, parsuminds, collapse!, contractorder, select, neighbours
 export Branches, branches, leaves
 
+include("SizedEinExpr.jl")
+export SizedEinExpr
+
 include("Counters.jl")
 export flops, removedsize
 
