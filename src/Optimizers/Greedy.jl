@@ -43,7 +43,7 @@ function einexpr(config::Greedy, path, sizedict)
         end,
     )
 
-    while length(path.args) > 2 && length(queue) > 1
+    while nargs(path) > 2 && length(queue) > 1
         # choose winner
         _, winner = config.choose(queue)
 
@@ -66,4 +66,8 @@ function einexpr(config::Greedy, path, sizedict)
     end
 
     return path
+end
+
+function einexpr(config::Greedy, path::SizedEinExpr)
+    return einexpr(config, path.path, path.size)
 end
