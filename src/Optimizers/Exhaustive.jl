@@ -28,19 +28,19 @@ function einexpr(config::Exhaustive, path; cost = BigInt(0))
         path = einexpr(Naive(), path),
         cost = mapreduce(config.metric, +, Branches(einexpr(Naive(), path), inverse = true), init = BigInt(0))::BigInt,
     ))
-    __einexpr_exhaustive_it(path, cost, config.metric, config.outer, leader)
+    __einexpr_exhaustive_it(path, cost, Val(config.metric), config.outer, leader)
     return leader[].path
 end
 
 function __einexpr_exhaustive_it(
     path,
     cost,
-    metric,
+    @specialize(metric::Val{Metric}),
     outer,
     leader;
     cache = Dict{Vector{Symbol},BigInt}(),
     hashyperinds = any(hyperinds(path)),
-)
+) where {Metric}
     if nargs(path) <= 2
         leader[] = (; path = path, cost = cost) #= mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))) =#
         return
@@ -52,7 +52,7 @@ function __einexpr_exhaustive_it(
 
         # prune paths based on metric
         new_cost = cost + get!(cache, head(candidate)) do
-            metric(SizedEinExpr(candidate, path.size))
+            Metric(SizedEinExpr(candidate, path.size))
         end
         new_cost >= leader[].cost && continue
 
