@@ -42,7 +42,8 @@ function __einexpr_exhaustive_it(
     hashyperinds = any(hyperinds(path)),
 ) where {Metric}
     if nargs(path) <= 2
-        leader[] = (; path = path, cost = cost) #= mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))) =#
+        #= mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))) =#
+        leader[] = (; path = path, cost = cost)
         return
     end
 
