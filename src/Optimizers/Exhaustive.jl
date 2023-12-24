@@ -48,7 +48,8 @@ function __einexpr_exhaustive_it(
 
     for (i, j) in combinations(args(path), 2)
         !outer && isdisjoint(head(i), head(j)) && continue
-        candidate = sum([i, j]; skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
+        # candidate = sum([i, j]; skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
+        candidate = sum(i, j; skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
 
         # prune paths based on metric
         new_cost = cost + get!(cache, head(candidate)) do

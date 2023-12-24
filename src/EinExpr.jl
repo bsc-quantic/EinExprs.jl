@@ -226,6 +226,7 @@ Create an `EinExpr` from other `EinExpr`s.
 function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
     _head = Symbol[]
     _counts = Int[]
+
     for arg in args
         for index in head(arg)
             i = findfirst(Base.Fix1(===, index), _head)
@@ -233,15 +234,35 @@ function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
                 push!(_head, index)
                 push!(_counts, 1)
             else
-                _counts[i] += 1
+                @inbounds _counts[i] += 1
             end
         end
     end
 
-    _head = map(first, Iterators.filter(zip(_head, _counts)) do (index, count)
-        count == 1 || index ∈ skip
-    end)
+    # NOTE `map` with `Iterators.filter` induces many heap grows; allocating once and deleting is faster
+    for i in Iterators.reverse(eachindex(_head, _counts))
+        (_counts[i] == 1 || _head[i] ∈ skip) && continue
+        deleteat!(_head, i)
+    end
+
     EinExpr(_head, args)
+end
+
+function Base.sum(a::EinExpr, b::EinExpr; skip = Symbol[])
+    _head = copy(head(a))
+
+    for index in head(b)
+        i = findfirst(Base.Fix1(===, index), _head)
+        if isnothing(i)
+            push!(_head, index)
+        elseif index ∈ skip
+            continue
+        else
+            deleteat!(_head, i)
+        end
+    end
+
+    EinExpr(_head, [a, b])
 end
 
 function Base.string(path::EinExpr; recursive::Bool = false)
