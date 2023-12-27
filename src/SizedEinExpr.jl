@@ -28,6 +28,7 @@ Base.:(==)(a::SizedEinExpr, b::SizedEinExpr) = a.path == b.path && a.size == b.s
 Base.ndims(sexpr::SizedEinExpr) = ndims(sexpr.path)
 
 Base.size(sexpr::SizedEinExpr) = size(sexpr.path, sexpr.size)
+Base.size(sexpr::SizedEinExpr, i) = sexpr.size[i]
 Base.length(sexpr::SizedEinExpr) = length(sexpr.path, sexpr.size)
 
 collapse!(sexpr::SizedEinExpr) = collapse!(sexpr.path)
