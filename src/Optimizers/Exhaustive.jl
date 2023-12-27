@@ -39,7 +39,7 @@ function __einexpr_exhaustive_it(
     outer,
     leader;
     cache = Dict{Vector{Symbol},BigInt}(),
-    hashyperinds = any(hyperinds(path)),
+    hashyperinds = !isempty(hyperinds(path)),
 ) where {Metric}
     if nargs(path) <= 2
         #= mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))) =#
