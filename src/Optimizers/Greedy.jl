@@ -68,6 +68,4 @@ function einexpr(config::Greedy, path, sizedict)
     return path
 end
 
-function einexpr(config::Greedy, path::SizedEinExpr)
-    return einexpr(config, path.path, path.size)
-end
+einexpr(config::Greedy, path::SizedEinExpr) = SizedEinExpr(einexpr(config, path.path, path.size), path.size)

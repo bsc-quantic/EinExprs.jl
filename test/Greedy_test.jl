@@ -9,20 +9,23 @@
         EinExpr([:i, :h, :d]),
         EinExpr([:d, :g, :c]),
     ]
+    expr = sum(tensors)
 
-    path = einexpr(Greedy(), EinExpr(Symbol[], tensors), sizedict)
+    path = einexpr(Greedy(), SizedEinExpr(expr, sizedict))
 
-    @test path isa EinExpr
+    @test path isa SizedEinExpr
 
-    @test mapreduce(flops(sizedict), +, Branches(path)) == 100
+    @test mapreduce(flops, +, Branches(path)) == 100
 
     @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:f], [:b, :d]]))
 
     @testset "example: let unchanged" begin
         sizedict = Dict(i => 2 for i in [:i, :j, :k, :l, :m])
         tensors = [EinExpr([:i, :j, :k]), EinExpr([:k, :l, :m])]
+        expr = sum(tensors, skip = [:i, :j, :l, :m])
+        sexpr = SizedEinExpr(expr, sizedict)
 
-        path = einexpr(Greedy(), EinExpr(Symbol[:i, :j, :l, :m], tensors))
+        path = einexpr(Greedy(), sexpr)
 
         @test suminds(path) == [:k]
     end
@@ -33,10 +36,10 @@
         b = EinExpr([:k, :β])
         c = EinExpr([:β, :l, :m])
 
-        path = einexpr(EinExprs.Greedy(), sum([a, b, c], skip = [:β]), sizedict)
+        path = einexpr(EinExprs.Greedy(), SizedEinExpr(sum([a, b, c], skip = [:β]), sizedict))
         @test all(∋(:β) ∘ head, branches(path))
 
-        path = einexpr(EinExprs.Greedy(), sum([a, b, c], skip = Symbol[]), sizedict)
+        path = einexpr(EinExprs.Greedy(), SizedEinExpr(sum([a, b, c], skip = Symbol[]), sizedict))
         @test all(∋(:β) ∘ head, branches(path)[1:end-1])
         @test all(!∋(:β) ∘ head, branches(path)[end:end])
     end
