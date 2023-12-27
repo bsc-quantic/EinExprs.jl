@@ -9,14 +9,16 @@
         EinExpr([:i, :h, :d]),
         EinExpr([:d, :g, :c]),
     ]
+    expr = EinExpr(Symbol[], tensors)
+    sexpr = SizedEinExpr(expr, sizedict)
 
-    path = einexpr(Exhaustive, EinExpr(Symbol[], tensors), sizedict)
+    path = einexpr(Exhaustive, sexpr)
 
-    @test path isa EinExpr
+    @test path isa SizedEinExpr
 
-    @test mapreduce(flops, +, Branches(path)) == 90
+    @test mapreduce(flops, +, Branches(path)) == 92
 
-    @test all(splat(issetequal), zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:d], [:b, :i, :h], [:j]]))
+    @test all(splat(issetequal), zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:j], [:i, :h], [:d, :b]]))
 
     @testset "hyperedges" begin
         sizedict = Dict(i => 2 for i in [:i, :j, :k, :l, :m, :β])
@@ -24,10 +26,10 @@
         b = EinExpr([:k, :β])
         c = EinExpr([:β, :l, :m])
 
-        path = einexpr(EinExprs.Exhaustive(), sum([a, b, c], skip = [:β]), sizedict)
+        path = einexpr(EinExprs.Exhaustive(), SizedEinExpr(sum([a, b, c], skip = [:β]), sizedict))
         @test all(∋(:β) ∘ head, branches(path))
 
-        path = einexpr(EinExprs.Exhaustive(), sum([a, b, c], skip = Symbol[]), sizedict)
+        path = einexpr(EinExprs.Exhaustive(), SizedEinExpr(sum([a, b, c], skip = Symbol[]), sizedict))
         @test all(∋(:β) ∘ head, branches(path)[1:end-1])
         @test all(!∋(:β) ∘ head, branches(path)[end:end])
     end
