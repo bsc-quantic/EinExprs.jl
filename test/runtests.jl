@@ -3,6 +3,7 @@ using EinExprs
 
 @testset "Unit tests" verbose = true begin
     include("EinExpr_test.jl")
+    include("SizedEinExpr_test.jl")
     include("Counters_test.jl")
     @testset "Optimizers" begin
         include("Naive_test.jl")
