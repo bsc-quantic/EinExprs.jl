@@ -65,8 +65,9 @@
             EinExpr((:p, :k)),
         ],
     )
+    sexpr = SizedEinExpr(expr, sizes)
 
-    cuttings = findslices(FlopsScorer(), expr, slices = 1000)
+    cuttings = findslices(FlopsScorer(), sexpr, slices = 1000)
 
-    @test prod(i -> sizedict[i], cuttings) >= 1000
+    @test prod(i -> sizes[i], cuttings) >= 1000
 end
