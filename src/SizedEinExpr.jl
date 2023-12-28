@@ -13,7 +13,16 @@ end
 EinExpr(path::Vector{Symbol}, size::Dict{Symbol}) = SizedEinExpr(EinExpr(path), size)
 
 head(sexpr::SizedEinExpr) = head(sexpr.path)
-args(sexpr::SizedEinExpr) = sexpr.path.args # map(Base.Fix2(SizedEinExpr, sexpr.size), sexpr.path.args)
+
+"""
+    args(sexpr::SizedEinExpr)
+
+# Note
+
+Unlike `args(::EinExpr)`, this function returns `SizedEinExpr` objects.
+"""
+args(sexpr::SizedEinExpr) = map(Base.Fix2(SizedEinExpr, sexpr.size), sexpr.path.args) # sexpr.path.args
+
 nargs(sexpr::SizedEinExpr) = nargs(sexpr.path)
 inds(sexpr::SizedEinExpr) = inds(sexpr.path)
 
@@ -59,7 +68,7 @@ Base.IteratorEltype(::Type{<:TreeIterator{SizedEinExpr}}) = Base.HasEltype()
 Base.eltype(::Type{<:TreeIterator{SizedEinExpr}}) = SizedEinExpr
 
 # AbstractTrees interface and traits
-AbstractTrees.children(sexpr::SizedEinExpr) = map(Base.Fix2(SizedEinExpr, sexpr.size), args(sexpr))
+AbstractTrees.children(sexpr::SizedEinExpr) = args(sexpr)
 AbstractTrees.childtype(::Type{SizedEinExpr}) = SizedEinExpr
 AbstractTrees.childrentype(::Type{SizedEinExpr}) = Vector{SizedEinExpr}
 AbstractTrees.childstatetype(::Type{SizedEinExpr}) = Int

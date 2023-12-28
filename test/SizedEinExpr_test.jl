@@ -6,7 +6,8 @@
     sexpr = SizedEinExpr(expr, Dict(:i => 2, :j => 3))
 
     @test head(sexpr) === head(expr) === sexpr.head
-    @test args(sexpr) === args(expr) === sexpr.args
+    @test args(expr) === sexpr.args
+    @test args(sexpr) == map(Base.Fix2(SizedEinExpr, Dict(:i => 2, :j => 3)), args(expr))
     @test EinExprs.nargs(sexpr) == EinExprs.nargs(expr)
 
     @test inds(sexpr) == inds(expr)
