@@ -15,18 +15,15 @@ suite["greedy"] = BenchmarkGroup([])
 suite["kahypar"] = BenchmarkGroup([])
 
 # BENCHMARK 1
-expr = EinExpr(
-    Symbol[],
-    [
-        EinExpr([:j, :b, :i, :h], Dict(i => 2 for i in [:j, :b, :i, :h])),
-        EinExpr([:a, :c, :e, :f], Dict(i => 2 for i in [:a, :c, :e, :f])),
-        EinExpr([:j], Dict(i => 2 for i in [:j])),
-        EinExpr([:e, :a, :g], Dict(i => 2 for i in [:e, :a, :g])),
-        EinExpr([:f, :b], Dict(i => 2 for i in [:f, :b])),
-        EinExpr([:i, :h, :d], Dict(i => 2 for i in [:i, :h, :d])),
-        EinExpr([:d, :g, :c], Dict(i => 2 for i in [:d, :g, :c])),
-    ],
-)
+expr = sum([
+    EinExpr([:j, :b, :i, :h], Dict(i => 2 for i in [:j, :b, :i, :h])),
+    EinExpr([:a, :c, :e, :f], Dict(i => 2 for i in [:a, :c, :e, :f])),
+    EinExpr([:j], Dict(i => 2 for i in [:j])),
+    EinExpr([:e, :a, :g], Dict(i => 2 for i in [:e, :a, :g])),
+    EinExpr([:f, :b], Dict(i => 2 for i in [:f, :b])),
+    EinExpr([:i, :h, :d], Dict(i => 2 for i in [:i, :h, :d])),
+    EinExpr([:d, :g, :c], Dict(i => 2 for i in [:d, :g, :c])),
+])
 
 suite["naive"][1] = @benchmarkable einexpr(EinExprs.Naive(), $expr)
 suite["exhaustive"][1] = @benchmarkable einexpr(Exhaustive(), $expr)
@@ -41,7 +38,7 @@ D = EinExpr([:c, :h, :d, :i], Dict(:c => 2, :h => 2, :d => 2, :i => 2))
 E = EinExpr([:f, :i, :g, :j], Dict(:f => 2, :i => 2, :g => 2, :j => 2))
 F = EinExpr([:B, :h, :k, :l], Dict(:B => 2, :h => 2, :k => 2, :l => 2))
 G = EinExpr([:j, :k, :l, :D], Dict(:j => 2, :k => 2, :l => 2, :D => 2))
-expr = EinExpr([:A, :B, :C, :D], [A, B, C, D, E, F, G])
+expr = sum([A, B, C, D, E, F, G], skip = [:A, :B, :C, :D])
 
 suite["naive"][2] = @benchmarkable einexpr(EinExprs.Naive(), $expr)
 suite["exhaustive"][2] = @benchmarkable einexpr(Exhaustive(), $expr)

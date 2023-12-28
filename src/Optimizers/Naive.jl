@@ -1,10 +1,14 @@
+using AbstractTrees
+
 struct Naive <: Optimizer end
 
-function einexpr(::Naive, path)
-    hist = Dict(i => count(∋(i) ∘ head, path.args) for i in hyperinds(path))
+einexpr(::Naive, path, _) = einexpr(Naive(), path)
 
-    foldl(path.args) do a, b
-        expr = sum([a, b], skip = path.head ∪ collect(keys(hist)))
+function einexpr(::Naive, path)
+    hist = Dict(i => count(∋(i) ∘ head, args(path)) for i in hyperinds(path))
+
+    foldl(args(path)) do a, b
+        expr = sum([a, b], skip = head(path) ∪ collect(keys(hist)))
 
         for i in Iterators.filter(∈(keys(hist)), ∩(head(a), head(b)))
             hist[i] -= 1
@@ -14,3 +18,5 @@ function einexpr(::Naive, path)
         return expr
     end
 end
+
+einexpr(::Naive, path::SizedEinExpr) = SizedEinExpr(einexpr(Naive(), path.path), path.size)

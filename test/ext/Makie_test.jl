@@ -34,8 +34,8 @@
         EinExpr([:g, :q], filter(p -> p.first ∈ [:g, :q], sizes)),
         EinExpr([:d, :b, :o], filter(p -> p.first ∈ [:d, :b, :o], sizes)),
     ]
-
-    path = einexpr(Exhaustive(), EinExpr([:p, :j], tensors))
+    expr = sum(tensors, skip = [:p, :j])
+    path = einexpr(Exhaustive(), expr)
 
     @testset "plot!" begin
         f = Figure()

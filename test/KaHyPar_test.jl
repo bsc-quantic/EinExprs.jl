@@ -9,10 +9,11 @@
             EinExpr([:i, :h, :d], Dict(i => 2 for i in [:i, :h, :d])),
             EinExpr([:d, :g, :c], Dict(i => 2 for i in [:d, :g, :c])),
         ]
+        sexpr = sum(tensors)
 
-        path = einexpr(HyPar(imbalance=0.42), EinExpr(Symbol[], tensors))
+        path = einexpr(HyPar(imbalance = 0.42), sexpr)
 
-        @test path isa EinExpr
+        @test path isa SizedEinExpr
 
         @test mapreduce(flops, +, Branches(path)) == 108
     end
@@ -40,10 +41,11 @@
             EinExpr([:A, :W], Dict(:A => 6, :W => 6)),
             EinExpr([:a, :C, :d], Dict(:a => 3, :d => 6, :C => 4)),
         ]
+        sexpr = sum(tensors)
 
-        path = einexpr(HyPar(imbalance=0.45), EinExpr(Symbol[], tensors))
+        path = einexpr(HyPar(imbalance = 0.45), sexpr)
 
-        @test path isa EinExpr
+        @test path isa SizedEinExpr
 
         @test mapreduce(flops, +, Branches(path)) == 19099592
     end

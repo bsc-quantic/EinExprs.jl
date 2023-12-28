@@ -27,7 +27,9 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
     outer::Bool = false
 end
 
-function einexpr(config::Greedy, path)
+function einexpr(config::Greedy, path, sizedict)
+    metric = config.metric(sizedict)
+
     # generate initial candidate contractions
     queue = MutableBinaryHeap{Tuple{Float64,EinExpr}}(
         Base.By(first, Base.Reverse),
@@ -36,12 +38,12 @@ function einexpr(config::Greedy, path)
         ) do (a, b)
             # TODO don't consider outer products
             candidate = sum([a, b], skip = path.head ∪ hyperinds(path))
-            weight = config.metric(candidate)
+            weight = metric(candidate)
             (weight, candidate)
         end,
     )
 
-    while length(path.args) > 2 && length(queue) > 1
+    while nargs(path) > 2 && length(queue) > 1
         # choose winner
         _, winner = config.choose(queue)
 
@@ -55,7 +57,7 @@ function einexpr(config::Greedy, path)
         for other in Iterators.filter(other -> config.outer || !isdisjoint(winner.head, other.head), path.args)
             # TODO don't consider outer products
             candidate = sum([winner, other], skip = path.head ∪ hyperinds(path))
-            weight = config.metric(candidate)
+            weight = metric(candidate)
             push!(queue, (weight, candidate))
         end
 
@@ -65,3 +67,5 @@ function einexpr(config::Greedy, path)
 
     return path
 end
+
+einexpr(config::Greedy, path::SizedEinExpr) = SizedEinExpr(einexpr(config, path.path, path.size), path.size)

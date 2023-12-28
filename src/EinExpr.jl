@@ -2,31 +2,17 @@ using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
 using AbstractTrees
 
-struct EinExpr
+Base.@kwdef struct EinExpr
     head::Vector{Symbol}
-    args::Vector{EinExpr}
-    size::Dict{Symbol,Int}
-
-    # TODO checks: same dim for index, valid indices
-    EinExpr(head, args) = new(head, args, Dict{Symbol,EinExpr}())
-
-    function EinExpr(head::AbstractVector{Symbol}, size::AbstractDict{Symbol,Int})
-        head ⊆ keys(size) || throw(ArgumentError("Missing sizes for indices $(setdiff(head, keys(size)))"))
-        new(head, EinExpr[], size)
-    end
+    args::Vector{EinExpr} = EinExpr[]
 end
+
+EinExpr(head) = EinExpr(head, EinExpr[])
+EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}) = EinExpr(head, map(EinExpr, args))
 
 EinExpr(head::NTuple, args) = EinExpr(collect(head), args)
 EinExpr(head, args::NTuple) = EinExpr(head, collect(args))
 EinExpr(head::NTuple, args::NTuple) = EinExpr(collect(head), collect(args))
-
-function EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}, sizes)
-    args = map(args) do arg
-        sizedict = filter(∈(arg) ∘ first, sizes)
-        EinExpr(arg, sizedict)
-    end
-    EinExpr(head, args)
-end
 
 """
     head(path::EinExpr)
@@ -45,6 +31,8 @@ Return the children of the `path`, which correspond to input tensors for the con
 See also: [`head`](@ref).
 """
 args(path::EinExpr) = path.args
+
+nargs(path::EinExpr) = length(path.args)
 
 """
     inds(path)
@@ -100,11 +88,8 @@ Base.ndims(path::EinExpr) = length(head(path))
 
 Return the size of the resulting tensor from contracting `path`. If `index` is specified, return the size of such index.
 """
-Base.size(path::EinExpr) = (size(path, i) for i in head(path)) |> splat(tuple)
-Base.size(path::EinExpr, i::Symbol) =
-    Iterators.filter(∋(i) ∘ head, Leaves(path)) |> first |> Base.Fix2(getproperty, :size) |> Base.Fix2(getindex, i)
-
-Base.length(path::EinExpr) = (prod ∘ size)(path)
+Base.size(path::EinExpr, sizedict) = (sizedict[i] for i in head(path)) |> splat(tuple)
+Base.length(path::EinExpr, sizedict) = (prod ∘ size)(path, sizedict)
 
 """
     collapse!(path::EinExpr)
@@ -241,6 +226,7 @@ Create an `EinExpr` from other `EinExpr`s.
 function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
     _head = Symbol[]
     _counts = Int[]
+
     for arg in args
         for index in head(arg)
             i = findfirst(Base.Fix1(===, index), _head)
@@ -248,15 +234,35 @@ function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
                 push!(_head, index)
                 push!(_counts, 1)
             else
-                _counts[i] += 1
+                @inbounds _counts[i] += 1
             end
         end
     end
 
-    _head = map(first, Iterators.filter(zip(_head, _counts)) do (index, count)
-        count == 1 || index ∈ skip
-    end)
+    # NOTE `map` with `Iterators.filter` induces many heap grows; allocating once and deleting is faster
+    for i in Iterators.reverse(eachindex(_head, _counts))
+        (_counts[i] == 1 || _head[i] ∈ skip) && continue
+        deleteat!(_head, i)
+    end
+
     EinExpr(_head, args)
+end
+
+function Base.sum(a::EinExpr, b::EinExpr; skip = Symbol[])
+    _head = copy(head(a))
+
+    for index in head(b)
+        i = findfirst(Base.Fix1(===, index), _head)
+        if isnothing(i)
+            push!(_head, index)
+        elseif index ∈ skip
+            continue
+        else
+            deleteat!(_head, i)
+        end
+    end
+
+    EinExpr(_head, [a, b])
 end
 
 function Base.string(path::EinExpr; recursive::Bool = false)

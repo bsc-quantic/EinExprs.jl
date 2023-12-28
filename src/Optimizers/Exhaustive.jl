@@ -23,35 +23,41 @@ The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``
 end
 
 function einexpr(config::Exhaustive, path; cost = BigInt(0))
-    leader = Ref{NamedTuple{(:path, :cost),Tuple{EinExpr,BigInt}}}((;
+    # metric = Base.Fix2(config.metric, path.size)
+    leader = Ref((;
         path = einexpr(Naive(), path),
         cost = mapreduce(config.metric, +, Branches(einexpr(Naive(), path), inverse = true), init = BigInt(0))::BigInt,
     ))
-    cache = Dict{Vector{Symbol},BigInt}()
-    __einexpr_exhaustive_it(path, cost, config.metric, config.outer, leader, cache)
+    __einexpr_exhaustive_it(path, cost, Val(config.metric), config.outer, leader)
     return leader[].path
 end
 
-function __einexpr_exhaustive_it(path, cost, metric, outer, leader, cache)
-    if length(path.args) == 1
-        # remove identity einsum (i.e. "i...->i...")
-        path = path.args[1]
-
-        leader[] = (; path, cost = mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))::BigInt)
+function __einexpr_exhaustive_it(
+    path,
+    cost,
+    @specialize(metric::Val{Metric}),
+    outer,
+    leader;
+    cache = Dict{Vector{Symbol},BigInt}(),
+    hashyperinds = !isempty(hyperinds(path)),
+) where {Metric}
+    if nargs(path) <= 2
+        #= mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))) =#
+        leader[] = (; path = path, cost = cost)
         return
     end
 
-    for (i, j) in combinations(args(path), 2)
+    for (i, j) in combinations(path.args, 2)
         !outer && isdisjoint(head(i), head(j)) && continue
-        candidate = sum([i, j], skip = path.head ∪ hyperinds(path))
+        candidate = sum(i, j; skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
 
         # prune paths based on metric
         new_cost = cost + get!(cache, head(candidate)) do
-            metric(candidate)
+            Metric(SizedEinExpr(candidate, path.size))
         end
         new_cost >= leader[].cost && continue
 
-        new_path = EinExpr(head(path), [candidate, filter(∉([i, j]), args(path))...])
-        __einexpr_exhaustive_it(new_path, new_cost, metric, outer, leader, cache)
+        new_path = SizedEinExpr(EinExpr(head(path), [candidate, filter(∉([i, j]), path.args)...]), path.size) # sum([candidate, filter(∉([i, j]), args(path))...], skip = path.head)
+        __einexpr_exhaustive_it(new_path, new_cost, metric, outer, leader; cache, hashyperinds)
     end
 end
