@@ -1,16 +1,16 @@
 using AbstractTrees
 
-struct SizedEinExpr
-    path::EinExpr
-    size::Dict{Symbol,Int}
+struct SizedEinExpr{Label}
+    path::EinExpr{Label}
+    size::Dict{Label,Int}
 
-    function SizedEinExpr(path, size)
+    function SizedEinExpr(path::EinExpr{L}, size) where {L}
         # inds(path) ⊆ keys(size) || throw(ArgumentError(""))
-        new(path, size)
+        new{L}(path, size)
     end
 end
 
-EinExpr(path::Vector{Symbol}, size::Dict{Symbol}) = SizedEinExpr(EinExpr(path), size)
+EinExpr(path::Vector{L}, size::Dict{L}) where {L} = SizedEinExpr(EinExpr(path), size)
 
 head(sexpr::SizedEinExpr) = head(sexpr.path)
 
@@ -56,7 +56,7 @@ parsuminds(sexpr::SizedEinExpr) = parsuminds(sexpr.path)
 Base.sum!(sexpr::SizedEinExpr, inds) = sum!(sexpr.path, inds)
 Base.sum(sexpr::SizedEinExpr, inds) = sum(sexpr.path, inds)
 
-function Base.sum(sexpr::Vector{SizedEinExpr}; skip = Symbol[])
+function Base.sum(sexpr::Vector{SizedEinExpr{L}}; skip = L[]) where {L}
     path = sum(map(x -> x.path, sexpr); skip)
     size = allequal(Iterators.map(x -> x.size, sexpr)) ? first(sexpr).size : merge(map(x -> x.size, sexpr)...)
     # size = merge(map(x -> x.size, sexpr)...)

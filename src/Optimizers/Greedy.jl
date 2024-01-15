@@ -27,11 +27,11 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
     outer::Bool = false
 end
 
-function einexpr(config::Greedy, path, sizedict)
+function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
     metric = config.metric(sizedict)
 
     # generate initial candidate contractions
-    queue = MutableBinaryHeap{Tuple{Float64,EinExpr}}(
+    queue = MutableBinaryHeap{Tuple{Float64,EinExpr{L}}}(
         Base.By(first, Base.Reverse),
         map(
             Iterators.filter(((a, b),) -> config.outer || !isdisjoint(a.head, b.head), combinations(path.args, 2)),

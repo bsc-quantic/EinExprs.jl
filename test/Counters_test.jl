@@ -4,8 +4,8 @@
     sizedict = Dict(:i => 2, :j => 3, :k => 4, :l => 5)
 
     @testset "identity" begin
-        tensor = EinExpr((:i, :j))
-        expr = EinExpr((:i, :j), [tensor])
+        tensor = EinExpr([:i, :j])
+        expr = EinExpr([:i, :j], [tensor])
 
         @test flops(expr, sizedict) == 0
         @test removedsize(expr, sizedict) == 0
@@ -13,7 +13,7 @@
     end
 
     @testset "transpose" begin
-        tensor = EinExpr((:i, :j))
+        tensor = EinExpr([:i, :j])
         expr = EinExpr([:j, :i], [tensor])
 
         @test flops(expr, sizedict) == 0
@@ -22,8 +22,8 @@
     end
 
     @testset "axis sum" begin
-        tensor = EinExpr((:i, :j))
-        expr = EinExpr((:i,), [tensor])
+        tensor = EinExpr([:i, :j])
+        expr = EinExpr([:i], [tensor])
 
         @test flops(expr, sizedict) == 6
         @test removedsize(expr, sizedict) == 4
@@ -31,8 +31,8 @@
     end
 
     @testset "diagonal" begin
-        tensor = EinExpr((:i, :i))
-        expr = EinExpr((:i,), [tensor])
+        tensor = EinExpr([:i, :i])
+        expr = EinExpr([:i], [tensor])
 
         @test flops(expr, sizedict) == 0
         @test removedsize(expr, sizedict) == 2
@@ -40,7 +40,7 @@
     end
 
     @testset "trace" begin
-        tensor = EinExpr((:i, :i))
+        tensor = EinExpr([:i, :i])
         expr = EinExpr(Symbol[], [tensor])
 
         @test flops(expr, sizedict) == 2
@@ -49,8 +49,8 @@
     end
 
     @testset "outer product" begin
-        tensors = [EinExpr((:i, :j)), EinExpr((:k, :l))]
-        expr = EinExpr((:i, :j, :k, :l), tensors)
+        tensors = [EinExpr([:i, :j]), EinExpr([:k, :l])]
+        expr = EinExpr([:i, :j, :k, :l], tensors)
 
         @test flops(expr, sizedict) == prod(2:5)
         @test removedsize(expr, sizedict) == -94
@@ -58,7 +58,7 @@
     end
 
     @testset "inner product" begin
-        tensors = [EinExpr((:i,)), EinExpr((:i,))]
+        tensors = [EinExpr([:i]), EinExpr([:i])]
         expr = EinExpr(Symbol[], tensors)
 
         @test flops(expr, sizedict) == 2
@@ -67,8 +67,8 @@
     end
 
     @testset "matrix multiplication" begin
-        tensors = [EinExpr((:i, :j)), EinExpr((:j, :k))]
-        expr = EinExpr((:i, :k), tensors)
+        tensors = [EinExpr([:i, :j]), EinExpr([:j, :k])]
+        expr = EinExpr([:i, :k], tensors)
 
         @test flops(expr, sizedict) == 2 * 3 * 4
         @test removedsize(expr, sizedict) == 10

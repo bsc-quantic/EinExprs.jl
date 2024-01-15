@@ -22,7 +22,7 @@ The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``
     outer::Bool = false
 end
 
-function einexpr(config::Exhaustive, path; cost = BigInt(0))
+function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) where {L}
     # metric = Base.Fix2(config.metric, path.size)
     leader = Ref((;
         path = einexpr(Naive(), path),
@@ -33,14 +33,14 @@ function einexpr(config::Exhaustive, path; cost = BigInt(0))
 end
 
 function __einexpr_exhaustive_it(
-    path,
+    path::SizedEinExpr{L},
     cost,
     @specialize(metric::Val{Metric}),
     outer,
     leader;
-    cache = Dict{Vector{Symbol},BigInt}(),
+    cache = Dict{Vector{L},BigInt}(),
     hashyperinds = !isempty(hyperinds(path)),
-) where {Metric}
+) where {L,Metric}
     if nargs(path) <= 2
         #= mapreduce(metric, +, Branches(path, inverse = true), init = BigInt(0))) =#
         leader[] = (; path = path, cost = cost)

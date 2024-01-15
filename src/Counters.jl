@@ -38,6 +38,6 @@ removedrank(expr::EinExpr, _) = removedrank(expr)
 removedrank(sexpr::SizedEinExpr, _) = removedrank(sexpr.path)
 
 for f in [:flops, :removedsize]
-    @eval $f(sizedict::Dict{Symbol}) = Base.Fix2($f, sizedict)
+    @eval $f(sizedict::Dict) = Base.Fix2($f, sizedict)
 end
 removedrank(::Dict) = removedrank

@@ -1,7 +1,7 @@
 using AbstractTrees
 
 """
-    selectdim(path::EinExpr, index::Symbol, i)
+    selectdim(path::EinExpr, index, i)
 
 Project `index` to dimension `i` in a EinExpr. This is equivalent to tensor cutting aka slicing.
 
@@ -13,9 +13,9 @@ Project `index` to dimension `i` in a EinExpr. This is equivalent to tensor cutt
 
 See also: [`view`](@ref).
 """
-Base.selectdim(path::EinExpr, ::Symbol, i) = path
+Base.selectdim(path::EinExpr{L}, ::L, i) where {L} = path
 
-function Base.selectdim(path::EinExpr, index::Symbol, i::Integer)
+function Base.selectdim(path::EinExpr{L}, index::L, i::Integer) where {L}
     path = deepcopy(path)
 
     for expr in PreOrderDFS(path)
@@ -25,7 +25,7 @@ function Base.selectdim(path::EinExpr, index::Symbol, i::Integer)
     return path
 end
 
-function Base.selectdim(sexpr::SizedEinExpr, index::Symbol, i)
+function Base.selectdim(sexpr::SizedEinExpr, index, i)
     path = selectdim(sexpr.path, index, i)
 
     size = copy(sexpr.size)
@@ -34,7 +34,7 @@ function Base.selectdim(sexpr::SizedEinExpr, index::Symbol, i)
     return SizedEinExpr(path, size)
 end
 
-function Base.selectdim(sexpr::SizedEinExpr, index::Symbol, i::Integer)
+function Base.selectdim(sexpr::SizedEinExpr, index, i::Integer)
     path = selectdim(sexpr.path, index, i)
 
     size = filter(!=(index) ∘ first, sexpr.size)
@@ -60,7 +60,7 @@ end
 
 See also: [`selectdim`](@ref).
 """
-Base.view(path::EinExpr, cuttings::Pair{Symbol,<:Integer}...) =
+Base.view(path::EinExpr{L}, cuttings::Pair{L,<:Integer}...) where {L} =
     reduce(cuttings, init = path) do acc, proj
         d, i = proj
         selectdim(acc, d, i)
@@ -87,18 +87,18 @@ Reimplementation based on [`contengra`](https://github.com/jcmgray/cotengra)'s `
 """
 function findslices(
     scorer,
-    path;
+    path::SizedEinExpr{L};
     size = nothing,
     overhead = nothing,
     slices = nothing,
     temperature = 0.01,
     skip = head(path),
-)
+) where {L}
     all(isnothing, (size, overhead, slices)) &&
         throw(ArgumentError("need to specify at least one size, overhead or slices target"))
 
     candidates = Set(setdiff(mapreduce(head, ∪, PostOrderDFS(path)), skip))
-    solution = Set{Symbol}()
+    solution = Set{L}()
     current = (; slices = 1, size = maximum(length, PostOrderDFS(path)), overhead = 1.0)
     original_flops = mapreduce(flops, +, Branches(path; inverse = true))
 

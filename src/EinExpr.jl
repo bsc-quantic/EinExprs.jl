@@ -2,13 +2,13 @@ using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
 using AbstractTrees
 
-Base.@kwdef struct EinExpr
-    head::Vector{Symbol}
-    args::Vector{EinExpr} = EinExpr[]
+Base.@kwdef struct EinExpr{Label}
+    head::Vector{Label}
+    args::Vector{EinExpr{Label}} = EinExpr{Label}[]
 end
 
-EinExpr(head) = EinExpr(head, EinExpr[])
-EinExpr(head, args::AbstractVecOrTuple{<:AbstractVecOrTuple{Symbol}}) = EinExpr(head, map(EinExpr, args))
+EinExpr(head::Vector{L}) where {L} = EinExpr(head, EinExpr{L}[])
+EinExpr(head::Vector{L}, args::Vector{Vector{L}}) where {L} = EinExpr{L}(head, map(EinExpr{L}, args))
 
 EinExpr(head::NTuple, args) = EinExpr(collect(head), args)
 EinExpr(head, args::NTuple) = EinExpr(head, collect(args))
@@ -112,8 +112,8 @@ select(path::EinExpr, i::AbstractVecOrTuple) = Iterators.filter(Base.Fix1(⊆, i
 Return the indices neighbouring to `i`.
 """
 neighbours(path::EinExpr, i) = neighbours(path, (i,))
-neighbours(path::EinExpr, i::Base.AbstractVecOrTuple) =
-    setdiff(mapreduce(head, union!, Iterators.filter(node -> i ⊆ head(node), Leaves(path)), init = Symbol[]), i)
+neighbours(path::EinExpr{L}, i::Base.AbstractVecOrTuple) where {L} =
+    setdiff(mapreduce(head, union!, Iterators.filter(node -> i ⊆ head(node), Leaves(path)), init = L[]), i)
 
 """
     contractorder(path::EinExpr)
@@ -204,7 +204,7 @@ Explicit sum over `indices`.
 
 See [`sum!`](@ref) for inplace modification.
 """
-function Base.sum(path::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
+function Base.sum(path::EinExpr{L}, inds::Union{L,AbstractVecOrTuple{L}}) where {L}
     i = .!isdisjoint.((inds,), head.(args(path)))
 
     subinds = head.(args(path)[findall(i)])
@@ -215,7 +215,7 @@ function Base.sum(path::EinExpr, inds::Union{Symbol,AbstractVecOrTuple{Symbol}})
 end
 
 """
-    sum(tensors::Vector{EinExpr}; skip = Symbol[])
+    sum(tensors::Vector{EinExpr}; skip = [])
 
 Create an `EinExpr` from other `EinExpr`s.
 
@@ -223,8 +223,8 @@ Create an `EinExpr` from other `EinExpr`s.
 
   - `skip` Specifies indices to be skipped from summation.
 """
-function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
-    _head = Symbol[]
+function Base.sum(args::Vector{EinExpr{L}}; skip = L[]) where {L}
+    _head = L[]
     _counts = Int[]
 
     for arg in args
@@ -248,7 +248,7 @@ function Base.sum(args::Vector{EinExpr}; skip = Symbol[])
     EinExpr(_head, args)
 end
 
-function Base.sum(a::EinExpr, b::EinExpr; skip = Symbol[])
+function Base.sum(a::EinExpr{L}, b::EinExpr{L}; skip = L[]) where {L}
     _head = copy(head(a))
 
     for index in head(b)
