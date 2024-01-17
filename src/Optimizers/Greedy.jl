@@ -28,6 +28,7 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
 end
 
 function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
+    path = copy(path)
     metric = config.metric(sizedict)
 
     # generate initial candidate contractions

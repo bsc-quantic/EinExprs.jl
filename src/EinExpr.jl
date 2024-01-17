@@ -14,6 +14,8 @@ EinExpr(head::NTuple, args) = EinExpr(collect(head), args)
 EinExpr(head, args::NTuple) = EinExpr(head, collect(args))
 EinExpr(head::NTuple, args::NTuple) = EinExpr(collect(head), collect(args))
 
+Base.copy(expr::EinExpr) = EinExpr(copy(expr.head), copy(expr.args))
+
 """
     head(path::EinExpr)
 
