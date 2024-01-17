@@ -57,6 +57,6 @@ function exhaustive_depthfirst(
         new_cost >= leader[].cost && continue
 
         new_path = SizedEinExpr(EinExpr(head(path), [candidate, filter(∉([i, j]), path.args)...]), path.size) # sum([candidate, filter(∉([i, j]), args(path))...], skip = path.head)
-        __einexpr_exhaustive_it(new_path, new_cost, metric, outer, leader; cache, hashyperinds)
+        exhaustive_depthfirst(metric, new_path, new_cost, outer, leader; cache, hashyperinds)
     end
 end
