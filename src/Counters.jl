@@ -17,6 +17,24 @@ flops(sexpr::SizedEinExpr) =
 
 flops(expr::EinExpr, size) = flops(SizedEinExpr(expr, size))
 
+function fastflops(sexpr::SizedEinExpr)
+    if nargs(sexpr) == 0 || nargs(sexpr) == 1 && isempty(suminds(sexpr))
+        return 0
+    end
+
+    mapreduce(
+        log ∘ Base.Fix1(getindex, sexpr.size),
+        +,
+        Iterators.flatten((head(sexpr), suminds(sexpr))),
+        init = zero(Float64),
+    ) |>
+    exp |>
+    round |>
+    BigInt
+end
+
+fastflops(expr::EinExpr, size) = fastflops(SizedEinExpr(expr, size))
+
 """
     removedsize(path::EinExpr)
 
