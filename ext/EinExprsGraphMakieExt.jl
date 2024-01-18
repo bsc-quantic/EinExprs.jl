@@ -15,13 +15,13 @@ const MAX_EDGE_WIDTH = 10.0
 const MAX_ARROW_SIZE = 35.0
 const MAX_NODE_SIZE = 40.0
 
-function Makie.plot(path::EinExpr; kwargs...)
+function Makie.plot(path::SizedEinExpr; kwargs...)
     f = Figure()
     ax, p = plot!(f[1, 1], path; kwargs...)
     return Makie.FigureAxisPlot(f, ax, p)
 end
 
-function Makie.plot!(f::Union{Figure,GridPosition}, path::EinExpr; kwargs...)
+function Makie.plot!(f::Union{Figure,GridPosition}, path::SizedEinExpr; kwargs...)
     ax = if haskey(kwargs, :layout) && __networklayout_dim(kwargs[:layout]) == 3
         Axis3(f[1, 1])
     else
@@ -65,13 +65,13 @@ end
 # TODO replace `to_colormap(:viridis)[begin:end-10]` with a custom colormap
 function Makie.plot!(
     ax::Union{Axis,Axis3},
-    path::EinExpr;
+    path::SizedEinExpr;
     colormap = to_colormap(:viridis)[begin:end-10],
     inds = false,
     kwargs...,
 )
-    handles = IdDict(obj => i for (i, obj) in enumerate(PostOrderDFS(path)))
-    graph = SimpleDiGraph([Edge(handles[from], handles[to]) for to in Branches(path) for from in to.args])
+    handles = IdDict(obj => i for (i, obj) in enumerate(PostOrderDFS(path.path)))
+    graph = SimpleDiGraph([Edge(handles[from], handles[to]) for to in Branches(path.path) for from in to.args])
 
     lin_size = length.(PostOrderDFS(path))[1:end-1]
     lin_flops = map(max, Iterators.repeated(1), Iterators.map(flops, PostOrderDFS(path)))
