@@ -75,7 +75,6 @@ function exhaustive_breadthfirst(
     outer::Bool = false,
     hashyperinds = !isempty(hyperinds(expr)),
 ) where {L,Metric}
-    outer && error("Outer products not supported yet")
     hashyperinds && error("Hyperindices not supported yet")
 
     cost_fac = maximum(values(expr.size))
@@ -119,7 +118,8 @@ function exhaustive_breadthfirst(
             # if not disjoint, then ta and tb contain at least one common tensor
             isdisjoint(ta, tb) || continue
 
-            get(costs, ta ∪ tb, cost_cur) > cost_prev || continue
+            # outer products do not generally improve contraction path
+            !outer && isdisjoint(indices[ta], indices[tb]) && continue
 
             # new candidate contraction
             tc = ta ∪ tb # aka Q in the paper
