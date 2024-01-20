@@ -17,6 +17,12 @@ flops(sexpr::SizedEinExpr) =
 
 flops(expr::EinExpr, size) = flops(SizedEinExpr(expr, size))
 
+function flops(_out, _suminds, sizelist)
+    mapreduce(*, enumerate(sizelist)) do (i, size)
+        onehot_in(i, _out) || onehot_in(i, _suminds) ? size : 1
+    end
+end
+
 function fastflops(sexpr::SizedEinExpr)
     if nargs(sexpr) == 0 || nargs(sexpr) == 1 && isempty(suminds(sexpr))
         return 0

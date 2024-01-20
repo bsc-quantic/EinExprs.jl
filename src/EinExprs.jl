@@ -1,5 +1,7 @@
 module EinExprs
 
+include("Utils.jl")
+
 include("EinExpr.jl")
 export EinExpr
 export head, args, inds, hyperinds, suminds, parsuminds, collapse!, contractorder, select, neighbours
