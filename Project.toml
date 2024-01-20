@@ -23,8 +23,8 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 [extensions]
 EinExprsChainRulesCoreExt = "ChainRulesCore"
 EinExprsFiniteDifferencesExt = "FiniteDifferences"
-EinExprsMakieExt = "Makie"
 EinExprsGraphMakieExt = ["Makie", "GraphMakie"]
+EinExprsMakieExt = "Makie"
 
 [compat]
 AbstractTrees = "0.4"
