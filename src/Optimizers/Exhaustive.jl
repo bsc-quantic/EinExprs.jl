@@ -26,6 +26,8 @@ end
 
 function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) where {L}
     if config.strategy === :breadth
+        !isempty(hyperinds(path)) && error("Hyperindices not supported for strategy=:breadth")
+
         ninds = length(inds(path))
         settype = if ninds <= 8
             UInt8
@@ -124,10 +126,7 @@ function exhaustive_breadthfirst(
     expr::SizedEinExpr{L},
     ::Type{SetType} = BitSet;
     outer::Bool = false,
-    hashyperinds = !isempty(hyperinds(expr)),
 ) where {L,Metric,SetType}
-    hashyperinds && error("Hyperindices not supported yet")
-
     cost_fac = maximum(values(expr.size))
 
     # make a initial guess using a fast optimizer like Greedy
