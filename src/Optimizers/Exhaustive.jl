@@ -40,7 +40,7 @@ function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) wh
         else
             BitSet
         end
-        return exhaustive_breadthfirst(Val(config.metric), path, settype; outer = config.outer)
+        return exhaustive_breadthfirst(Val(config.metric), path, settype, config.outer)
     elseif config.strategy === :depth
         init_path = einexpr(Naive(), path)
         leader = Ref((;
@@ -86,7 +86,7 @@ end
 function exhaustive_breadthfirst(
     @specialize(metric::Val{Metric}),
     expr::SizedEinExpr{L},
-    ::Type{SetType} = BitSet;
+    ::Type{SetType} = BitSet,
     outer::Bool = false,
 ) where {L,Metric,SetType}
     cost_fac = maximum(values(expr.size))
@@ -178,7 +178,7 @@ function exhaustive_breadthfirst(
         cost_cur = min(cost_max, cost_next * cost_fac)
     end
 
-    function recurse_construct(tc)
+    function recurse_construct(tc)::EinExpr{L}
         ta, tb = trees[tc]
 
         inds_c = map(last, Iterators.filter(enumerate(index_dec)) do (i, _)
@@ -193,5 +193,5 @@ function exhaustive_breadthfirst(
     end
 
     path = recurse_construct(only(S[n]))
-    return SizedEinExpr(path, expr.size)
+    return SizedEinExpr(path, expr.size)::SizedEinExpr{L}
 end

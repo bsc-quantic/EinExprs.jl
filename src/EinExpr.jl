@@ -43,7 +43,7 @@ Return all the involved indices in `path`. If a tensor is passed, then it is equ
 
 See also: [`head`](@ref).
 """
-inds(path::EinExpr) = mapreduce(parent ∘ head, ∪, Leaves(path)) |> collect
+inds(path::EinExpr)::Vector{Symbol} = mapreduce(parent ∘ head, ∪, Leaves(path); init = Symbol[]) |> collect
 
 """
     leaves(path::EinExpr[, i])
