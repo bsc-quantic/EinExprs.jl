@@ -20,13 +20,6 @@ jobs:
           version: "1"
           arch: ${{ runner.arch }}
         if: steps.julia_in_path.outcome != 'success'
-      - name: Add registries via Git
-        run: |
-          import Pkg
-          ENV["JULIA_PKG_SERVER"] = ""
-          Pkg.Registry.add("General")
-          Pkg.Registry.add(Pkg.RegistrySpec(url = "https://github.com/bsc-quantic/Registry.git"))
-        shell: julia --color=yes {0}
       - name: Install CompatHelper
         run: |
           import Pkg
