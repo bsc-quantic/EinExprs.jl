@@ -184,6 +184,7 @@ function exhaustive_breadthfirst(
         inds_c = map(last, Iterators.filter(enumerate(index_dec)) do (i, _)
             onehot_in(i, indices[tc])
         end)
+        inds_c = L === Any ? Any[i for i in inds_c] : inds_c
 
         if onehot_isempty(ta) && onehot_isempty(tb)
             return EinExpr(inds_c::Vector{L})
