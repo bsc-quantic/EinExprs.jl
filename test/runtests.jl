@@ -1,5 +1,6 @@
 using Test
 using EinExprs
+using Compat
 
 @testset "Unit tests" verbose = true begin
     include("EinExpr_test.jl")

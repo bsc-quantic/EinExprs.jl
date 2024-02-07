@@ -2,6 +2,7 @@ using AbstractTrees
 using SparseArrays
 using KaHyPar
 using Suppressor
+using Compat
 
 @kwdef struct HyPar <: Optimizer
     parts::Int = 2
@@ -17,7 +18,7 @@ function EinExprs.einexpr(config::HyPar, path)
     config.stop(path) && return path
 
     inds = mapreduce(head, ∪, path.args)
-    indexmap = Dict(Iterators.map(splat(Pair) ∘ reverse, enumerate(inds)))
+    indexmap = Dict(Iterators.map(@compat(splat(Pair)) ∘ reverse, enumerate(inds)))
 
     I = Iterators.flatmap(((i, tensor),) -> fill(i, ndims(tensor)), enumerate(path.args)) |> collect
     J = Iterators.flatmap(tensor -> Iterators.map(Base.Fix1(getindex, indexmap), head(tensor)), path.args) |> collect

@@ -1,4 +1,5 @@
 using AbstractTrees
+using Compat
 
 struct SizedEinExpr{Label}
     path::EinExpr{Label}
@@ -58,7 +59,7 @@ Base.sum(sexpr::SizedEinExpr, inds) = sum(sexpr.path, inds)
 
 function Base.sum(sexpr::Vector{SizedEinExpr{L}}; skip = L[]) where {L}
     path = sum(map(x -> x.path, sexpr); skip)
-    size = allequal(Iterators.map(x -> x.size, sexpr)) ? first(sexpr).size : merge(map(x -> x.size, sexpr)...)
+    size = @compat(allequal(Iterators.map(x -> x.size, sexpr))) ? first(sexpr).size : merge(map(x -> x.size, sexpr)...)
     # size = merge(map(x -> x.size, sexpr)...)
     SizedEinExpr(path, size)
 end

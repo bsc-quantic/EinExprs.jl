@@ -20,7 +20,7 @@
 
     # FIXME non-determinist behaviour on order
     @test all(
-        splat(issetequal),
+        @compat(splat(issetequal)),
         zip(map(suminds, Branches(path)), [Symbol[], [:j], [:a, :e], [:f, :b], [:i, :h], [:d, :g, :c]]),
     )
 

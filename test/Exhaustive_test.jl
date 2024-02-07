@@ -19,7 +19,10 @@
 
         @test mapreduce(flops, +, Branches(path)) == 92
 
-        @test all(splat(issetequal), zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:j], [:i, :h], [:d, :b]]))
+        @test all(
+            @compat(splat(issetequal)),
+            zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:j], [:i, :h], [:d, :b]]),
+        )
 
         @testset "hyperedges" begin
             sizedict = Dict(i => 2 for i in [:i, :j, :k, :l, :m, :β])
@@ -57,6 +60,9 @@
 
         @test mapreduce(flops, +, Branches(path)) == 90
 
-        @test all(splat(issetequal), zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:d], [:b, :i, :h], [:j]]))
+        @test all(
+            @compat(splat(issetequal)),
+            zip(contractorder(path), [[:a, :e], [:c, :g], [:f], [:d], [:b, :i, :h], [:j]]),
+        )
     end
 end

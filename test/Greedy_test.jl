@@ -17,7 +17,10 @@
 
     @test mapreduce(flops, +, Branches(path)) == 100
 
-    @test all(splat(issetequal), zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:f], [:b, :d]]))
+    @test all(
+        @compat(splat(issetequal)),
+        zip(contractorder(path), [[:i, :h], [:j], [:a, :e], [:g, :c], [:f], [:b, :d]]),
+    )
 
     @testset "example: let unchanged" begin
         sizedict = Dict(i => 2 for i in [:i, :j, :k, :l, :m])
