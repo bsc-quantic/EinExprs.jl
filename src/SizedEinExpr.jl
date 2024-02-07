@@ -78,3 +78,6 @@ AbstractTrees.ParentLinks(::Type{SizedEinExpr}) = ImplicitParents()
 AbstractTrees.SiblingLinks(::Type{SizedEinExpr}) = ImplicitSiblings()
 AbstractTrees.ChildIndexing(::Type{SizedEinExpr}) = IndexedChildren()
 AbstractTrees.NodeType(::Type{SizedEinExpr}) = HasNodeType()
+
+# Utils
+sumtraces(path::SizedEinExpr) = SizedEinExpr(sumtraces(path.path), path.size)

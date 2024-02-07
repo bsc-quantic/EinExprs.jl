@@ -25,6 +25,9 @@ The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``
 end
 
 function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) where {L}
+    # remove self-loops
+    path = sumtraces(path)
+
     if config.strategy === :breadth
         !isempty(hyperinds(path)) && error("Hyperindices not supported for strategy=:breadth")
 

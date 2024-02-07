@@ -1,3 +1,7 @@
+using DataStructures: counter
+
+nonunique(v) = [k for (k, v) in counter(v) if v > 1]
+
 onehot_init(T::Type{<:Integer}) = zero(T)
 onehot_init(::Type{BitSet}) = BitSet()
 

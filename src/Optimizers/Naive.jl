@@ -5,6 +5,8 @@ struct Naive <: Optimizer end
 einexpr(::Naive, path, _) = einexpr(Naive(), path)
 
 function einexpr(::Naive, path)
+    # remove self-loops
+    path = sumtraces(path)
     hist = Dict(i => count(∋(i) ∘ head, args(path)) for i in hyperinds(path))
 
     foldl(args(path)) do a, b
