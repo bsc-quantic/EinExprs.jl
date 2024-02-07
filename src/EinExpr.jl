@@ -206,7 +206,7 @@ Explicit sum over `indices`.
 
 See [`sum!`](@ref) for inplace modification.
 """
-function Base.sum(path::EinExpr{L}, inds::Union{L,AbstractVecOrTuple{L}}) where {L}
+function Base.sum(path::EinExpr{L}, inds::AbstractVecOrTuple{L}) where {L}
     i = .!isdisjoint.((inds,), head.(args(path)))
 
     subinds = head.(args(path)[findall(i)])
@@ -215,6 +215,7 @@ function Base.sum(path::EinExpr{L}, inds::Union{L,AbstractVecOrTuple{L}}) where 
 
     return EinExpr(head(path), (EinExpr(suboutput, args(path)[findall(i)]), args(path)[findall(.!i)]...))
 end
+Base.sum(path::EinExpr{L}, inds::L) where {L} = sum(path, (inds,))
 
 """
     sum(tensors::Vector{EinExpr}; skip = [])
@@ -287,3 +288,17 @@ AbstractTrees.ParentLinks(::Type{EinExpr}) = ImplicitParents()
 AbstractTrees.SiblingLinks(::Type{EinExpr}) = ImplicitSiblings()
 AbstractTrees.ChildIndexing(::Type{EinExpr}) = IndexedChildren()
 AbstractTrees.NodeType(::Type{EinExpr}) = HasNodeType()
+
+# Utils
+function sumtraces(path::EinExpr)
+    do_not_contract_inds = hyperinds(path) ∪ path.head
+    _args = map(path.args) do arg
+        selfinds = nonunique(arg.head)
+        isempty(selfinds) && return arg
+
+        skip = selfinds ∩ do_not_contract_inds
+        sum([arg]; skip)
+    end
+
+    EinExpr(path.head, _args)
+end
