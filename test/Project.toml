@@ -1,5 +1,6 @@
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
