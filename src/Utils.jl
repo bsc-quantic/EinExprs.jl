@@ -52,5 +52,5 @@ onehot_isempty(set::BitSet) = isempty(set)
 if VERSION >= v"1.9"
     flatmap = Iterators.flatmap
 else
-    flatmap(f, iterators) = Iterators.flatten(map(f, iterators...))
+    flatmap(f, iterators) = Iterators.flatten(Iterators.map(f, iterators...))
 end
