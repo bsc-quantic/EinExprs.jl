@@ -20,8 +20,8 @@ function EinExprs.einexpr(config::HyPar, path)
     inds = mapreduce(head, ∪, path.args)
     indexmap = Dict(Iterators.map(@compat(splat(Pair)) ∘ reverse, enumerate(inds)))
 
-    I = Iterators.flatmap(((i, tensor),) -> fill(i, ndims(tensor)), enumerate(path.args)) |> collect
-    J = Iterators.flatmap(tensor -> Iterators.map(Base.Fix1(getindex, indexmap), head(tensor)), path.args) |> collect
+    I = flatmap(((i, tensor),) -> fill(i, ndims(tensor)), enumerate(path.args)) |> collect
+    J = flatmap(tensor -> Iterators.map(Base.Fix1(getindex, indexmap), head(tensor)), path.args) |> collect
     V = fill(1, length(I))
     incidence_matrix = sparse(I, J, V)
 

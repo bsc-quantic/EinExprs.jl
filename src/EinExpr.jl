@@ -127,10 +127,7 @@ contractorder(path::EinExpr) = map(suminds, Branches(path))
 
 hyperinds(path::EinExpr) = map(
     first,
-    Iterators.filter(
-        >(2) ∘ last,
-        Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), Iterators.flatmap(head, args(path))),
-    ),
+    Iterators.filter(>(2) ∘ last, Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), flatmap(head, args(path)))),
 )
 
 @doc raw"""

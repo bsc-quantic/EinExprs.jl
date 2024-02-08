@@ -48,3 +48,9 @@ onehot_only(set::BitSet) = only(set)
 
 onehot_isempty(set::T) where {T<:Integer} = set == zero(T)
 onehot_isempty(set::BitSet) = isempty(set)
+
+if VERSION >= v"1.9"
+    flatmap = Iterators.flatmap
+else
+    flatmap(f, iterators) = Iterators.flatten(map(f, iterators...))
+end
