@@ -39,14 +39,26 @@
 
     @testset "plot!" begin
         f = Figure()
-        @testset "(default)" plot!(f[1, 1], path)
-        @testset "with labels" plot!(f[1, 1], path; inds = true)
-        @testset "3D" plot!(f[1, 1], path; layout = Spring(dim = 3))
+        @testset "(default)" begin
+            plot!(f[1, 1], path)
+        end
+        @testset "with labels" begin
+            plot!(f[1, 1], path; inds = true)
+        end
+        @testset "3D" begin
+            plot!(f[1, 1], path; layout = Spring(dim = 3))
+        end
     end
 
     @testset "plot" begin
-        @testset "(default)" plot(path)
-        @testset "with labels" plot(path; inds = true)
-        @testset "3D" plot(path; layout = Spring(dim = 3))
+        @testset "(default)" begin
+            plot(path)
+        end
+        @testset "with labels" begin
+            plot(path; inds = true)
+        end
+        @testset "3D" begin
+            plot(path; layout = Spring(dim = 3))
+        end
     end
 end
