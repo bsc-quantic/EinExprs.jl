@@ -1,7 +1,7 @@
 name = "EinExprs"
 uuid = "b1794770-133b-4de1-afb4-526377e9f4c5"
 authors = ["Sergio Sánchez Ramírez <sergio.sanchez.ramirez@bsc.es>"]
-version = "0.6.2"
+version = "0.6.3"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
