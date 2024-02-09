@@ -27,7 +27,7 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
     outer::Bool = false
 end
 
-function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
+function einexpr(config::Greedy, sizedict::Dict{L}, path::EinExpr{L}) where {L}
     # remove self-loops
     path = sumtraces(path)
     metric = config.metric(sizedict)
@@ -70,4 +70,4 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
     return path
 end
 
-einexpr(config::Greedy, path::SizedEinExpr) = SizedEinExpr(einexpr(config, path.path, path.size), path.size)
+einexpr(config::Greedy, path::SizedEinExpr) = SizedEinExpr(einexpr(config, path.size, path.path), path.size)
