@@ -300,3 +300,43 @@ function sumtraces(path::EinExpr)
 
     EinExpr(path.head, _args)
 end
+
+function dfs(graph, v, visited, subgraph)
+    visited[v] = true
+    push!(subgraph, v)
+    for u in 1:size(graph, 1)
+        if graph[v, u] && !visited[u]  # Check adjacency and visited status
+            dfs(graph, u, visited, subgraph)
+        end
+    end
+end
+
+function components(path::EinExpr{L}) where {L}
+    network = [args.head for args in path.args]
+    # create adjacency graph of the network
+    tengraph = zeros(Bool, length(network), length(network))
+    for i in 1:length(network)
+        for j in 1:length(network)
+            if !isempty(network[i] ∩ network[j]) && i ≠ j
+                tengraph[i,j] = true
+            end
+        end
+    end
+
+    # find disconneceted subgraphs
+    subgraphs = Vector{Vector{Int}}()
+    n = size(tengraph, 1)
+    visited = falses(n)
+    for v in 1:n
+        if !visited[v]
+            subgraph = Int[]
+            dfs(tengraph, v, visited, subgraph)
+            push!(subgraphs, subgraph)
+        end
+    end
+
+    # create subnetworks
+    indeppaths = [sum(EinExpr.([network[tns] for tns in subnet])) for subnet in subgraphs]
+
+    return indeppaths
+end
