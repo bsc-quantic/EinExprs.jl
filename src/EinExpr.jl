@@ -326,18 +326,14 @@ function components(path::EinExpr{L}) where {L}
 
     # find disconneceted subgraphs
     subgraphs = Vector{Vector{Int}}()
-    n = size(adjmat, 1)
     visited = falses(n)
-    for v in 1:n
-        if !visited[v]
-            subgraph = Int[]
-            dfs(adjmat, v, visited, subgraph)
-            push!(subgraphs, subgraph)
-        end
+    for vertex in Iterators.filter(v -> !visited[v], 1:n)
+        subgraph = Int[]
+        dfs(adjmat, vertex, visited, subgraph)
+        push!(subgraphs, subgraph)
     end
-
+    
     # create subnetworks
     indeppaths = [sum(EinExpr.([network[tns] for tns in subnet])) for subnet in subgraphs]
-
     return indeppaths
 end
