@@ -1,4 +1,6 @@
 @testset "KaHyPar" begin
+    using KaHyPar
+
     @testset begin
         tensors = [
             EinExpr([:j, :b, :i, :h], Dict(i => 2 for i in [:j, :b, :i, :h])),
