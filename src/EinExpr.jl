@@ -312,25 +312,26 @@ function dfs(graph, v, visited, subgraph)
 end
 
 function components(path::EinExpr{L}) where {L}
-    network = [args.head for args in path.args]
-    # create adjacency graph of the network
-    tengraph = zeros(Bool, length(network), length(network))
-    for i in 1:length(network)
-        for j in 1:length(network)
-            if !isempty(network[i] ∩ network[j]) && i ≠ j
-                tengraph[i,j] = true
-            end
+    network = map(head, path.args)
+    # create adjacency matrix of the network
+    n = nargs(path)
+    adjmat = falses(n,n)
+    
+    for (i,j) in combinations(1:n, 2)
+        if !isdisjoint(network[i], network[j])
+            adjmat[i,j] = true
+            adjmat[j,i] = true
         end
     end
 
     # find disconneceted subgraphs
     subgraphs = Vector{Vector{Int}}()
-    n = size(tengraph, 1)
+    n = size(adjmat, 1)
     visited = falses(n)
     for v in 1:n
         if !visited[v]
             subgraph = Int[]
-            dfs(tengraph, v, visited, subgraph)
+            dfs(adjmat, v, visited, subgraph)
             push!(subgraphs, subgraph)
         end
     end
