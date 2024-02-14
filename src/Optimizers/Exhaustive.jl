@@ -23,6 +23,7 @@ The algorithm has a ``\mathcal{O}(n!)`` time complexity if `outer = true` and ``
     metric::Function = flops
     outer::Bool = false
     strategy::Symbol = :breadth
+    init::Optimizer = Greedy()
 end
 
 function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) where {L}
@@ -44,9 +45,9 @@ function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) wh
         else
             BitSet
         end
-        return exhaustive_breadthfirst(Val(config.metric), path, settype, config.outer)
+        return exhaustive_breadthfirst(Val(config.metric), path, settype, config.outer, config.init)
     elseif config.strategy === :depth
-        init_path = einexpr(Naive(), path)
+        init_path = einexpr(config.init, path)
         leader = Ref(
             @compat (;
                 path = init_path,
@@ -94,11 +95,12 @@ function exhaustive_breadthfirst(
     expr::SizedEinExpr{L},
     ::Type{SetType} = BitSet,
     outer::Bool = false,
+    optimizer_init::Optimizer = Greedy(),
 ) where {L,Metric,SetType}
     cost_fac = maximum(values(expr.size))
 
     # make a initial guess using a fast optimizer like Greedy
-    greedy_path = einexpr(Greedy(), expr)
+    greedy_path = einexpr(optimizer_init, expr)
     cost_max = mapreduce(Metric, +, Branches(greedy_path, inverse = true), init = BigInt(0))::BigInt
 
     # number of input tensors
