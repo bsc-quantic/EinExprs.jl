@@ -40,7 +40,6 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
         map(
             Iterators.filter(((a, b),) -> config.outer || !isdisjoint(a.head, b.head), combinations(path.args, 2)),
         ) do (a, b)
-            # TODO don't consider outer products
             candidate = sum([a, b], skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
             weight = metric(candidate)
             (weight, candidate)
@@ -59,7 +58,6 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
 
         # update candidate queue
         for other in Iterators.filter(other -> config.outer || !isdisjoint(winner.head, other.head), path.args)
-            # TODO don't consider outer products
             candidate = sum([winner, other], skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
             weight = metric(candidate)
             push!(queue, (weight, candidate))
