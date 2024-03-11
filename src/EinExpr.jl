@@ -44,7 +44,7 @@ Return all the involved indices in `path`. If a tensor is passed, then it is equ
 
 See also: [`head`](@ref).
 """
-inds(path::EinExpr{L}) where {L} = mapreduce(parent ∘ head, ∪, Leaves(path); init = L[]) |> collect
+inds(path::EinExpr{L}) where {L} = mapreduce(head, ∪, Leaves(path); init = L[])
 
 """
     leaves(path::EinExpr[, i])
