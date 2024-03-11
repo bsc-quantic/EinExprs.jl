@@ -70,15 +70,15 @@ Base.eltype(::Type{<:TreeIterator{SizedEinExpr}}) = SizedEinExpr
 
 # AbstractTrees interface and traits
 AbstractTrees.children(sexpr::SizedEinExpr) = args(sexpr)
-AbstractTrees.childtype(::Type{SizedEinExpr}) = SizedEinExpr
-AbstractTrees.childrentype(::Type{SizedEinExpr}) = Vector{SizedEinExpr}
-AbstractTrees.childstatetype(::Type{SizedEinExpr}) = Int
-AbstractTrees.nodetype(::Type{SizedEinExpr}) = SizedEinExpr
+AbstractTrees.childtype(::Type{S}) where {S<:SizedEinExpr} = S
+AbstractTrees.childrentype(::Type{S}) where {S<:SizedEinExpr} = Vector{S}
+AbstractTrees.childstatetype(::Type{<:SizedEinExpr}) = Int
+AbstractTrees.nodetype(::Type{S}) where {S<:SizedEinExpr} = S
 
-AbstractTrees.ParentLinks(::Type{SizedEinExpr}) = ImplicitParents()
-AbstractTrees.SiblingLinks(::Type{SizedEinExpr}) = ImplicitSiblings()
-AbstractTrees.ChildIndexing(::Type{SizedEinExpr}) = IndexedChildren()
-AbstractTrees.NodeType(::Type{SizedEinExpr}) = HasNodeType()
+AbstractTrees.ParentLinks(::Type{<:SizedEinExpr}) = ImplicitParents()
+AbstractTrees.SiblingLinks(::Type{<:SizedEinExpr}) = ImplicitSiblings()
+AbstractTrees.ChildIndexing(::Type{<:SizedEinExpr}) = IndexedChildren()
+AbstractTrees.NodeType(::Type{<:SizedEinExpr}) = HasNodeType()
 
 # Utils
 sumtraces(path::SizedEinExpr) = SizedEinExpr(sumtraces(path.path), path.size)
