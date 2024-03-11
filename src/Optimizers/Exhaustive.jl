@@ -42,6 +42,8 @@ function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) wh
             UInt32
         elseif ninds <= 64
             UInt64
+        elseif ninds <= 128
+            UInt128
         else
             BitSet
         end
