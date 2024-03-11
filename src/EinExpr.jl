@@ -125,13 +125,14 @@ Transform `path` into a contraction order.
 """
 contractorder(path::EinExpr) = map(suminds, Branches(path))
 
-hyperinds(path::EinExpr) = map(
-    first,
-    Iterators.filter(
-        >(2) ∘ last,
-        Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), Iterators.flatten(Iterators.map(head, args(path)))),
-    ),
-)
+hyperinds(path::EinExpr) =
+    map(
+        first,
+        Iterators.filter(
+            >(2) ∘ last,
+            Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), Iterators.flatten(Iterators.map(head, args(path)))),
+        ),
+    ) |> unique!
 
 @doc raw"""
     suminds(path)
