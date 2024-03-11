@@ -277,15 +277,15 @@ Base.eltype(::Type{<:TreeIterator{EinExpr}}) = EinExpr
 
 # AbstractTrees interface and traits
 AbstractTrees.children(path::EinExpr) = args(path)
-AbstractTrees.childtype(::Type{EinExpr}) = EinExpr
-AbstractTrees.childrentype(::Type{EinExpr}) = Vector{EinExpr}
-AbstractTrees.childstatetype(::Type{EinExpr}) = Int
-AbstractTrees.nodetype(::Type{EinExpr}) = EinExpr
+AbstractTrees.childtype(::Type{E}) where {E<:EinExpr} = E
+AbstractTrees.childrentype(::Type{E}) where {E<:EinExpr} = Vector{E}
+AbstractTrees.childstatetype(::Type{<:EinExpr}) = Int
+AbstractTrees.nodetype(::Type{E}) where {E<:EinExpr} = E
 
-AbstractTrees.ParentLinks(::Type{EinExpr}) = ImplicitParents()
-AbstractTrees.SiblingLinks(::Type{EinExpr}) = ImplicitSiblings()
-AbstractTrees.ChildIndexing(::Type{EinExpr}) = IndexedChildren()
-AbstractTrees.NodeType(::Type{EinExpr}) = HasNodeType()
+AbstractTrees.ParentLinks(::Type{<:EinExpr}) = ImplicitParents()
+AbstractTrees.SiblingLinks(::Type{<:EinExpr}) = ImplicitSiblings()
+AbstractTrees.ChildIndexing(::Type{<:EinExpr}) = IndexedChildren()
+AbstractTrees.NodeType(::Type{<:EinExpr}) = HasNodeType()
 
 # Utils
 function sumtraces(path::EinExpr)
