@@ -134,6 +134,7 @@ hyperinds(path::EinExpr) =
         ),
     ) |> unique!
 
+# TODO may need a fix for contracting hyperindices, or other edge cases
 @doc raw"""
     suminds(path)
 
@@ -181,6 +182,11 @@ Indices of summation of possible pairwise tensors contractions between children 
 """
 parsuminds(path::EinExpr) =
     Iterators.filter(!isempty, Iterators.map(((a, b),) -> suminds(sum([a, b])), combinations(path.args, 2))) |> collect
+
+indshistogram(exprs...) = mergewith(+, map(exprs) do expr
+    Dict(i => 1 for i in head(expr))
+end...)
+indshistogram(exprs::Vector) = indshistogram(exprs...)
 
 """
     sum!(path, indices)

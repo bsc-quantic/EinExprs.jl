@@ -34,16 +34,35 @@
     end
 
     @testset "hyperedges" begin
-        sizedict = Dict(i => 2 for i in [:i, :j, :k, :l, :m, :β])
-        a = EinExpr([:i, :β, :j])
-        b = EinExpr([:k, :β])
-        c = EinExpr([:β, :l, :m])
+        let sizedict = Dict(i => 2 for i in [:i, :j, :k, :l, :m, :β]),
+            a = EinExpr([:i, :β, :j]),
+            b = EinExpr([:k, :β]),
+            c = EinExpr([:β, :l, :m])
 
-        path = einexpr(EinExprs.Greedy(), SizedEinExpr(sum([a, b, c], skip = [:β]), sizedict))
-        @test all(∋(:β) ∘ head, branches(path))
+            path = einexpr(EinExprs.Greedy(), SizedEinExpr(sum([a, b, c], skip = [:β]), sizedict))
+            @test all(∋(:β) ∘ head, branches(path))
 
-        path = einexpr(EinExprs.Greedy(), SizedEinExpr(sum([a, b, c], skip = Symbol[]), sizedict))
-        @test all(∋(:β) ∘ head, branches(path)[1:end-1])
-        @test all(!∋(:β) ∘ head, branches(path)[end:end])
+            path = einexpr(EinExprs.Greedy(), SizedEinExpr(sum([a, b, c], skip = Symbol[]), sizedict))
+            @test all(∋(:β) ∘ head, branches(path)[1:end-1])
+            @test all(!∋(:β) ∘ head, branches(path)[end:end])
+        end
+
+        let sizedict = Dict(i => 2 for i in [:a, :b, :c, :d, :e, :X, :Y, :T, :Z])
+            expr = sum([
+                EinExpr([:a, :X]),
+                EinExpr([:X]),
+                EinExpr([:X, :c, :Y]),
+                EinExpr([:Y]),
+                EinExpr([:Y, :d, :Z]),
+                EinExpr([:Z]),
+                EinExpr([:Z, :e, :T]),
+                EinExpr([:T]),
+                EinExpr([:b, :T]),
+            ])
+
+            path = einexpr(EinExprs.Greedy(), SizedEinExpr(expr, sizedict))
+            @test isdisjoint(head(path), [:X, :Y, :Z, :T])
+            @test all(<=(2) ∘ length ∘ args, Branches(path))
+        end
     end
 end

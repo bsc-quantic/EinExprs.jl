@@ -32,7 +32,9 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
     path = sumtraces(path)
     metric = config.metric(sizedict)
 
-    hashyperinds = !isempty(hyperinds(path))
+    hyperhistogram = filter!(indshistogram(args(path)...)) do (_, v)
+        v > 2
+    end
 
     # generate initial candidate contractions
     queue = MutableBinaryHeap{Tuple{Float64,EinExpr{L}}}(
@@ -40,7 +42,7 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
         map(
             Iterators.filter(((a, b),) -> config.outer || !isdisjoint(a.head, b.head), combinations(path.args, 2)),
         ) do (a, b)
-            candidate = sum([a, b], skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
+            candidate = sum([a, b], skip = !isempty(hyperhistogram) ? path.head ∪ keys(hyperhistogram) : path.head)
             weight = metric(candidate)
             (weight, candidate)
         end,
@@ -56,9 +58,18 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
         # remove old intermediate tensors
         setdiff!(path.args, args(winner))
 
+        # update histogram of hyperindices
+        if !isempty(hyperhistogram)
+            for i in collect(Iterators.flatten(parsuminds(winner))) ∩ keys(hyperhistogram)
+                hyperhistogram[i] -= 1
+                hyperhistogram[i] <= 2 && delete!(hyperhistogram, i)
+            end
+        end
+
         # update candidate queue
         for other in Iterators.filter(other -> config.outer || !isdisjoint(winner.head, other.head), path.args)
-            candidate = sum([winner, other], skip = hashyperinds ? path.head ∪ hyperinds(path) : path.head)
+            candidate =
+                sum([winner, other], skip = !isempty(hyperhistogram) ? path.head ∪ keys(hyperhistogram) : path.head)
             weight = metric(candidate)
             push!(queue, (weight, candidate))
         end
