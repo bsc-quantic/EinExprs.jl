@@ -1,0 +1,24 @@
+title: "\texttt{EinExprs.jl}: Contraction Paths as Symbolic Expressions"
+keywords:
+  - Julia
+  - Tensor Networks
+  - Contraction Path
+  - Symbolic Expressions
+  - Optimization
+authors:
+  - name: Sergio Sanchez-Ramirez
+    orcid: 0000-0003-1361-440X
+    affiliation: 1
+  - name: Jofre Vallés-Muns
+    orcid: 0009-0000-0139-9744
+    affiliation: 1
+  - name: Artur Garcia-Saez
+    orcid: 0000-0003-3561-0223
+    affiliation: 1, 2
+affiliations:
+  - name: Barcelona Supercomputing Center, 08034 Barcelona, Spain
+    index: 1
+  - name: Qilimanjaro Quantum Tech., 08014 Barcelona, Spain
+    index: 2
+date: 20 march 2024
+bibliography: ref.bib
