@@ -5,7 +5,7 @@ include("Utils.jl")
 include("EinExpr.jl")
 export EinExpr
 export head, args, inds, hyperinds, suminds, parsuminds, collapse!, contractorder, select, neighbours
-export Branches, branches, leaves
+export Branches, branches, Leaves, leaves
 
 include("SizedEinExpr.jl")
 export SizedEinExpr
