@@ -35,3 +35,4 @@ jobs:
         shell: julia --color=yes {0}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_CLONE_PROTECTION_ACTIVE: false
