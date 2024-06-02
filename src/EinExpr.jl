@@ -134,6 +134,15 @@ hyperinds(path::EinExpr) =
         ),
     ) |> unique!
 
+openinds(path::EinExpr) =
+    map(
+        first,
+        Iterators.filter(
+            ==(1) ∘ last,
+            Iterators.map(i -> (i, count(∋(i) ∘ head, args(path))), Iterators.flatten(Iterators.map(head, args(path)))),
+        ),
+    ) |> unique!
+
 # TODO may need a fix for contracting hyperindices, or other edge cases
 @doc raw"""
     suminds(path)
