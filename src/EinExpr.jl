@@ -17,6 +17,8 @@ EinExpr(head::NTuple, args::NTuple) = EinExpr(collect(head), collect(args))
 
 Base.copy(expr::EinExpr) = EinExpr(copy(expr.head), copy(expr.args))
 
+Base.show(io::IO, path::EinExpr) = print_tree((io, node) -> print(io, head(node)), io, path)
+
 """
     head(path::EinExpr)
 

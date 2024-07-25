@@ -13,6 +13,16 @@ end
 
 EinExpr(path::Vector{L}, size::Dict{L}) where {L} = SizedEinExpr(EinExpr(path), size)
 
+function Base.show(io::IO, path::SizedEinExpr)
+    print_tree(io, path.path) do io, node
+        print(io, head(node))
+        print(
+            io,
+            " " * join(["$(flops(node, path.size)) flops", "$(length(SizedEinExpr(node, path.size))) elems"], ", "),
+        )
+    end
+end
+
 head(sexpr::SizedEinExpr) = head(sexpr.path)
 
 """
