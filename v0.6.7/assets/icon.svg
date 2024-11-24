@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Created with Vectornator (http://vectornator.io/) -->
+<svg height="1024.0px" stroke-miterlimit="10" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 1024 1024" width="1024.0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<path d="M218.018 182.637C218.018 161.959 234.781 145.197 255.459 145.197C276.136 145.197 292.899 161.959 292.899 182.637C292.899 203.315 276.136 220.077 255.459 220.077C234.781 220.077 218.018 203.315 218.018 182.637Z" id="Fill"/>
+<path d="M214.822 817.299C214.822 794.856 233.016 776.662 255.459 776.662C277.902 776.662 296.096 794.856 296.096 817.299C296.096 839.742 277.902 857.936 255.459 857.936C233.016 857.936 214.822 839.742 214.822 817.299Z" id="Fill_2"/>
+<path d="M432.078 500.502C432.078 471.683 455.441 448.32 484.26 448.32C513.079 448.32 536.441 471.683 536.441 500.502C536.441 529.321 513.079 552.683 484.26 552.683C455.441 552.683 432.078 529.321 432.078 500.502Z" id="Fill_3"/>
+<path d="M728.552 182.637C728.552 161.79 745.452 144.891 766.299 144.891C787.145 144.891 804.045 161.79 804.045 182.637C804.045 203.484 787.145 220.383 766.299 220.383C745.452 220.383 728.552 203.484 728.552 182.637Z" id="Fill_4"/>
+<path d="M722.981 817.299C722.981 793.376 742.375 773.982 766.299 773.982C790.222 773.982 809.616 793.376 809.616 817.299C809.616 841.223 790.222 860.617 766.299 860.617C742.375 860.617 722.981 841.223 722.981 817.299Z" id="Fill_5"/>
+</defs>
+<g id="Capa-1">
+<path d="M688.314 740.572L727.612 664.802L818.65 664.802L807.759 861.344L548.256 879.596L225.899 869.924L196.637 794.949L421.234 498.092L196.467 186.991L224.543 135.201L238.764 108.969L773.131 104.1L823.846 154.75L809.698 301.103L720.176 307.173L688.314 255.641L383.455 247.56C383.455 247.56 565.744 503.337 565.744 503.337L410.422 740.572" fill="#ffb20f" fill-rule="nonzero" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="round" stroke-opacity="0" stroke-width="0"/>
+<path d="M773.131 890.763L257.266 890.763C228.225 890.763 202.173 874.624 189.291 848.62C176.409 822.615 179.322 792.125 196.923 769.046L383.626 524.307C395.992 508.107 395.992 485.436 383.626 469.191L196.908 224.452C179.307 201.388 176.379 170.898 189.261 144.893C202.158 118.889 228.225 102.75 257.266 102.75L773.131 102.75C813.628 102.75 840.044 134.619 840.044 178.52L840.044 299.753C840.044 326.121 827.739 330.061 818.65 330.061L727.612 330.061C712.454 330.061 688.314 318.529 688.314 299.753L688.314 254.291L410.407 254.291L560.361 450.825C580.981 477.875 580.981 515.639 560.376 542.674L410.422 739.222L688.314 739.222L688.314 739.222L688.314 693.76C688.314 674.984 712.454 663.452 727.612 663.452L818.65 663.452C827.754 663.452 840.044 667.392 840.044 693.76L840.044 814.993C840.044 858.894 813.628 890.763 773.131 890.763ZM257.266 133.058C239.574 133.058 224.325 142.514 216.481 158.35C208.637 174.186 210.351 192.038 221.063 206.07L407.782 450.809C428.386 477.859 428.386 515.623 407.782 542.674L221.078 787.412C210.351 801.475 208.637 819.312 216.481 835.148C224.325 850.984 239.574 860.455 257.266 860.455L773.131 860.455C800.306 860.455 809.698 836.891 809.698 814.993L809.698 693.76L727.612 693.76C726.11 693.76 718.66 694.942 718.66 696.079L718.66 739.222C718.66 765.59 706.355 769.531 697.266 769.531L410.407 769.531C398.784 769.531 388.391 763.075 383.232 752.694C378.073 742.314 379.226 730.115 386.266 720.871L536.221 524.292C548.587 508.092 548.587 485.421 536.221 469.176L386.282 272.642C379.226 263.398 378.073 251.199 383.232 240.804C388.391 230.408 398.784 223.983 410.407 223.983L697.266 223.983C706.37 223.983 718.66 227.923 718.66 254.291L718.66 297.419C718.66 298.556 726.11 299.753 727.612 299.753L809.698 299.753L809.698 178.52C809.698 156.623 800.306 133.058 773.131 133.058L257.266 133.058Z" fill="#ffb20f" fill-rule="nonzero" opacity="1" stroke="none"/>
+</g>
+<g id="Arrows">
+<path d="M255.459 817.299C255.459 817.299 447.865 567.932 512 483.606" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="round" stroke-width="19.4188"/>
+<path d="M766.299 817.299L255.459 817.299" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="round" stroke-width="19.4188"/>
+<path d="M766.299 182.637L255.459 182.637" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="round" stroke-width="19.4188"/>
+<path d="M255.459 182.637L512 512" fill="none" opacity="1" stroke="#000000" stroke-linecap="butt" stroke-linejoin="round" stroke-width="19.4188"/>
+<path d="M555.516 786.224L555.516 848.375L502.783 817.299L555.516 786.224Z" fill="#000000" fill-rule="nonzero" opacity="1" stroke="none"/>
+<path d="M563.409 151.562L563.409 213.712L510.677 182.637L563.409 151.562Z" fill="#000000" fill-rule="nonzero" opacity="1" stroke="none"/>
+<path d="M342.979 346.79L390.887 307.198L400.525 367.643L342.979 346.79Z" fill="#000000" fill-rule="nonzero" opacity="1" stroke="none"/>
+<path d="M391.043 690.333L343.119 650.761L400.656 629.885L391.043 690.333Z" fill="#000000" fill-rule="nonzero" opacity="1" stroke="none"/>
+</g>
+<g id="Circles">
+<g opacity="1">
+<use fill="#ff0000" fill-rule="nonzero" stroke="none" xlink:href="#Fill"/>
+<mask height="112.266" id="StrokeMask" maskUnits="userSpaceOnUse" width="112.266" x="199.325" y="126.504">
+<rect fill="#ffffff" height="112.266" stroke="none" width="112.266" x="199.325" y="126.504"/>
+<use fill="#000000" fill-rule="evenodd" stroke="none" xlink:href="#Fill"/>
+</mask>
+<use fill="none" mask="url(#StrokeMask)" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="37.3861" xlink:href="#Fill"/>
+</g>
+<g opacity="1">
+<use fill="#04af04" fill-rule="nonzero" stroke="none" xlink:href="#Fill_2"/>
+<mask height="116.11" id="StrokeMask_2" maskUnits="userSpaceOnUse" width="116.11" x="197.404" y="759.244">
+<rect fill="#ffffff" height="116.11" stroke="none" width="116.11" x="197.404" y="759.244"/>
+<use fill="#000000" fill-rule="evenodd" stroke="none" xlink:href="#Fill_2"/>
+</mask>
+<use fill="none" mask="url(#StrokeMask_2)" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="34.8366" xlink:href="#Fill_2"/>
+</g>
+<g opacity="1">
+<use fill="#ce00ff" fill-rule="nonzero" stroke="none" xlink:href="#Fill_3"/>
+<mask height="141.459" id="StrokeMask_3" maskUnits="userSpaceOnUse" width="141.459" x="413.53" y="429.772">
+<rect fill="#ffffff" height="141.459" stroke="none" width="141.459" x="413.53" y="429.772"/>
+<use fill="#000000" fill-rule="evenodd" stroke="none" xlink:href="#Fill_3"/>
+</mask>
+<use fill="none" mask="url(#StrokeMask_3)" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="37.0963" xlink:href="#Fill_3"/>
+</g>
+<g opacity="1">
+<use fill="#04af04" fill-rule="nonzero" stroke="none" xlink:href="#Fill_4"/>
+<mask height="107.604" id="StrokeMask_4" maskUnits="userSpaceOnUse" width="107.604" x="712.497" y="128.835">
+<rect fill="#ffffff" height="107.604" stroke="none" width="107.604" x="712.497" y="128.835"/>
+<use fill="#000000" fill-rule="evenodd" stroke="none" xlink:href="#Fill_4"/>
+</mask>
+<use fill="none" mask="url(#StrokeMask_4)" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="32.1117" xlink:href="#Fill_4"/>
+</g>
+<g opacity="1">
+<use fill="#006eff" fill-rule="nonzero" stroke="none" xlink:href="#Fill_5"/>
+<mask height="127.255" id="StrokeMask_5" maskUnits="userSpaceOnUse" width="127.255" x="702.671" y="753.672">
+<rect fill="#ffffff" height="127.255" stroke="none" width="127.255" x="702.671" y="753.672"/>
+<use fill="#000000" fill-rule="evenodd" stroke="none" xlink:href="#Fill_5"/>
+</mask>
+<use fill="none" mask="url(#StrokeMask_5)" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="40.619" xlink:href="#Fill_5"/>
+</g>
+</g>
+</svg>
