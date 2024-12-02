@@ -2,8 +2,6 @@ using AbstractTrees
 
 struct Naive <: Optimizer end
 
-einexpr(::Naive, path, _) = einexpr(Naive(), path)
-
 function einexpr(::Naive, path)
     # remove self-loops
     path = sumtraces(path)
