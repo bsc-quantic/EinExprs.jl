@@ -1,4 +1,4 @@
-title: "\texttt{EinExprs.jl}: Contraction Paths as Symbolic Expressions"
+title: "EinExprs.jl: Contraction Paths as Symbolic Expressions"
 keywords:
   - Julia
   - Tensor Networks
