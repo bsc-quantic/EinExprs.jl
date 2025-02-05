@@ -41,6 +41,34 @@ end
 
 fastflops(expr::EinExpr, size) = fastflops(SizedEinExpr(expr, size))
 
+# Function wrapper to compute the flops of a path, excluding a given index
+function filtered_flops(sexpr::SizedEinExpr, index)
+    if nargs(sexpr) == 0 || nargs(sexpr) == 1 && isempty(suminds(sexpr))
+        0
+    else
+        ret = one(BigInt)
+        for element in Iterators.flatten((head(sexpr), suminds(sexpr)))
+            if element != index
+                ret *= getindex(sexpr.size, element)
+            end
+        end
+        ret
+    end
+end
+
+# Function wrapper to compute the flops of a path, excluding a given index
+function filtered_length(sexpr::SizedEinExpr, index)
+    path = sexpr.path
+    sizedict = sexpr.size
+
+    # remove index from the head
+    if index ∈ head(path)
+        path = selectdim(path, index, 1)
+    end
+
+    return (prod ∘ size)(path, sizedict)
+end
+
 """
     removedsize(path::EinExpr)
 
