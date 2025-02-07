@@ -146,12 +146,16 @@ Base.@kwdef struct FlopsScorer <: Scorer
 end
 
 function (cb::FlopsScorer)(path, index)
-    slice = selectdim(path, index, 1)
+    total_reductions = mapreduce(
+        sexpr -> (
+            flops(sexpr) - filtered_flops(sexpr, index),
+            length(sexpr) - filtered_length(sexpr, index)
+        ),
+        .+,
+        PostOrderDFS(path))
 
-    flops_reduction = mapreduce(flops, +, PostOrderDFS(path)) - mapreduce(flops, +, PostOrderDFS(slice))
-    write_reduction = mapreduce(length, +, PostOrderDFS(path)) - mapreduce(length, +, PostOrderDFS(slice))
-
-    log(flops_reduction + write_reduction * cb.weight + 1)
+    flops_reduction, write_reduction = total_reductions
+    return log(flops_reduction + write_reduction * cb.weight + 1)
 end
 
 """
