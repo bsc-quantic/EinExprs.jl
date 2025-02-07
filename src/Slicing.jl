@@ -146,10 +146,23 @@ Base.@kwdef struct FlopsScorer <: Scorer
 end
 
 function (cb::FlopsScorer)(path, index)
-    flops_reduction = 0.
-    write_reduction = 0.
+    total_reductions = mapreduce(
+        sexpr -> (
+            flops(sexpr) - filtered_flops(sexpr, index),
+            length(sexpr) - filtered_length(sexpr, index)
+        ),
+        (a, b) -> (a[1] + b[1], a[2] + b[2]),
+        PostOrderDFS(path))
 
-    for sexpr in PostOrderDFS(path)
+    flops_reduction, write_reduction = total_reductions
+    return log(flops_reduction + write_reduction * cb.weight + 1)
+end
+
+function (cb::FlopsScorer)(path, index)
+    flops_reduction = BigInt(0)
+    write_reduction = BigInt(0)
+
+    @inbounds for sexpr in PostOrderDFS(path)
         flops_reduction += flops(sexpr) - filtered_flops(sexpr, index)
         write_reduction += length(sexpr) - filtered_length(sexpr, index)
     end
