@@ -3,7 +3,7 @@
 
 Count the number of mathematical operations will be performed by the contraction of the root of the `path` tree.
 """
-flops(sexpr::SizedEinExpr) =
+function flops(sexpr::SizedEinExpr)
     if nargs(sexpr) == 0 || nargs(sexpr) == 1 && isempty(suminds(sexpr))
         0
     else
@@ -14,6 +14,7 @@ flops(sexpr::SizedEinExpr) =
             init = one(BigInt),
         )
     end
+end
 
 flops(expr::EinExpr, size) = flops(SizedEinExpr(expr, size))
 
@@ -74,8 +75,10 @@ end
 
 Count the amount of memory that will be freed after performing the contraction of the root of the `path` tree.
 """
-removedsize(sexpr::SizedEinExpr) = -length(sexpr) + mapreduce(+, sexpr.args) do arg
-    length(SizedEinExpr(arg, sexpr.size))
+function removedsize(sexpr::SizedEinExpr)
+    -length(sexpr) + mapreduce(+, sexpr.args) do arg
+        length(SizedEinExpr(arg, sexpr.size))
+    end
 end
 
 removedsize(expr::EinExpr, size) = removedsize(SizedEinExpr(expr, size))

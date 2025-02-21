@@ -147,12 +147,10 @@ end
 
 function (cb::FlopsScorer)(path, index)
     total_reductions = mapreduce(
-        sexpr -> (
-            flops(sexpr) - filtered_flops(sexpr, index),
-            length(sexpr) - filtered_length(sexpr, index)
-        ),
+        sexpr -> (flops(sexpr) - filtered_flops(sexpr, index), length(sexpr) - filtered_length(sexpr, index)),
         .+,
-        PostOrderDFS(path))
+        PostOrderDFS(path),
+    )
 
     flops_reduction, write_reduction = total_reductions
     return log(flops_reduction + write_reduction * cb.weight + 1)
