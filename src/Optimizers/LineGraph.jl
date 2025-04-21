@@ -78,20 +78,22 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     end
 
     # dynamic programming
-    tags = zeros(Bool, n + 1); tags[end] = true
-    stack = EinExpr{L}[]
+    tags = zeros(Bool, n + 1); stack = EinExpr{L}[]
 
     for (b, bag) in enumerate(tree)
-        tensor = EinExpr(L[])
-
-        for i in separator(bag)
-            push!(head(tensor), il[i])
-        end
-        
-        for i in residual(bag), t in view(rowvals(ti), nzrange(ti, i))
+        sep = separator(bag)
+        res = residual(bag)
+        tensor = EinExpr(il[sep])
+       
+        for i in res, t in view(rowvals(ti), nzrange(ti, i))
             if !tags[t]
                 tags[t] = true
-                push!(args(tensor), tensors[t])
+
+                if t > n
+                    append!(head(tensor), head(path))
+                else
+                    push!(args(tensor), tensors[t])
+                end
             end
         end
 
@@ -104,14 +106,12 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
 
     # we now have an expression for each root
     # of the tree decomposition
-    result = EinExpr(L[])
+    result = EinExpr(copy(head(path)))
 
-    # merge them into `result`
     for tensor in stack
-        append!(args(result), args(tensor))
+        push!(args(result), tensor)
     end
 
-    append!(head(result), head(path))
     return result
 end
 
