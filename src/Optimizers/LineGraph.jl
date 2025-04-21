@@ -24,7 +24,7 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     for tensor in tensors
         for l in head(tensor)
             if !haskey(li, l)
-                push!(weights, sizedict[l])
+                push!(weights, log2(sizedict[l]))
                 push!(il, l); li[l] = length(il)
             end
 
@@ -35,23 +35,24 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
         push!(colptr, length(rowval) + 1)
     end
 
-    for label in head(path)
+    for l in head(path)
         push!(nzval, 1)
-        push!(rowval, li[label])
+        push!(rowval, li[l])
     end
 
     push!(colptr, length(rowval) + 1)
     m = length(il); n = length(tensors)
     it = SparseMatrixCSC{Int, Int}(m, n + 1, colptr, rowval, nzval)
-    
+    ti = copy(transpose(it))
+
     # construct tree decomposition
-    clique = view(rowvals(it), nzrange(it, n))
+    clique = view(rowvals(it), nzrange(it, n + 1))
     alg = CompositeRotations(clique, config.alg)
-    perm, tree = cliquetree(weights, it * it'; alg)
+    perm, tree = cliquetree(weights, ti' * ti; alg)
     
     # permute hypergraph
     permute!(il, perm)
-    permute!(it, perm, oneto(n + 1))
+    permute!(ti, oneto(n + 1), perm)
 
     # compute subtree roots
     roots = Vector{Int}(undef, m)
@@ -63,7 +64,6 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     # construct expression
     tags = zeros(Bool, n + 1); tags[end] = true
     stack = EinExpr{L}[]
-    ti = copy(transpose(it))
 
     for (b, bag) in enumerate(tree)
         tensor = EinExpr(L[])
