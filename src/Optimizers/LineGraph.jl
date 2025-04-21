@@ -16,8 +16,13 @@ end
 function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {L}
     tensors = leaves(path)
 
-    # construct hypergraph
-    il = L[]; li = Dict{L, Int}()
+    # construct incidence matrix `ti`
+    #           indices
+    #         [         ]
+    # tensors [    ti   ]
+    #         [         ]
+    # we only care about the sparsity pattern
+    il = L[]; li = Dict{L, Int}() # il ∘ li = id
     weights = Float64[]; nzval = Int[]; rowval = Int[]
     colptr = Int[]; push!(colptr, 1)
 
@@ -35,6 +40,7 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
         push!(colptr, length(rowval) + 1)
     end
 
+    # add a "virtual" tensor with indices `head(path)`
     for l in head(path)
         push!(nzval, 1)
         push!(rowval, li[l])
@@ -45,23 +51,33 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     it = SparseMatrixCSC{Int, Int}(m, n + 1, colptr, rowval, nzval)
     ti = copy(transpose(it))
 
-    # construct tree decomposition
+    # construct line graph `ii`
+    #           indices
+    #         [         ]
+    # indices [    ii   ]
+    #         [         ]
+    # we only care about the sparsity pattern
+    ii = ti' * ti
+
+    # compute a tree (forest) decomposition of `ii`, ensuring
+    # that `clique` is contained in one of the roots
     clique = view(rowvals(it), nzrange(it, n + 1))
     alg = CompositeRotations(clique, config.alg)
-    perm, tree = cliquetree(weights, ti' * ti; alg)
+    perm, tree = cliquetree(weights, ii; alg)
     
-    # permute hypergraph
+    # permute incidence matrix `ti`
     permute!(il, perm)
     permute!(ti, oneto(n + 1), perm)
 
-    # compute subtree roots
+    # the vector `roots` maps each vertex to the root node
+    # of its subtree
     roots = Vector{Int}(undef, m)
 
     for (b, bag) in enumerate(tree), i in residual(bag)
         roots[i] = b
     end
 
-    # construct expression
+    # dynamic programming
     tags = zeros(Bool, n + 1); tags[end] = true
     stack = EinExpr{L}[]
 
@@ -86,9 +102,12 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
         push!(stack, tensor)
     end
 
-    result = first(stack)
+    # we now have an expression for each root
+    # of the tree decomposition
+    result = EinExpr(L[])
 
-    for tensor in stack[2:end]
+    # merge them into `result`
+    for tensor in stack
         append!(args(result), args(tensor))
     end
 
