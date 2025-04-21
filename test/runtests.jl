@@ -10,6 +10,7 @@ using Compat
         include("Naive_test.jl")
         include("Exhaustive_test.jl")
         include("Greedy_test.jl")
+        include("LineGraph_test.jl")
         include("KaHyPar_test.jl")
     end
     include("Slicing_test.jl")
