@@ -1,6 +1,6 @@
 using AbstractTrees
 using Base: oneto
-using CliqueTrees: EliminationAlgorithm, CompositeRotations, MF, cliquetree, residual, separator
+using CliqueTrees: EliminationAlgorithm, MF, cliquetree, cliquetree!, residual, separator
 using SparseArrays
 
 struct LineGraph{A <: EliminationAlgorithm} <: Optimizer
@@ -59,12 +59,31 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     # we only care about the sparsity pattern
     ii = ti' * ti
 
-    # compute a tree (forest) decomposition of `ii`, ensuring
-    # that `clique` is contained in one of the roots
-    clique = view(rowvals(it), nzrange(it, n + 1))
-    alg = CompositeRotations(clique, config.alg)
-    perm, tree = cliquetree(weights, ii; alg)
-    
+    # compute a tree (forest) decomposition of `ii`
+    perm, tree = cliquetree(weights, ii; alg=config.alg)
+   
+    # find the bag containing `clique`, call it `root`
+    clique = zeros(Bool, m); root = 0
+
+    for i in view(rowvals(it), nzrange(it, n + 1))
+        clique[i] = true
+    end
+
+    for (b, bag) in enumerate(tree)
+        !iszero(root) && break
+
+        for i in residual(bag)
+            !iszero(root) && break
+
+            if clique[perm[i]]
+                root = b
+            end
+        end
+    end
+
+    # make `root` a root node of the tree decomposition
+    permute!(perm, cliquetree!(tree, root))
+
     # permute incidence matrix `ti`
     permute!(il, perm)
     permute!(ti, oneto(n + 1), perm)

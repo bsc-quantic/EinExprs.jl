@@ -32,7 +32,7 @@ EinExprsMakieExt = "Makie"
 [compat]
 AbstractTrees = "0.4"
 ChainRulesCore = "1"
-CliqueTrees = "1.5.0"
+CliqueTrees = "1.5.1"
 Combinatorics = "1.0"
 Compat = "4"
 DataStructures = "0.18"

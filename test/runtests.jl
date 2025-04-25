@@ -1,4 +1,5 @@
 using Test
+using Tenet
 using EinExprs
 using Compat
 
