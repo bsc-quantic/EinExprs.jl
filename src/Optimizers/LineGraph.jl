@@ -125,13 +125,7 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
 
     # we now have an expression for each root
     # of the tree decomposition
-    result = EinExpr(copy(head(path)))
-
-    for tensor in stack
-        push!(args(result), tensor)
-    end
-
-    return result
+    return EinExpr(copy(head(path)), stack)
 end
 
 function einexpr(config::LineGraph, path::SizedEinExpr)
