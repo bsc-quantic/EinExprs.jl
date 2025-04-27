@@ -29,43 +29,41 @@ function random_regular_eincode(n::Integer, k::Integer)
     return SizedEinExpr(sum(exprs), sizedict)
 end
 
-function make()
+# m: number of trials
+# n: number of vertices
+# k: number of neighbors (3, 4, ..., 2 + k)
+function make(m::Integer, n::Integer, k::Integer)
     # construct ein-expressions
-    exprs = map(3:6) do k
-        random_regular_eincode(16, k)
+    exprs = Matrix{SizedEinExpr{Int}}(undef, k, m)
+
+    for i in 1:k, j in 1:m
+        exprs[i, j] = random_regular_eincode(n, 2 + i)
     end
 
     # construct benchmarks
-    n = length(exprs)
-
     suite = BenchmarkGroup()
-    suite["exhaustive"] = BenchmarkGroup([])
-    suite["greedy"] = BenchmarkGroup([])
-    suite["kahypar"] = BenchmarkGroup([])
-    suite["min-fill"] = BenchmarkGroup([])
+    count = Dict{String, Matrix{Int}}()
+    count["exhaustive"] = Matrix{Int}(undef, k, m)
+    count["greedy"] = Matrix{Int}(undef, k, m)
+    count["kahypar"] = Matrix{Int}(undef, k, m)
+    count["min-fill"] = Matrix{Int}(undef, k, m)
 
-    count = Dict{String, Vector{Int}}()
-    count["exhaustive"] = Vector{Int}(undef, n)
-    count["greedy"] = Vector{Int}(undef, n)
-    count["kahypar"] = Vector{Int}(undef, n)
-    count["min-fill"] = Vector{Int}(undef, n)
+    for i in 1:k, j in 1:m
+        expr = exprs[i, j]
 
-    for i in 1:n
-        expr = exprs[i]
+        suite["exhaustive"][i, j] = @benchmarkable einexpr(Exhaustive(), $expr)
+        suite["greedy"][i, j] = @benchmarkable einexpr(Greedy(), $expr)
+        suite["kahypar"][i, j] = @benchmarkable einexpr(HyPar(), $expr)
+        suite["min-fill"][i, j] = @benchmarkable einexpr(LineGraph(MF()), $expr)
 
-        suite["exhaustive"][i] = @benchmarkable einexpr(Exhaustive(), $expr)
-        suite["greedy"][i] = @benchmarkable einexpr(Greedy(), $expr)
-        suite["kahypar"][i] = @benchmarkable einexpr(HyPar(), $expr)
-        suite["min-fill"][i] = @benchmarkable einexpr(LineGraph(MF()), $expr)
-
-        count["exhaustive"][i] = mapreduce(flops, +, Branches(einexpr(Exhaustive(), expr)))
-        count["greedy"][i] = mapreduce(flops, +, Branches(einexpr(Greedy(), expr)))
-        count["kahypar"][i] = mapreduce(flops, +, Branches(einexpr(HyPar(), expr)))
-        count["min-fill"][i] = mapreduce(flops, +, Branches(einexpr(LineGraph(MF()), expr)))
+        count["exhaustive"][i, j] = mapreduce(flops, +, Branches(einexpr(Exhaustive(), expr)))
+        count["greedy"][i, j] = mapreduce(flops, +, Branches(einexpr(Greedy(), expr)))
+        count["kahypar"][i, j] = mapreduce(flops, +, Branches(einexpr(HyPar(), expr)))
+        count["min-fill"][i, j] = mapreduce(flops, +, Branches(einexpr(LineGraph(MF()), expr)))
     end
 
     # tune benchmarks
-    tune!(suite)
+    tune!(suite; verbose=true)
 
     # run benchmarks
     results = run(suite, verbose = true)
@@ -75,7 +73,7 @@ function make()
     x = Vector{Float64}[]
     y = Vector{Float64}[]
 
-    for i in 1:n
+    for i in 1:k
         push!(x, Float64[])
         push!(y, Float64[])
     end
@@ -83,15 +81,23 @@ function make()
     for name in keys(count)
         push!(names, name)
         
-        for i in 1:n
-            push!(x[i], count[name][i])
-            push!(y[i], time(minimum(results[name][i])))
+        for i in 1:k
+            xx = 0.0
+            yy = 0.0
+
+            for j in 1:m
+                xx += count[name][i, j] / m
+                yy += time(minimum(results[name][i, j])) / m
+            end
+    
+            push!(x[i], xx)
+            push!(y[i], yy)
         end
     end
 
-    figure = Figure(; size=(600, 800))
+    figure = Figure(; size=(600, 200 * k))
 
-    for i in 1:n - 1
+    for i in 1:k - 1
         axis = Axis(figure[i, 1];
             ylabel = "time (ns)",
             xscale=log10,
@@ -104,7 +110,7 @@ function make()
         text!(axis, x[i], y[i]; text=names)
     end
 
-    axis = Axis(figure[n, 1];
+    axis = Axis(figure[k, 1];
         ylabel = "time (ns)",
         xlabel = "flops",
         xscale=log10,
@@ -113,10 +119,10 @@ function make()
         yautolimitmargin = (0.1, 0.2),
     )
 
-    scatter!(axis, x[n], y[n])
-    text!(axis, x[n], y[n]; text=names)
+    scatter!(axis, x[k], y[k])
+    text!(axis, x[k], y[k]; text=names)
 
     save("figure.png", figure)
 end
 
-make()
+make(5, 16, 3)
