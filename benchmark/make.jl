@@ -2,78 +2,40 @@ using BenchmarkTools
 using CairoMakie
 using CliqueTrees
 using EinExprs
+using Graphs
+using Random
 
 import KaHyPar
-import TreeWidthSolver
+
+Random.seed!(1)
+
+function random_regular_eincode(n::Integer, k::Integer)
+    graph = random_regular_graph(n, k)
+    exprs = Vector{EinExpr{Int}}(undef, n)
+    sizedict = Dict{Int, Int}()
+    
+    for v in vertices(graph)
+        exprs[v] = EinExpr(Int[])
+    end
+    
+    for (i, edge) in enumerate(edges(graph))
+        v = src(edge)
+        w = dst(edge)
+        push!(head(exprs[v]), i)
+        push!(head(exprs[w]), i)
+        sizedict[i] = 2
+    end
+    
+    return SizedEinExpr(sum(exprs), sizedict)
+end
 
 function make()
-    # benchmark 1
-    expr1 = SizedEinExpr(
-        sum([
-            EinExpr([1]),
-            EinExpr([1, 2]),
-            EinExpr([3]),
-            EinExpr([3, 4]),
-            EinExpr([3, 5]),
-            EinExpr([2, 4, 6]),
-            EinExpr([6, 7]),
-            EinExpr([5, 6, 8]),
-        ]),
-        Dict(1 => 2, 2 => 2, 3 => 2, 4 => 2, 5 => 2, 6 => 2, 7 => 2, 8 => 2),
-    )
-
-    # benchmark 2
-    expr2 = SizedEinExpr(
-        sum([
-            EinExpr([4]),
-            EinExpr([1, 2]),
-            EinExpr([3, 5, 6]),
-            EinExpr([2, 6, 8]),
-            EinExpr([1, 3]),
-            EinExpr([1]),
-            EinExpr([4, 5]),
-            EinExpr([6, 7]),
-        ]),
-        Dict(1 => 2, 2 => 2, 3 => 2, 4 => 2, 5 => 2, 6 => 2, 7 => 2, 8 => 2),
-    )
-
-    # benchmark 3
-    expr3 = SizedEinExpr(
-        sum([
-            EinExpr([1]),
-            EinExpr([1, 2]),
-            EinExpr([3]),
-            EinExpr([1, 3, 4]),
-            EinExpr([4, 5]),
-            EinExpr([1, 3, 6]),
-            EinExpr([6, 7]),
-            EinExpr([8]),
-            EinExpr([3, 8, 9]),
-            EinExpr([9, 10]),
-        ]),
-        Dict(1 => 2, 2 => 2, 3 => 2, 4 => 2, 5 => 2, 6 => 2, 7 => 2, 8 => 2, 9 => 2, 10 => 2),
-    )
-
-    # benchmark 4
-    expr4 = SizedEinExpr(
-        sum([
-            EinExpr([1, 2, 8]),
-            EinExpr([2, 4, 8]),
-            EinExpr([3, 8, 9]),
-            EinExpr([4, 8, 9, 11]),
-            EinExpr([5, 8, 9]),
-            EinExpr([6, 7, 10]),
-            EinExpr([7, 10]),
-            EinExpr([8, 9]),
-            EinExpr([9]),
-            EinExpr([10]),
-            EinExpr([9, 8, 11])
-        ]),
-        Dict(1 => 2, 2 => 2, 3 => 2, 4 => 2, 5 => 2, 6 => 2, 7 => 2, 8 => 2, 9 => 2, 10 => 2, 11 => 2),
-    )
+    # construct ein-expressions
+    exprs = map(3:6) do k
+        random_regular_eincode(16, k)
+    end
 
     # construct benchmarks
-    exprs = [expr1, expr2, expr3, expr4]
     n = length(exprs)
 
     suite = BenchmarkGroup()
@@ -81,29 +43,25 @@ function make()
     suite["greedy"] = BenchmarkGroup([])
     suite["kahypar"] = BenchmarkGroup([])
     suite["min-fill"] = BenchmarkGroup([])
-    suite["bouchitte-todinca"] = BenchmarkGroup([])
 
     count = Dict{String, Vector{Int}}()
     count["exhaustive"] = Vector{Int}(undef, n)
     count["greedy"] = Vector{Int}(undef, n)
     count["kahypar"] = Vector{Int}(undef, n)
     count["min-fill"] = Vector{Int}(undef, n)
-    count["bouchitte-todinca"] = Vector{Int}(undef, n)
 
     for i in 1:n
         expr = exprs[i]
 
-        suite["exhaustive"][i] = @benchmarkable einexpr(Exhaustive(; strategy=:depth), $expr)
+        suite["exhaustive"][i] = @benchmarkable einexpr(Exhaustive(), $expr)
         suite["greedy"][i] = @benchmarkable einexpr(Greedy(), $expr)
         suite["kahypar"][i] = @benchmarkable einexpr(HyPar(), $expr)
         suite["min-fill"][i] = @benchmarkable einexpr(LineGraph(MF()), $expr)
-        suite["bouchitte-todinca"][i] = @benchmarkable einexpr(LineGraph(SafeRules(BT())), $expr)
 
-        count["exhaustive"][i] = mapreduce(flops, +, Branches(einexpr(Exhaustive(; strategy=:depth), expr)))
+        count["exhaustive"][i] = mapreduce(flops, +, Branches(einexpr(Exhaustive(), expr)))
         count["greedy"][i] = mapreduce(flops, +, Branches(einexpr(Greedy(), expr)))
         count["kahypar"][i] = mapreduce(flops, +, Branches(einexpr(HyPar(), expr)))
         count["min-fill"][i] = mapreduce(flops, +, Branches(einexpr(LineGraph(MF()), expr)))
-        count["bouchitte-todinca"][i] = mapreduce(flops, +, Branches(einexpr(LineGraph(SafeRules(BT())), expr)))
     end
 
     # tune benchmarks
