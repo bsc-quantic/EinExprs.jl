@@ -4,5 +4,12 @@ To run these benchmarks, navigate to the `benchmark` directory and run the follo
 ```
 julia --project make.jl
 ```
+## Random Regular Graph
 
-![](figure.png)
+### |V| = 16
+
+![](16.png)
+
+### |V| = 512
+
+![](512.png)

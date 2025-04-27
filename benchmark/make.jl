@@ -9,6 +9,13 @@ import KaHyPar
 
 Random.seed!(1)
 
+const OPTIMIZERS = Dict(
+    "exhaustive" => Exhaustive(),
+    "greedy" => Greedy(),
+    "kahypar" => HyPar(),
+    "min-fill" => LineGraph(MF()),
+)
+
 function random_regular_eincode(n::Integer, k::Integer)
     graph = random_regular_graph(n, k)
     exprs = Vector{EinExpr{Int}}(undef, n)
@@ -32,7 +39,7 @@ end
 # m: number of trials
 # n: number of vertices
 # k: number of neighbors (3, 4, ..., 2 + k)
-function make(m::Integer, n::Integer, k::Integer)
+function make(m::Integer, n::Integer, k::Integer, optimizers::Vector{String})
     # construct ein-expressions
     exprs = Matrix{SizedEinExpr{Int}}(undef, k, m)
 
@@ -42,24 +49,20 @@ function make(m::Integer, n::Integer, k::Integer)
 
     # construct benchmarks
     suite = BenchmarkGroup()
-    count = Dict{String, Matrix{Int}}()
-    count["exhaustive"] = Matrix{Int}(undef, k, m)
-    count["greedy"] = Matrix{Int}(undef, k, m)
-    count["kahypar"] = Matrix{Int}(undef, k, m)
-    count["min-fill"] = Matrix{Int}(undef, k, m)
+    count = Dict{String, Matrix{BigInt}}()
+
+    for name in optimizers
+        count[name] = Matrix{BigInt}(undef, k, m)
+    end
 
     for i in 1:k, j in 1:m
         expr = exprs[i, j]
 
-        suite["exhaustive"][i, j] = @benchmarkable einexpr(Exhaustive(), $expr)
-        suite["greedy"][i, j] = @benchmarkable einexpr(Greedy(), $expr)
-        suite["kahypar"][i, j] = @benchmarkable einexpr(HyPar(), $expr)
-        suite["min-fill"][i, j] = @benchmarkable einexpr(LineGraph(MF()), $expr)
-
-        count["exhaustive"][i, j] = mapreduce(flops, +, Branches(einexpr(Exhaustive(), expr)))
-        count["greedy"][i, j] = mapreduce(flops, +, Branches(einexpr(Greedy(), expr)))
-        count["kahypar"][i, j] = mapreduce(flops, +, Branches(einexpr(HyPar(), expr)))
-        count["min-fill"][i, j] = mapreduce(flops, +, Branches(einexpr(LineGraph(MF()), expr)))
+        for name in optimizers
+            opt = OPTIMIZERS[name]
+            suite[name][i, j] = @benchmarkable einexpr($opt, $expr)
+            count[name][i, j] = mapreduce(flops, +, Branches(einexpr(opt, expr)))
+        end
     end
 
     # tune benchmarks
@@ -69,7 +72,6 @@ function make(m::Integer, n::Integer, k::Integer)
     results = run(suite, verbose = true)
 
     # construct plots
-    names = String[]
     x = Vector{Float64}[]
     y = Vector{Float64}[]
 
@@ -78,21 +80,17 @@ function make(m::Integer, n::Integer, k::Integer)
         push!(y, Float64[])
     end
         
-    for name in keys(count)
-        push!(names, name)
-        
-        for i in 1:k
-            xx = 0.0
-            yy = 0.0
+    for name in optimizers, i in 1:k
+        xx = 0.0
+        yy = 0.0
 
-            for j in 1:m
-                xx += count[name][i, j] / m
-                yy += time(minimum(results[name][i, j])) / m
-            end
-    
-            push!(x[i], xx)
-            push!(y[i], yy)
+        for j in 1:m
+            xx += count[name][i, j] / m
+            yy += time(minimum(results[name][i, j])) / m
         end
+
+        push!(x[i], xx)
+        push!(y[i], yy)
     end
 
     figure = Figure(; size=(600, 200 * k))
@@ -107,7 +105,7 @@ function make(m::Integer, n::Integer, k::Integer)
         )
 
         scatter!(axis, x[i], y[i])
-        text!(axis, x[i], y[i]; text=names)
+        text!(axis, x[i], y[i]; text=optimizers)
     end
 
     axis = Axis(figure[k, 1];
@@ -120,9 +118,25 @@ function make(m::Integer, n::Integer, k::Integer)
     )
 
     scatter!(axis, x[k], y[k])
-    text!(axis, x[k], y[k]; text=names)
+    text!(axis, x[k], y[k]; text=optimizers)
 
-    save("figure.png", figure)
+    save("$n.png", figure)
 end
 
-make(5, 16, 3)
+# random regular graph:
+#   |V| = 16
+#   k ∈ {3, 4, 5}
+make(5, 16, 3, [
+    "exhaustive",
+    "greedy",
+    "kahypar",
+    "min-fill",
+])
+
+# random regular graph
+#   |V| = 512
+#   k ∈ {3, 4, 5}
+make(5, 512, 3, [
+    "greedy",
+    "min-fill",
+])
