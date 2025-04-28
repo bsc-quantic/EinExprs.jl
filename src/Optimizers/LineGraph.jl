@@ -141,7 +141,7 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
         result = EinExpr(copy(head(path)), stack)
     end
 
-    return result
+    return canonize!(Binarize(), result)
 end
 
 function einexpr(config::LineGraph, path::SizedEinExpr)

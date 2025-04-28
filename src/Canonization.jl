@@ -44,3 +44,27 @@ function canonize!(::SumOpenInds, path::SizedEinExpr)
 
     return path
 end
+
+"""
+    Binarize
+
+Binarize an n-ary contraction tree.
+"""
+struct Binarize <: Canonization end
+
+function canonize!(::Binarize, path::EinExpr)
+    if length(args(path)) > 2
+        copy!(args(path), args(einexpr(Naive(), path)))
+    end
+
+    for arg in args(path)
+        canonize!(Binarize(), arg)
+    end
+
+    return path
+end
+
+function canonize!(::Binarize, path::SizedEinExpr)
+    canonize!(Binarize(), path.path)
+    return path
+end
