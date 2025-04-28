@@ -135,7 +135,13 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
 
     # we now have an expression for each root
     # of the tree decomposition
-    return EinExpr(copy(head(path)), stack)
+    if isone(length(stack))
+        result = only(stack)
+    else
+        result = EinExpr(copy(head(path)), stack)
+    end
+
+    return result
 end
 
 function einexpr(config::LineGraph, path::SizedEinExpr)
