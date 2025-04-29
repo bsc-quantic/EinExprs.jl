@@ -11,7 +11,7 @@ Random.seed!(1)
 
 const OPTIMIZERS = Dict(
     "exhaustive" => Exhaustive(),
-    "greedy" => Greedy(),
+    "greedy" => Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 0.5 * rand())),
     "kahypar" => HyPar(),
     "min-fill" => LineGraph(MF()),
 )
@@ -120,7 +120,7 @@ function make(m::Integer, n::Integer, k::Integer, optimizers::Vector{String})
     scatter!(axis, x[k], y[k])
     text!(axis, x[k], y[k]; text=optimizers)
 
-    save("$n.png", figure)
+    save("$n.svg", figure)
 end
 
 # random regular graph:

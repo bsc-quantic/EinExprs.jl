@@ -8,8 +8,8 @@ julia --project make.jl
 
 ### |V| = 16
 
-![](16.png)
+![](16.svg)
 
 ### |V| = 512
 
-![](512.png)
+![](512.svg)
