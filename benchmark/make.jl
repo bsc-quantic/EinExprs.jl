@@ -9,9 +9,32 @@ import KaHyPar
 
 Random.seed!(1)
 
+struct BestOfK{T <: Optimizer} <: Optimizer
+    opt::T
+    k::Int
+end
+
+function EinExprs.einexpr(optimizer::BestOfK, expr::SizedEinExpr)
+    e = expr
+    n = mapreduce(flops, +, Branches(e))
+
+    for _ in 1:optimizer.k
+        ee = einexpr(optimizer.opt, expr)
+        nn = mapreduce(flops, +, Branches(ee))
+
+        if nn < n
+            e = ee
+            n = nn
+        end
+    end
+
+    return e
+end
+
 const OPTIMIZERS = Dict(
     "exhaustive" => Exhaustive(),
-    "greedy" => Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 5 * rand())),
+    "random-greedy" => BestOfK(Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 5 * rand())), 10),
+    "greedy" => Greedy(),
     "kahypar" => HyPar(),
     "min-fill" => LineGraph(MF()),
 )
@@ -129,6 +152,7 @@ end
 make(5, 16, 3, [
     "exhaustive",
     "greedy",
+    "random-greedy",
     "kahypar",
     "min-fill",
 ])
@@ -138,5 +162,6 @@ make(5, 16, 3, [
 #   k ∈ {3, 4, 5}
 make(5, 512, 3, [
     "greedy",
+    "random-greedy",
     "min-fill",
 ])
