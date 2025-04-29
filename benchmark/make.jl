@@ -11,7 +11,7 @@ Random.seed!(1)
 
 const OPTIMIZERS = Dict(
     "exhaustive" => Exhaustive(),
-    "greedy" => Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 0.5 * rand())),
+    "greedy" => Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 5 * rand())),
     "kahypar" => HyPar(),
     "min-fill" => LineGraph(MF()),
 )
