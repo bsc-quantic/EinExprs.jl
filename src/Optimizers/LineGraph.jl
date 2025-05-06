@@ -3,6 +3,16 @@ using Base: oneto
 using CliqueTrees: EliminationAlgorithm, MF, cliquetree, cliquetree!, residual, separator
 using SparseArrays
 
+"""
+    LineGraph(alg::EliminationAlgorithm)
+
+Tree decomposition based solver. Constructs the line graph of a tensor networks and finds a tree
+decomposition using [CliqueTrees.jl](https://github.com/AlgebraicJulia/CliqueTrees.jl).
+
+# Arguments
+
+  - `alg` is an elimination algorithm. See the list [here](https://algebraicjulia.github.io/CliqueTrees.jl/stable/api/#Elimination-Algorithms).
+"""
 struct LineGraph{A <: EliminationAlgorithm} <: Optimizer
     alg::A
 end
@@ -125,7 +135,13 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
 
     # we now have an expression for each root
     # of the tree decomposition
-    return EinExpr(copy(head(path)), stack)
+    if isone(length(stack))
+        result = only(stack)
+    else
+        result = EinExpr(copy(head(path)), stack)
+    end
+
+    return canonize!(Binarize(), result)
 end
 
 function einexpr(config::LineGraph, path::SizedEinExpr)

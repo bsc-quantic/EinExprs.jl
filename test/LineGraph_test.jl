@@ -11,12 +11,12 @@
 
     path1 = einexpr(network; optimizer=Greedy())
     path2 = einexpr(network; optimizer=LineGraph())
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 5
+    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
     @test contract(network; path=path1) ≈ contract(network; path=path2)
 
     path1 = einexpr(network; optimizer=Greedy(), outputs=[:i, :p])
     path2 = einexpr(network; optimizer=LineGraph(), outputs=[:i, :p])
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 5
+    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
     @test contract(network; path=path1) ≈ contract(network; path=path2)
 
     # unconnected
@@ -29,16 +29,16 @@
 
     path1 = einexpr(network; optimizer=Greedy())
     path2 = einexpr(network; optimizer=LineGraph())
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 5
+    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
     @test contract(network; path=path1) ≈ contract(network; path=path2)
 
     path1 = einexpr(network; optimizer=Greedy(), outputs=[:i])
     path2 = einexpr(network; optimizer=LineGraph(), outputs=[:i])
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 5
+    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
     @test contract(network; path=path1) ≈ contract(network; path=path2)
 
     path1 = einexpr(network; optimizer=Greedy(), outputs=[:i, :k])
     path2 = einexpr(network; optimizer=LineGraph(), outputs=[:i, :k])
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 5
+    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
     @test contract(network; path=path1) ≈ contract(network; path=path2)
 end

@@ -1,66 +1,167 @@
-using Pkg
-Pkg.activate(@__DIR__)
-Pkg.instantiate()
-
-push!(LOAD_PATH, "$(@__DIR__)/..")
-
 using BenchmarkTools
+using CairoMakie
+using CliqueTrees
 using EinExprs
+using Graphs
+using Random
 
-suite = BenchmarkGroup()
+import KaHyPar
 
-suite["naive"] = BenchmarkGroup([])
-suite["exhaustive"] = BenchmarkGroup([])
-suite["greedy"] = BenchmarkGroup([])
-suite["kahypar"] = BenchmarkGroup([])
+Random.seed!(1)
 
-# BENCHMARK 1
-expr = sum([
-    EinExpr([:j, :b, :i, :h], Dict(i => 2 for i in [:j, :b, :i, :h])),
-    EinExpr([:a, :c, :e, :f], Dict(i => 2 for i in [:a, :c, :e, :f])),
-    EinExpr([:j], Dict(i => 2 for i in [:j])),
-    EinExpr([:e, :a, :g], Dict(i => 2 for i in [:e, :a, :g])),
-    EinExpr([:f, :b], Dict(i => 2 for i in [:f, :b])),
-    EinExpr([:i, :h, :d], Dict(i => 2 for i in [:i, :h, :d])),
-    EinExpr([:d, :g, :c], Dict(i => 2 for i in [:d, :g, :c])),
+struct BestOfK{T <: Optimizer} <: Optimizer
+    opt::T
+    k::Int
+end
+
+function EinExprs.einexpr(optimizer::BestOfK, expr::SizedEinExpr)
+    e = expr
+    n = mapreduce(flops, +, Branches(e))
+
+    for _ in 1:optimizer.k
+        ee = einexpr(optimizer.opt, expr)
+        nn = mapreduce(flops, +, Branches(ee))
+
+        if nn < n
+            e = ee
+            n = nn
+        end
+    end
+
+    return e
+end
+
+const OPTIMIZERS = Dict(
+    "exhaustive" => Exhaustive(),
+    "random-greedy" => BestOfK(Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 5 * rand())), 10),
+    "greedy" => Greedy(),
+    "kahypar" => HyPar(),
+    "min-fill" => LineGraph(MF()),
+)
+
+function random_regular_eincode(n::Integer, k::Integer)
+    graph = random_regular_graph(n, k)
+    exprs = Vector{EinExpr{Int}}(undef, n)
+    sizedict = Dict{Int, Int}()
+    
+    for v in vertices(graph)
+        exprs[v] = EinExpr(Int[])
+    end
+    
+    for (i, edge) in enumerate(edges(graph))
+        v = src(edge)
+        w = dst(edge)
+        push!(head(exprs[v]), i)
+        push!(head(exprs[w]), i)
+        sizedict[i] = 2
+    end
+    
+    return SizedEinExpr(sum(exprs), sizedict)
+end
+
+# m: number of trials
+# n: number of vertices
+# k: number of neighbors (3, 4, ..., 2 + k)
+function make(m::Integer, n::Integer, k::Integer, optimizers::Vector{String})
+    # construct ein-expressions
+    exprs = Matrix{SizedEinExpr{Int}}(undef, k, m)
+
+    for i in 1:k, j in 1:m
+        exprs[i, j] = random_regular_eincode(n, 2 + i)
+    end
+
+    # construct benchmarks
+    suite = BenchmarkGroup()
+    count = Dict{String, Matrix{BigInt}}()
+
+    for name in optimizers
+        count[name] = Matrix{BigInt}(undef, k, m)
+    end
+
+    for i in 1:k, j in 1:m
+        expr = exprs[i, j]
+
+        for name in optimizers
+            opt = OPTIMIZERS[name]
+            suite[name][i, j] = @benchmarkable einexpr($opt, $expr)
+            count[name][i, j] = mapreduce(flops, +, Branches(einexpr(opt, expr)))
+        end
+    end
+
+    # tune benchmarks
+    tune!(suite; verbose=true)
+
+    # run benchmarks
+    results = run(suite, verbose = true)
+
+    # construct plots
+    x = Vector{Float64}[]
+    y = Vector{Float64}[]
+
+    for i in 1:k
+        push!(x, Float64[])
+        push!(y, Float64[])
+    end
+        
+    for name in optimizers, i in 1:k
+        xx = 0.0
+        yy = 0.0
+
+        for j in 1:m
+            xx += count[name][i, j] / m
+            yy += time(minimum(results[name][i, j])) / m
+        end
+
+        push!(x[i], xx)
+        push!(y[i], yy)
+    end
+
+    figure = Figure(; size=(600, 200 * k))
+
+    for i in 1:k - 1
+        axis = Axis(figure[i, 1];
+            ylabel = "time (ns)",
+            xscale=log10,
+            yscale=log10,
+            xautolimitmargin = (0.1, 0.2),
+            yautolimitmargin = (0.1, 0.2),
+        )
+
+        scatter!(axis, x[i], y[i])
+        text!(axis, x[i], y[i]; text=optimizers)
+    end
+
+    axis = Axis(figure[k, 1];
+        ylabel = "time (ns)",
+        xlabel = "flops",
+        xscale=log10,
+        yscale=log10,
+        xautolimitmargin = (0.1, 0.2),
+        yautolimitmargin = (0.1, 0.2),
+    )
+
+    scatter!(axis, x[k], y[k])
+    text!(axis, x[k], y[k]; text=optimizers)
+
+    save("$n.svg", figure)
+end
+
+# random regular graph:
+#   |V| = 16
+#   k ∈ {3, 4, 5}
+make(5, 16, 3, [
+    "exhaustive",
+    "greedy",
+    "random-greedy",
+    "kahypar",
+    "min-fill",
 ])
 
-suite["naive"][1] = @benchmarkable einexpr(EinExprs.Naive(), $expr)
-suite["exhaustive"][1] = @benchmarkable einexpr(Exhaustive(), $expr)
-suite["greedy"][1] = @benchmarkable einexpr(Greedy(), $expr)
-suite["kahypar"][1] = @benchmarkable einexpr(HyPar(), $expr)
-
-# BENCHMARK 2
-A = EinExpr([:A, :a, :b, :c], Dict(:A => 2, :a => 2, :b => 2, :c => 2))
-B = EinExpr([:b, :d, :e, :f], Dict(:b => 2, :d => 2, :e => 2, :f => 2))
-C = EinExpr([:a, :e, :g, :C], Dict(:a => 2, :e => 2, :g => 2, :C => 2))
-D = EinExpr([:c, :h, :d, :i], Dict(:c => 2, :h => 2, :d => 2, :i => 2))
-E = EinExpr([:f, :i, :g, :j], Dict(:f => 2, :i => 2, :g => 2, :j => 2))
-F = EinExpr([:B, :h, :k, :l], Dict(:B => 2, :h => 2, :k => 2, :l => 2))
-G = EinExpr([:j, :k, :l, :D], Dict(:j => 2, :k => 2, :l => 2, :D => 2))
-expr = sum([A, B, C, D, E, F, G], skip = [:A, :B, :C, :D])
-
-suite["naive"][2] = @benchmarkable einexpr(EinExprs.Naive(), $expr)
-suite["exhaustive"][2] = @benchmarkable einexpr(Exhaustive(), $expr)
-suite["greedy"][2] = @benchmarkable einexpr(Greedy(), $expr)
-suite["kahypar"][2] = @benchmarkable einexpr(HyPar(), $expr)
-
-# Tuning
-tune!(suite)
-
-# Run
-GC.enable(false)
-results = run(suite, verbose = true)
-GC.enable(true)
-
-using BenchmarkPlots, StatsPlots
-
-for (method, group) in results
-    plt = plot(
-        results[method],
-        yaxis = (:log10, "Execution time [ns]"),
-        xaxis = (:flip, "Benchmark set"),
-        title = "$method",
-    )
-    display(plt)
-end
+# random regular graph
+#   |V| = 512
+#   k ∈ {3, 4, 5}
+make(5, 512, 3, [
+    "greedy",
+    "random-greedy",
+    "min-fill",
+])
