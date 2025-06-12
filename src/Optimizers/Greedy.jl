@@ -32,7 +32,7 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
     path = sumtraces(path)
     metric = config.metric(sizedict)
 
-    hyperhistogram = filter!(indshistogram(args(path)...)) do (_, v)
+    hyperhistogram = filter!(indshistogram(args(path))) do (_, v)
         v > 2
     end
 
