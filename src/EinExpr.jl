@@ -197,7 +197,19 @@ parsuminds(path::EinExpr) =
 indshistogram(exprs...) = mergewith(+, map(exprs) do expr
     Dict(i => 1 for i in head(expr))
 end...)
-indshistogram(exprs::Vector) = indshistogram(exprs...)
+
+#indshistogram(exprs::Vector) = indshistogram(exprs...)
+
+function indshistogram(exprs::Vector{EinExpr{L}}) where {L}
+    histogram = Dict{L, Int}()
+
+    for expr in exprs, i in head(expr)
+        count = get!(histogram, i, 0)
+        histogram[i] = count + 1
+    end
+
+    return histogram
+end
 
 """
     sum!(path, indices)
