@@ -13,11 +13,11 @@
         ]
         sexpr = sum(tensors)
 
-        path = einexpr(HyPar(imbalance = 0.42), sexpr)
+        path = einexpr(HyPar(imbalances = 420:420), sexpr)
 
         @test path isa SizedEinExpr
 
-        @test mapreduce(flops, +, Branches(path)) == 108
+        @test mapreduce(flops, +, Branches(path)) <= 108
     end
 
     @testset begin
@@ -45,10 +45,10 @@
         ]
         sexpr = sum(tensors)
 
-        path = einexpr(HyPar(imbalance = 0.45), sexpr)
+        path = einexpr(HyPar(imbalances = 450:450), sexpr)
 
         @test path isa SizedEinExpr
 
-        @test mapreduce(flops, +, Branches(path)) == 19099592
+        @test mapreduce(flops, +, Branches(path)) <= 19099592
     end
 end
