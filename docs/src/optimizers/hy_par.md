@@ -1,5 +1,5 @@
 # Nested dissection optimizer
 
 ```@docs
-EinExprs.NesDis
+EinExprs.HyPar
 ```

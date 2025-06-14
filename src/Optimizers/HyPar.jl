@@ -1,7 +1,7 @@
 using CliqueTrees: MF, MMD, ND, SafeRules, KaHyParND, METISND
 
 """
-    NesDis(dis, algs;
+    HyPar(dis, algs;
         level = 6,
         width = 120,
         imbalances = 130:130,
@@ -32,7 +32,7 @@ The optimizer is implemented using the tree decomposition library
   - `imbalances`: imbalance parameters 
 
 """
-struct NesDis{D, A} <: Optimizer
+struct HyPar{D, A} <: Optimizer
     dis::D
     algs::A
     level::Int
@@ -40,13 +40,13 @@ struct NesDis{D, A} <: Optimizer
     imbalances::StepRange{Int, Int}
 end
 
-function NesDis(dis::D=KaHyParND(), algs::A = (MF(), MMD());
+function HyPar(dis::D=KaHyParND(), algs::A = (MF(), MMD());
         level::Integer = 6,
         width::Integer = 120,
         imbalances::AbstractRange=130:130,
     ) where{D, A}
 
-    return NesDis{D, A}(dis, algs, level, width, imbalances)
+    return HyPar{D, A}(dis, algs, level, width, imbalances)
 end
 
 # scoring function used during
@@ -55,7 +55,7 @@ function score(path::SizedEinExpr)
     return log2(mapreduce(flops, +, Branches(path)))
 end
 
-function EinExprs.einexpr(config::NesDis, path)
+function EinExprs.einexpr(config::HyPar, path)
     dis = config.dis
     algs = config.algs
     level = config.level
@@ -83,8 +83,8 @@ function EinExprs.einexpr(config::NesDis, path)
     return minpath
 end
 
-function Base.show(io::IO, ::MIME"text/plain", config::NesDis{D, A}) where {D, A}
-    println(io, "NesDis{$D, $A}:")
+function Base.show(io::IO, ::MIME"text/plain", config::HyPar{D, A}) where {D, A}
+    println(io, "HyPar{$D, $A}:")
     show(IOContext(io, :indent => 4), "text/plain", config.dis)
 
     for alg in config.algs

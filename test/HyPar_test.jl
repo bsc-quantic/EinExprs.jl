@@ -1,4 +1,4 @@
-@testset "NesDis" begin
+@testset "HyPar" begin
     using CliqueTrees, KaHyPar, Metis
 
     for dis in (METISND(), KaHyParND())
@@ -14,7 +14,7 @@
             ]
             sexpr = sum(tensors)
 
-            path = einexpr(NesDis(dis; imbalances = 420:420), sexpr)
+            path = einexpr(HyPar(dis; imbalances = 420:420), sexpr)
 
             @test path isa SizedEinExpr
 
@@ -46,7 +46,7 @@
             ]
             sexpr = sum(tensors)
 
-            path = einexpr(NesDis(dis; imbalances = 450:450), sexpr)
+            path = einexpr(HyPar(dis; imbalances = 450:450), sexpr)
 
             @test path isa SizedEinExpr
 

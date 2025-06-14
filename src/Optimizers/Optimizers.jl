@@ -17,5 +17,5 @@ end
 include("Naive.jl")
 include("Exhaustive.jl")
 include("Greedy.jl")
-include("NesDis.jl")
+include("HyPar.jl")
 include("LineGraph.jl")
