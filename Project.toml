@@ -19,14 +19,12 @@ Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
-KaHyPar = "2a6221f6-aa48-11e9-3542-2d9e0ef01880"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [extensions]
 EinExprsChainRulesCoreExt = "ChainRulesCore"
 EinExprsFiniteDifferencesExt = "FiniteDifferences"
 EinExprsGraphMakieExt = ["Makie", "GraphMakie"]
-EinExprsKaHyParExt = "KaHyPar"
 EinExprsMakieExt = "Makie"
 
 [compat]
@@ -39,7 +37,6 @@ DataStructures = "0.18"
 FiniteDifferences = "0.12"
 GraphMakie = "0.5"
 Graphs = "1.6"
-KaHyPar = "0.3.1"
 Makie = "0.19, 0.20, 0.21, 0.22, 0.23"
 PackageExtensionCompat = "1"
 SparseArrays = "1.10.0"
@@ -50,5 +47,4 @@ julia = "1.6"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
-KaHyPar = "2a6221f6-aa48-11e9-3542-2d9e0ef01880"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"

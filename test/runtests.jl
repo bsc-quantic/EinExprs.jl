@@ -12,7 +12,7 @@ using Compat
         include("Exhaustive_test.jl")
         include("Greedy_test.jl")
         include("LineGraph_test.jl")
-        include("KaHyPar_test.jl")
+        include("HyPar_test.jl")
     end
     include("Slicing_test.jl")
 end
