@@ -1,4 +1,4 @@
-module EinExprsKaHyParExt
+module EinExprsMetisExt
 
 using CliqueTrees
 using EinExprs
@@ -7,13 +7,13 @@ function score(path::SizedEinExpr)
     return log2(mapreduce(flops, +, Branches(path)))
 end
 
-function EinExprs.einexpr(config::HyPar, path)
+function EinExprs.einexpr(config::NesDis, path)
     algs = config.algs
     level = config.level
     width = config.width
     imbalances = config.imbalances
 
-    dis = KaHyParND()
+    dis = METISND()
     minpath = nothing; minscore = typemax(Float64)
 
     for alg in algs, imbalance in imbalances

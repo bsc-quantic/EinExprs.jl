@@ -21,6 +21,7 @@ FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
 KaHyPar = "2a6221f6-aa48-11e9-3542-2d9e0ef01880"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+Metis = "2679e427-3c69-5b7f-982b-ece356f1e94b"
 
 [extensions]
 EinExprsChainRulesCoreExt = "ChainRulesCore"
@@ -28,6 +29,7 @@ EinExprsFiniteDifferencesExt = "FiniteDifferences"
 EinExprsGraphMakieExt = ["Makie", "GraphMakie"]
 EinExprsKaHyParExt = "KaHyPar"
 EinExprsMakieExt = "Makie"
+EinExprsMetisExt = "Metis"
 
 [compat]
 AbstractTrees = "0.4"
@@ -41,6 +43,7 @@ GraphMakie = "0.5"
 Graphs = "1.6"
 KaHyPar = "0.3.1"
 Makie = "0.19, 0.20, 0.21, 0.22, 0.23"
+Metis = "1.5"
 PackageExtensionCompat = "1"
 SparseArrays = "1.10.0"
 Suppressor = "0.2"
@@ -52,3 +55,4 @@ FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
 KaHyPar = "2a6221f6-aa48-11e9-3542-2d9e0ef01880"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+Metis = "2679e427-3c69-5b7f-982b-ece356f1e94b"

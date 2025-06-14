@@ -1,4 +1,4 @@
-@testset "KaHyPar" begin
+@testset "HyPar" begin
     using KaHyPar
 
     @testset begin

@@ -17,7 +17,7 @@ makedocs(
         "Home"=>"index.md",
         "Einsum Expressions"=>"einexpr.md",
         "Resource counting"=>"counters.md",
-        "Optimizers"=>["Exhaustive" => "optimizers/exhaustive.md", "Greedy" => "optimizers/greedy.md", "LineGraph" => "optimizers/line_graph.md", "HyPar" => "optimizers/hy_par.md"],
+        "Optimizers"=>["Exhaustive" => "optimizers/exhaustive.md", "Greedy" => "optimizers/greedy.md", "LineGraph" => "optimizers/line_graph.md", "HyPar" => "optimizers/hy_par.md", "NesDis" => "optimizers/nes_dis.md"],
         "Slicing"=>"slicing.md",
         "Alternatives"=>"alternatives.md",
     ],

@@ -20,7 +20,7 @@ include("Canonization.jl")
 
 include("Optimizers/Optimizers.jl")
 export Optimizer, einexpr
-export Exhaustive, Greedy, HyPar, LineGraph
+export Exhaustive, Greedy, HyPar, NesDis, LineGraph
 
 using PackageExtensionCompat
 function __init__()

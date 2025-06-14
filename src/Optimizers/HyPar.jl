@@ -15,7 +15,8 @@ the parameters `level` and `width`.
 
 The optimizer is implemented using the hypergraph partitioning
 library [KaHyPar.jl](https://github.com/kahypar/KaHyPar.jl) and the tree decomposition library
-[CliqueTrees.jl](https://github.com/AlgebraicJulia/CliqueTrees.jl).
+[CliqueTrees.jl](https://github.com/AlgebraicJulia/CliqueTrees.jl). Its sister optimizer is
+[`NesDis`](@ref).
 
 # Arguments
 
