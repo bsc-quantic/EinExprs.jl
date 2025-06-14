@@ -2,6 +2,7 @@ using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
 using AbstractTrees
 using Compat
+using Graphs
 
 Base.@kwdef struct EinExpr{Label}
     head::Vector{Label}
@@ -332,4 +333,25 @@ function sumtraces(path::EinExpr)
     end
 
     EinExpr(path.head, _args)
+end
+
+function components(path::EinExpr{L}) where {L}
+    network = map(head, path.args)
+    # create adjacency matrix of the network
+    n = nargs(path)
+    adjmat = falses(n,n)
+    
+    for (i,j) in combinations(1:n, 2)
+        if !isdisjoint(network[i], network[j])
+            adjmat[i,j] = true
+            adjmat[j,i] = true
+        end
+    end
+
+    # find disconneceted subgraphs
+    subgraphs = connected_components(SimpleGraph(adjmat))
+
+    # create subnetworks
+    indeppaths = [sum(EinExpr.([network[tns] for tns in subnet])) for subnet in subgraphs]
+    return indeppaths
 end

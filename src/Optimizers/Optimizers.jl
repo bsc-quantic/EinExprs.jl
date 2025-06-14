@@ -3,7 +3,7 @@ abstract type Optimizer end
 function einexpr end
 
 einexpr(T::Type{<:Optimizer}, args...; kwargs...) = einexpr(T(; kwargs...), args...)
-einexpr(config::Optimizer, expr, sizedict) = einexpr(config, SizedEinExpr(expr, sizedict))
+einexpr(config::Optimizer, expr, sizedict) = sum(einexpr.((config,), map(exp -> SizedEinExpr(exp, sizedict), components(expr))))
 
 function einexpr(path::SizedEinExpr; optimizer)
     path = deepcopy(path)
