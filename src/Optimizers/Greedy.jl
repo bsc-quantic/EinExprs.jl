@@ -56,7 +56,7 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
         any(∉(args(path)), args(winner)) && continue
 
         # remove old intermediate tensors
-        setdiff!(path.args, args(winner))
+        filter!(x -> !any(y -> y == x, args(winner)), path.args)
 
         # update histogram of hyperindices
         if !isempty(hyperhistogram)
