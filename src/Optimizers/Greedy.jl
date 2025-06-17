@@ -27,14 +27,20 @@ The implementation uses a binary heaptree to sort candidate pairwise tensor cont
     outer::Bool = false
 end
 
-function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
+function einexpr(config::Greedy, path::EinExpr{L}, sizedict) where {L}
+    einexpr(config, path, sizedict, config.metric(sizedict), config.choose)
+end
+
+function einexpr(config::Greedy, path::EinExpr{L}, _, metric, choose) where {L}
     # remove self-loops
     path = sumtraces(path)
-    metric = config.metric(sizedict)
 
     hyperhistogram = filter!(indshistogram(args(path))) do (_, v)
         v > 2
     end
+
+    # auxiliary variable that replicates they keys in `hyperhistogram` to avoid using set operations (which are costly)
+    _hyperinds = collect(keys(hyperhistogram))
 
     # generate initial candidate contractions
     queue = MutableBinaryHeap{Tuple{Float64,EinExpr{L}}}(
@@ -42,7 +48,7 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
         map(
             Iterators.filter(((a, b),) -> config.outer || !isdisjoint(a.head, b.head), combinations(path.args, 2)),
         ) do (a, b)
-            candidate = sum([a, b], skip = !isempty(hyperhistogram) ? path.head ∪ keys(hyperhistogram) : path.head)
+            candidate = sum([a, b], skip = !isempty(hyperhistogram) ? [path.head; _hyperinds] : path.head)
             weight = metric(candidate)
             (weight, candidate)
         end,
@@ -50,7 +56,7 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
 
     while nargs(path) > 2 && length(queue) > 1
         # choose winner
-        _, winner = config.choose(queue)
+        _, winner = choose(queue)
 
         # discard winner if old
         any(∉(args(path)), args(winner)) && continue
@@ -62,14 +68,16 @@ function einexpr(config::Greedy, path::EinExpr{L}, sizedict::Dict{L}) where {L}
         if !isempty(hyperhistogram)
             for i in collect(Iterators.flatten(parsuminds(winner))) ∩ keys(hyperhistogram)
                 hyperhistogram[i] -= 1
-                hyperhistogram[i] <= 2 && delete!(hyperhistogram, i)
+                if hyperhistogram[i] <= 2
+                    delete!(hyperhistogram, i)
+                    filter!(!=(i), _hyperinds)
+                end
             end
         end
 
         # update candidate queue
         for other in Iterators.filter(other -> config.outer || !isdisjoint(winner.head, other.head), path.args)
-            candidate =
-                sum([winner, other], skip = !isempty(hyperhistogram) ? path.head ∪ keys(hyperhistogram) : path.head)
+            candidate = sum([winner, other], skip = !isempty(hyperhistogram) ? [path.head; _hyperinds] : path.head)
             weight = metric(candidate)
             push!(queue, (weight, candidate))
         end
