@@ -1,5 +1,4 @@
 using Test
-using Tenet
 using EinExprs
 
 @testset "Unit tests" verbose = true begin

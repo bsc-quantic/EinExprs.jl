@@ -1,44 +1,86 @@
 @testset "LineGraph" begin
     # connected
-    network = SimpleTensorNetwork([
-        Tensor(rand(2, 2), (:i, :m)),
-        Tensor(rand(2, 2, 2), (:i, :j, :p)),
-        Tensor(rand(2, 2, 2), (:n, :j, :k)),
-        Tensor(rand(2, 2, 2), (:p, :k, :l)),
-        Tensor(rand(2, 2, 2), (:m, :n, :o)),
-        Tensor(rand(2, 2), (:o, :l)),
-    ])
+    @testset let network = SizedEinExpr(
+            EinExpr(
+                Symbol[],
+                [
+                    EinExpr([:i, :m])
+                    EinExpr([:i, :j, :p])
+                    EinExpr([:n, :j, :k])
+                    EinExpr([:p, :k, :l])
+                    EinExpr([:m, :n, :o])
+                    EinExpr([:o, :l])
+                ],
+            ),
+            Dict(:i => 2, :j => 2, :k => 2, :l => 2, :m => 2, :n => 2, :o => 2, :p => 2),
+        )
+        path1 = einexpr(Greedy(), network)
+        path2 = einexpr(LineGraph(), network)
+        @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
 
-    path1 = einexpr(network; optimizer = Greedy())
-    path2 = einexpr(network; optimizer = LineGraph())
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
-    @test contract(network; path = path1) ≈ contract(network; path = path2)
+        # TODO numerical test disabled due to circular dependency
+        # @test contract(network; path = path1) ≈ contract(network; path = path2)
+    end
 
-    path1 = einexpr(network; optimizer = Greedy(), outputs = [:i, :p])
-    path2 = einexpr(network; optimizer = LineGraph(), outputs = [:i, :p])
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
-    @test contract(network; path = path1) ≈ contract(network; path = path2)
+    @testset let network = SizedEinExpr(
+            EinExpr(
+                Symbol[:i, :p],
+                [
+                    EinExpr([:i, :m])
+                    EinExpr([:i, :j, :p])
+                    EinExpr([:n, :j, :k])
+                    EinExpr([:p, :k, :l])
+                    EinExpr([:m, :n, :o])
+                    EinExpr([:o, :l])
+                ],
+            ),
+            Dict(:i => 2, :j => 2, :k => 2, :l => 2, :m => 2, :n => 2, :o => 2, :p => 2),
+        )
+        path1 = einexpr(Greedy(), network)
+        path2 = einexpr(LineGraph(), network)
+        @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
+
+        # TODO numerical test disabled due to circular dependency
+        # @test contract(network; path = path1) ≈ contract(network; path = path2)
+    end
 
     # disconnected
-    network = TensorNetwork([
-        Tensor(rand(2, 2), (:i, :j)),
-        Tensor(rand(2, 2), (:i, :j)),
-        Tensor(rand(2, 2, 2), (:k, :l, :m)),
-        Tensor(rand(2, 2, 2), (:k, :l, :m)),
-    ])
+    @testset let network = SizedEinExpr(
+            EinExpr(Symbol[], [EinExpr([:i, :j]), EinExpr([:i, :j]), EinExpr([:k, :l, :m]), EinExpr([:k, :l, :m])]),
+            Dict(:i => 2, :j => 2, :k => 2, :l => 2, :m => 2),
+        )
+        path1 = einexpr(network; optimizer = Greedy())
+        path2 = einexpr(network; optimizer = LineGraph())
+        @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
 
-    path1 = einexpr(network; optimizer = Greedy())
-    path2 = einexpr(network; optimizer = LineGraph())
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
-    @test contract(network; path = path1) ≈ contract(network; path = path2)
+        # TODO numerical test disabled due to circular dependency
+        # @test contract(network; path = path1) ≈ contract(network; path = path2)
+    end
 
-    path1 = einexpr(network; optimizer = Greedy(), outputs = [:i])
-    path2 = einexpr(network; optimizer = LineGraph(), outputs = [:i])
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
-    @test contract(network; path = path1) ≈ contract(network; path = path2)
+    @testset let network = SizedEinExpr(
+            EinExpr(Symbol[:i], [EinExpr([:i, :j]), EinExpr([:i, :j]), EinExpr([:k, :l, :m]), EinExpr([:k, :l, :m])]),
+            Dict(:i => 2, :j => 2, :k => 2, :l => 2, :m => 2),
+        )
+        path1 = einexpr(Greedy(), network)
+        path2 = einexpr(LineGraph(), network)
+        @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
+    end
 
-    path1 = einexpr(network; optimizer = Greedy(), outputs = [:i, :k])
-    path2 = einexpr(network; optimizer = LineGraph(), outputs = [:i, :k])
-    @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
-    @test contract(network; path = path1) ≈ contract(network; path = path2)
+    # TODO numerical test disabled due to circular dependency
+    # @test contract(network; path = path1) ≈ contract(network; path = path2)
+
+    @testset let network = SizedEinExpr(
+            EinExpr(
+                Symbol[:i, :k],
+                [EinExpr([:i, :j]), EinExpr([:i, :j]), EinExpr([:k, :l, :m]), EinExpr([:k, :l, :m])],
+            ),
+            Dict(:i => 2, :j => 2, :k => 2, :l => 2, :m => 2),
+        )
+        path1 = einexpr(Greedy(), network)
+        path2 = einexpr(LineGraph(), network)
+        @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
+
+        # TODO numerical test disabled due to circular dependency
+        # @test contract(network; path = path1) ≈ contract(network; path = path2)
+    end
 end
