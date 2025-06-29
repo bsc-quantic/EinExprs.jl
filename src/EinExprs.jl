@@ -2,8 +2,11 @@ module EinExprs
 
 include("Utils.jl")
 
-include("EinExpr.jl")
+include("Interface.jl")
 export EinExpr
+
+include("SimpleEinExpr.jl")
+export SimpleEinExpr
 export head, args, inds, hyperinds, suminds, parsuminds, collapse!, contractorder, select, neighbours
 export Branches, branches, Leaves, leaves
 
