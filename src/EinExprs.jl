@@ -22,9 +22,4 @@ include("Optimizers/Optimizers.jl")
 export Optimizer, einexpr
 export Exhaustive, Greedy, HyPar, LineGraph
 
-using PackageExtensionCompat
-function __init__()
-    @require_extensions
-end
-
 end
