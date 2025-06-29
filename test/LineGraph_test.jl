@@ -1,6 +1,6 @@
 @testset "LineGraph" begin
     # connected
-    network = TensorNetwork([
+    network = SimpleTensorNetwork([
         Tensor(rand(2, 2), (:i, :m)),
         Tensor(rand(2, 2, 2), (:i, :j, :p)),
         Tensor(rand(2, 2, 2), (:n, :j, :k)),
@@ -19,7 +19,7 @@
     @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
     @test contract(network; path = path1) ≈ contract(network; path = path2)
 
-    # unconnected
+    # disconnected
     network = TensorNetwork([
         Tensor(rand(2, 2), (:i, :j)),
         Tensor(rand(2, 2), (:i, :j)),

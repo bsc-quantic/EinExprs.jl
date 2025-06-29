@@ -8,3 +8,6 @@ Metis = "2679e427-3c69-5b7f-982b-ece356f1e94b"
 NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
 Tenet = "85d41934-b9cd-44e1-8730-56d86f15f3ec"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+Tenet = "0.9"
