@@ -201,7 +201,7 @@ end...)
 #indshistogram(exprs::Vector) = indshistogram(exprs...)
 
 function indshistogram(exprs::Vector{EinExpr{L}}) where {L}
-    histogram = Dict{L, Int}()
+    histogram = Dict{L,Int}()
 
     for expr in exprs, i in head(expr)
         count = get!(histogram, i, 0)

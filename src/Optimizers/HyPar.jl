@@ -16,7 +16,7 @@ The line graph is partitioned using the algorithm `dis`. EinExprs currently supp
 algorithms, both of which require importing an external library.
 
 | type                                                                                             | package                                              |
-|:-------------------------------------------------------------------------------------------------|:-----------------------------------------------------|
+|:------------------------------------------------------------------------------------------------ |:---------------------------------------------------- |
 | [`METISND`](https://algebraicjulia.github.io/CliqueTrees.jl/stable/api/#CliqueTrees.METISND)     | [Metis.jl](https://github.com/JuliaSparse/Metis.jl)  |
 | [`KaHyParND`](https://algebraicjulia.github.io/CliqueTrees.jl/stable/api/#CliqueTrees.KaHyParND) | [KayHyPar.jl](https://github.com/kahypar/KaHyPar.jl) |
 
@@ -29,24 +29,24 @@ The optimizer is implemented using the tree decomposition library
   - `algs`: tuple of [elimination algorithms](https://algebraicjulia.github.io/CliqueTrees.jl/stable/api/#Elimination-Algorithms).
   - `level`: maximum level
   - `width`: minimum width
-  - `imbalances`: imbalance parameters 
-
+  - `imbalances`: imbalance parameters
 """
-struct HyPar{D, A} <: Optimizer
+struct HyPar{D,A} <: Optimizer
     dis::D
     algs::A
     level::Int
     width::Int
-    imbalances::StepRange{Int, Int}
+    imbalances::StepRange{Int,Int}
 end
 
-function HyPar(dis::D=KaHyParND(), algs::A = (MF(), MMD());
-        level::Integer = 6,
-        width::Integer = 120,
-        imbalances::AbstractRange=130:130,
-    ) where{D, A}
-
-    return HyPar{D, A}(dis, algs, level, width, imbalances)
+function HyPar(
+    dis::D = KaHyParND(),
+    algs::A = (MF(), MMD());
+    level::Integer = 6,
+    width::Integer = 120,
+    imbalances::AbstractRange = 130:130,
+) where {D,A}
+    return HyPar{D,A}(dis, algs, level, width, imbalances)
 end
 
 # scoring function used during
@@ -62,15 +62,11 @@ function EinExprs.einexpr(config::HyPar, path)
     width = config.width
     imbalances = config.imbalances
 
-    minpath = nothing; minscore = typemax(Float64)
+    minpath = nothing;
+    minscore = typemax(Float64)
 
     for alg in algs, imbalance in imbalances
-
-        curconfig = LineGraph(SafeRules(ND(alg, dis;
-            level,
-            width,
-            imbalance,
-        )))
+        curconfig = LineGraph(SafeRules(ND(alg, dis; level, width, imbalance)))
 
         curpath = einexpr(curconfig, path)
         curscore = score(curpath)
@@ -83,7 +79,7 @@ function EinExprs.einexpr(config::HyPar, path)
     return minpath
 end
 
-function Base.show(io::IO, ::MIME"text/plain", config::HyPar{D, A}) where {D, A}
+function Base.show(io::IO, ::MIME"text/plain", config::HyPar{D,A}) where {D,A}
     println(io, "HyPar{$D, $A}:")
     show(IOContext(io, :indent => 4), "text/plain", config.dis)
 

@@ -66,14 +66,14 @@ end
 function Makie.plot!(
     ax::Union{Axis,Axis3},
     path::SizedEinExpr;
-    colormap = to_colormap(:viridis)[begin:end-10],
+    colormap = to_colormap(:viridis)[begin:(end-10)],
     inds = false,
     kwargs...,
 )
     handles = IdDict(obj => i for (i, obj) in enumerate(PostOrderDFS(path.path)))
     graph = SimpleDiGraph([Edge(handles[from], handles[to]) for to in Branches(path.path) for from in to.args])
 
-    lin_size = length.(PostOrderDFS(path))[1:end-1]
+    lin_size = length.(PostOrderDFS(path))[1:(end-1)]
     lin_flops = map(max, Iterators.repeated(1), Iterators.map(flops, PostOrderDFS(path)))
 
     log_size = log2.(lin_size)
@@ -127,7 +127,7 @@ function Makie.plot!(
         :node_attr,
         (
             colorrange = extrema(lin_flops),
-            colormap = to_colormap(:plasma)[begin:end-50],
+            colormap = to_colormap(:plasma)[begin:(end-50)],
             colorscale = log10,
             highclip = Makie.Automatic(),
             lowclip = Makie.Automatic(),
@@ -135,7 +135,7 @@ function Makie.plot!(
     )
 
     # configure labels
-    inds == true && get!(() -> join.(head.(PostOrderDFS(path)))[1:end-1], kwargs, :elabels)
+    inds == true && get!(() -> join.(head.(PostOrderDFS(path)))[1:(end-1)], kwargs, :elabels)
     get!(() -> repeat([:black], ne(graph)), kwargs, :elabels_color)
     get!(() -> log_size ./ maximum(log_size) .* 5 .+ 12, kwargs, :elabels_textsize)
 

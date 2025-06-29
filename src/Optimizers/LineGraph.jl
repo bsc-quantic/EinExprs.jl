@@ -13,7 +13,7 @@ decomposition using [CliqueTrees.jl](https://github.com/AlgebraicJulia/CliqueTre
 
   - `alg` is an elimination algorithm. See the list [here](https://algebraicjulia.github.io/CliqueTrees.jl/stable/api/#Elimination-Algorithms).
 """
-struct LineGraph{A <: EliminationAlgorithm} <: Optimizer
+struct LineGraph{A<:EliminationAlgorithm} <: Optimizer
     alg::A
 end
 
@@ -32,15 +32,20 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     # tensors [    ti   ]
     #         [         ]
     # we only care about the sparsity pattern
-    il = L[]; li = Dict{L, Int}() # il ∘ li = id
-    weights = Float64[]; nzval = Int[]; rowval = Int[]
-    colptr = Int[]; push!(colptr, 1)
+    il = L[];
+    li = Dict{L,Int}() # il ∘ li = id
+    weights = Float64[];
+    nzval = Int[];
+    rowval = Int[]
+    colptr = Int[];
+    push!(colptr, 1)
 
     for tensor in tensors
         for l in head(tensor)
             if !haskey(li, l)
                 push!(weights, log2(sizedict[l]))
-                push!(il, l); li[l] = length(il)
+                push!(il, l);
+                li[l] = length(il)
             end
 
             push!(nzval, 1)
@@ -57,8 +62,9 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     end
 
     push!(colptr, length(rowval) + 1)
-    m = length(il); n = length(tensors)
-    it = SparseMatrixCSC{Int, Int}(m, n + 1, colptr, rowval, nzval)
+    m = length(il);
+    n = length(tensors)
+    it = SparseMatrixCSC{Int,Int}(m, n + 1, colptr, rowval, nzval)
     ti = copy(transpose(it))
 
     # construct line graph `ii`
@@ -70,10 +76,11 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     ii = ti' * ti
 
     # compute a tree (forest) decomposition of `ii`
-    perm, tree = cliquetree(weights, ii; alg=config.alg)
-   
+    perm, tree = cliquetree(weights, ii; alg = config.alg)
+
     # find the bag containing `clique`, call it `root`
-    clique = zeros(Bool, m); root = 0
+    clique = zeros(Bool, m);
+    root = 0
 
     for i in view(rowvals(it), nzrange(it, n + 1))
         clique[i] = true
@@ -107,13 +114,14 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     end
 
     # dynamic programming
-    tags = zeros(Bool, n + 1); stack = EinExpr{L}[]
+    tags = zeros(Bool, n + 1);
+    stack = EinExpr{L}[]
 
     for (b, bag) in enumerate(tree)
         sep = separator(bag)
         res = residual(bag)
         tensor = EinExpr(il[sep])
-       
+
         for i in res, t in view(rowvals(ti), nzrange(ti, i))
             if !tags[t]
                 tags[t] = true

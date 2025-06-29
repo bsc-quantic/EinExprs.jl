@@ -32,7 +32,7 @@
 
             path =
                 einexpr(EinExprs.Exhaustive(strategy = :depth), SizedEinExpr(sum([a, b, c], skip = Symbol[]), sizedict))
-            @test all(∋(:β) ∘ head, branches(path)[1:end-1])
+            @test all(∋(:β) ∘ head, branches(path)[1:(end-1)])
             @test all(!∋(:β) ∘ head, branches(path)[end:end])
         end
     end

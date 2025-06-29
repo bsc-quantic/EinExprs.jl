@@ -146,7 +146,7 @@ function exhaustive_breadthfirst(
         cost_next = cost_max
 
         # construct all subsets of `c` tensors (S[c]) that fulfill cost <= cost_cur
-        for c in 2:n, k in 1:c÷2, (ia, ta) in enumerate(S[k]), (ib, tb) in enumerate(S[c-k])
+        for c in 2:n, k in 1:(c÷2), (ia, ta) in enumerate(S[k]), (ib, tb) in enumerate(S[c-k])
             # special case for k = c/2 ∈ ℕ (i.e. k == c-k): `S[k] === S[c-k]` and thus, we only need `combinations(S[k], 2)`
             k == c - k && ia >= ib && continue
 

@@ -9,7 +9,7 @@ import KaHyPar
 
 Random.seed!(1)
 
-struct BestOfK{T <: Optimizer} <: Optimizer
+struct BestOfK{T<:Optimizer} <: Optimizer
     opt::T
     k::Int
 end
@@ -33,7 +33,8 @@ end
 
 const OPTIMIZERS = Dict(
     "exhaustive" => Exhaustive(),
-    "random-greedy" => BestOfK(Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 5 * rand())), 10),
+    "random-greedy" =>
+        BestOfK(Greedy(; metric = sizedict -> (expr -> removedsize(expr, sizedict) + 5 * rand())), 10),
     "greedy" => Greedy(),
     "kahypar" => HyPar(),
     "min-fill" => LineGraph(MF()),
@@ -42,12 +43,12 @@ const OPTIMIZERS = Dict(
 function random_regular_eincode(n::Integer, k::Integer)
     graph = random_regular_graph(n, k)
     exprs = Vector{EinExpr{Int}}(undef, n)
-    sizedict = Dict{Int, Int}()
-    
+    sizedict = Dict{Int,Int}()
+
     for v in vertices(graph)
         exprs[v] = EinExpr(Int[])
     end
-    
+
     for (i, edge) in enumerate(edges(graph))
         v = src(edge)
         w = dst(edge)
@@ -55,7 +56,7 @@ function random_regular_eincode(n::Integer, k::Integer)
         push!(head(exprs[w]), i)
         sizedict[i] = 2
     end
-    
+
     return SizedEinExpr(sum(exprs), sizedict)
 end
 
@@ -72,7 +73,7 @@ function make(m::Integer, n::Integer, k::Integer, optimizers::Vector{String})
 
     # construct benchmarks
     suite = BenchmarkGroup()
-    count = Dict{String, Matrix{BigInt}}()
+    count = Dict{String,Matrix{BigInt}}()
 
     for name in optimizers
         count[name] = Matrix{BigInt}(undef, k, m)
@@ -89,7 +90,7 @@ function make(m::Integer, n::Integer, k::Integer, optimizers::Vector{String})
     end
 
     # tune benchmarks
-    tune!(suite; verbose=true)
+    tune!(suite; verbose = true)
 
     # run benchmarks
     results = run(suite, verbose = true)
@@ -102,7 +103,7 @@ function make(m::Integer, n::Integer, k::Integer, optimizers::Vector{String})
         push!(x, Float64[])
         push!(y, Float64[])
     end
-        
+
     for name in optimizers, i in 1:k
         xx = 0.0
         yy = 0.0
@@ -116,32 +117,34 @@ function make(m::Integer, n::Integer, k::Integer, optimizers::Vector{String})
         push!(y[i], yy)
     end
 
-    figure = Figure(; size=(600, 200 * k))
+    figure = Figure(; size = (600, 200 * k))
 
-    for i in 1:k - 1
-        axis = Axis(figure[i, 1];
+    for i in 1:(k-1)
+        axis = Axis(
+            figure[i, 1];
             ylabel = "time (ns)",
-            xscale=log10,
-            yscale=log10,
+            xscale = log10,
+            yscale = log10,
             xautolimitmargin = (0.1, 0.2),
             yautolimitmargin = (0.1, 0.2),
         )
 
         scatter!(axis, x[i], y[i])
-        text!(axis, x[i], y[i]; text=optimizers)
+        text!(axis, x[i], y[i]; text = optimizers)
     end
 
-    axis = Axis(figure[k, 1];
+    axis = Axis(
+        figure[k, 1];
         ylabel = "time (ns)",
         xlabel = "flops",
-        xscale=log10,
-        yscale=log10,
+        xscale = log10,
+        yscale = log10,
         xautolimitmargin = (0.1, 0.2),
         yautolimitmargin = (0.1, 0.2),
     )
 
     scatter!(axis, x[k], y[k])
-    text!(axis, x[k], y[k]; text=optimizers)
+    text!(axis, x[k], y[k]; text = optimizers)
 
     save("$n.svg", figure)
 end
@@ -149,19 +152,9 @@ end
 # random regular graph:
 #   |V| = 16
 #   k ∈ {3, 4, 5}
-make(5, 16, 3, [
-    "exhaustive",
-    "greedy",
-    "random-greedy",
-    "kahypar",
-    "min-fill",
-])
+make(5, 16, 3, ["exhaustive", "greedy", "random-greedy", "kahypar", "min-fill"])
 
 # random regular graph
 #   |V| = 512
 #   k ∈ {3, 4, 5}
-make(5, 512, 3, [
-    "greedy",
-    "random-greedy",
-    "min-fill",
-])
+make(5, 512, 3, ["greedy", "random-greedy", "min-fill"])

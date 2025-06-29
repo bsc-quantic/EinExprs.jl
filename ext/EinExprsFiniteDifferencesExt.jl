@@ -10,7 +10,7 @@ function FiniteDifferences.to_vec(expr::EinExpr)
     sz = typeof(lengths)(cumsum(collect(lengths)))
     function EinExpr_from_vec(v)
         args = map(x_backs, lengths, sz) do x_back, l, s
-            return x_back(v[s-l+1:s])
+            return x_back(v[(s-l+1):s])
         end
         EinExpr(head(expr), args)
     end
