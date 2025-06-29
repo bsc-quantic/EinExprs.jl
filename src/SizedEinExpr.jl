@@ -1,5 +1,4 @@
 using AbstractTrees
-using Compat
 
 struct SizedEinExpr{Label}
     path::EinExpr{Label}

@@ -1,7 +1,6 @@
 using Base: @kwdef
 using Combinatorics
 using LinearAlgebra: Symmetric
-using Compat
 
 @doc raw"""
     Exhaustive(; outer = false)

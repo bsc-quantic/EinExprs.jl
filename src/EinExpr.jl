@@ -1,7 +1,6 @@
 using Base: AbstractVecOrTuple
 using DataStructures: DefaultDict
 using AbstractTrees
-using Compat
 
 Base.@kwdef struct EinExpr{Label}
     head::Vector{Label}

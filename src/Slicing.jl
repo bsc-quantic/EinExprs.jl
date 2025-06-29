@@ -1,5 +1,4 @@
 using AbstractTrees
-using Compat
 
 """
     selectdim(path::EinExpr, index, i)
