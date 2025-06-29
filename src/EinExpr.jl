@@ -93,7 +93,7 @@ Base.ndims(path::EinExpr) = length(head(path))
 
 Return the size of the resulting tensor from contracting `path`. If `index` is specified, return the size of such index.
 """
-Base.size(path::EinExpr, sizedict) = (sizedict[i] for i in head(path)) |> @compat(splat(tuple))
+Base.size(path::EinExpr, sizedict) = (sizedict[i] for i in head(path)) |> splat(tuple)
 Base.length(path::EinExpr, sizedict) = (prod ∘ size)(path, sizedict)
 
 """

@@ -47,11 +47,11 @@
         tensor = EinExpr([:i, :j])
         expr = EinExpr([:i], [tensor])
 
-        @test all(@compat(splat(==)), zip(expr.head, [:i]))
+        @test all(splat(==)), zip(expr.head, [:i])
         @test expr.args == [tensor]
 
-        @test all(@compat(splat(==)), zip(head(expr), [:i]))
-        @test all(@compat(splat(==)), zip(inds(expr), [:i, :j]))
+        @test all(splat(==)), zip(head(expr), [:i])
+        @test all(splat(==)), zip(inds(expr), [:i, :j])
 
         @test isempty(hyperinds(expr))
         @test suminds(expr) == [:j]
@@ -68,11 +68,11 @@
         tensor = EinExpr([:i, :i])
         expr = EinExpr([:i], [tensor])
 
-        @test all(@compat(splat(==)), zip(expr.head, [:i]))
+        @test all(splat(==)), zip(expr.head, [:i])
         @test expr.args == [tensor]
 
-        @test all(@compat(splat(==)), zip(head(expr), [:i]))
-        @test all(@compat(splat(==)), zip(inds(expr), head(expr)))
+        @test all(splat(==)), zip(head(expr), [:i])
+        @test all(splat(==)), zip(inds(expr), head(expr))
 
         @test isempty(hyperinds(expr))
         @test isempty(suminds(expr))
@@ -91,7 +91,7 @@
         @test expr.args == [tensor]
 
         @test isempty(head(expr))
-        @test all(@compat(splat(==)), zip(inds(expr), [:i]))
+        @test all(splat(==)), zip(inds(expr), [:i])
 
         @test isempty(hyperinds(expr))
         @test suminds(expr) == [:i]
@@ -106,11 +106,11 @@
         tensors = [EinExpr([:i, :j]), EinExpr([:k, :l])]
         expr = EinExpr([:i, :j, :k, :l], tensors)
 
-        @test all(@compat(splat(==)), zip(expr.head, [:i, :j, :k, :l]))
+        @test all(splat(==)), zip(expr.head, [:i, :j, :k, :l])
         @test expr.args == tensors
 
-        @test all(@compat(splat(==)), zip(head(expr), mapreduce(collect ∘ inds, vcat, tensors)))
-        @test all(@compat(splat(==)), zip(inds(expr), head(expr)))
+        @test all(splat(==)), zip(head(expr), mapreduce(collect ∘ inds, vcat, tensors))
+        @test all(splat(==)), zip(inds(expr), head(expr))
         @test ndims(expr) == 4
 
         @test isempty(hyperinds(expr))
@@ -135,7 +135,7 @@
             @test expr.args == tensors
 
             @test isempty(head(expr))
-            @test all(@compat(splat(==)), zip(inds(expr), [:i]))
+            @test all(splat(==)), zip(inds(expr), [:i])
             @test ndims(expr) == 0
 
             @test isempty(hyperinds(expr))
@@ -154,7 +154,7 @@
             @test expr.args == tensors
 
             @test isempty(head(expr))
-            @test all(@compat(splat(==)), zip(inds(expr), [:i, :j]))
+            @test all(splat(==)), zip(inds(expr), [:i, :j])
             @test ndims(expr) == 0
 
             @test isempty(hyperinds(expr))
@@ -172,11 +172,11 @@
         tensors = [EinExpr([:i, :k]), EinExpr([:k, :j])]
         expr = EinExpr([:i, :j], tensors)
 
-        @test all(@compat(splat(==)), zip(expr.head, [:i, :j]))
+        @test all(splat(==)), zip(expr.head, [:i, :j])
         @test expr.args == tensors
 
-        @test all(@compat(splat(==)), zip(head(expr), [:i, :j]))
-        @test all(@compat(splat(==)), zip(inds(expr), [:i, :k, :j]))
+        @test all(splat(==)), zip(head(expr), [:i, :j])
+        @test all(splat(==)), zip(inds(expr), [:i, :k, :j])
         @test ndims(expr) == 2
 
         @test isempty(hyperinds(expr))
@@ -217,7 +217,7 @@
             tensors = [EinExpr([:i, :β, :j]), EinExpr([:k, :β]), EinExpr([:β, :l, :m])]
             expr = sum(tensors)
 
-            @test all(@compat(splat(==)), zip(expr.head, [:i, :j, :k, :l, :m]))
+            @test all(splat(==)), zip(expr.head, [:i, :j, :k, :l, :m])
             @test expr.args == tensors
 
             @test issetequal(head(expr), [:i, :j, :k, :l, :m])

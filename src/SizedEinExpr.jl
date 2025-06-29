@@ -70,7 +70,7 @@ Base.sum(sexpr::SizedEinExpr, inds) = sum(sexpr.path, inds)
 function Base.sum(sexpr::Vector{SizedEinExpr{L}}; skip = L[]) where {L}
     path = sum(map(x -> x.path, sexpr); skip)
     size =
-        @compat(allequal(Iterators.map(x -> x.size, sexpr))) ? first(sexpr).size :
+        allequal(Iterators.map(x -> x.size, sexpr)) ? first(sexpr).size :
         mapreduce(x -> x.size, merge!, sexpr; init = Dict{L,Int}())
     # size = merge(map(x -> x.size, sexpr)...)
     SizedEinExpr(path, size)

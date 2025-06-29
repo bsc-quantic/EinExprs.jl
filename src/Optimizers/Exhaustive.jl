@@ -50,12 +50,10 @@ function einexpr(config::Exhaustive, path::SizedEinExpr{L}; cost = BigInt(0)) wh
         return exhaustive_breadthfirst(Val(config.metric), path, settype, config.outer, config.init)
     elseif config.strategy === :depth
         init_path = einexpr(config.init, path)
-        leader = Ref(
-            @compat (;
-                path = init_path,
-                cost = mapreduce(config.metric, +, Branches(init_path, inverse = true), init = BigInt(0))::BigInt,
-            )
-        )
+        leader = Ref((;
+            path = init_path,
+            cost = mapreduce(config.metric, +, Branches(init_path, inverse = true), init = BigInt(0))::BigInt,
+        ))
         exhaustive_depthfirst(Val(config.metric), path, cost, config.outer, leader)
         return leader[].path
     else
@@ -73,7 +71,7 @@ function exhaustive_depthfirst(
     hashyperinds = !isempty(hyperinds(path)),
 ) where {L,Metric}
     if nargs(path) <= 2
-        leader[] = @compat (; path = path, cost = cost)
+        leader[] = (; path = path, cost = cost)
         return
     end
 

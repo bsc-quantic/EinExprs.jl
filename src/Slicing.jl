@@ -100,7 +100,7 @@ function findslices(
 
     candidates = Set(setdiff(mapreduce(head, ∪, PostOrderDFS(path)), skip))
     solution = Set{L}()
-    current = @compat (; slices = 1, size = maximum(length, PostOrderDFS(path)), overhead = 1.0)
+    current = (; slices = 1, size = maximum(length, PostOrderDFS(path)), overhead = 1.0)
     original_flops = mapreduce(flops, +, Branches(path; inverse = true))
 
     sliced_path = path
@@ -119,7 +119,7 @@ function findslices(
         !isnothing(overhead) && cur_overhead > overhead && break
         push!(solution, winner)
 
-        current = @compat (;
+        current = (;
             slices = current.slices * Base.size(path, winner),
             size = maximum(length, PostOrderDFS(sliced_path)),
             overhead = cur_overhead,
