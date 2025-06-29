@@ -54,3 +54,30 @@ if VERSION >= v"1.9"
 else
     flatmap(f, iterators...) = Iterators.flatten(Iterators.map(f, iterators...))
 end
+
+@generated function flatunique(f, itr)
+    if Iterators.IteratorEltype(itr) isa Iterators.EltypeUnknown
+        return :(flatunique(Any, f, itr))
+    end
+
+    fouttype = Base.promote_op(f.instance, eltype(itr))
+    if Iterators.IteratorEltype(fouttype) isa Iterators.EltypeUnknown
+        return :(flatunique(Any, f, itr))
+    end
+
+    return :(flatunique($(eltype(fouttype)), f, itr))
+end
+
+function flatunique(::Type{T}, f, itr) where {T}
+    u = T[]
+    for x in itr
+        for y in f(x)
+            y ∉ u && push!(u, y)
+        end
+    end
+
+    return u
+end
+
+# TODO move to DelegatorTraits.jl
+struct FunctionDelegatable{F} <: Interface end
