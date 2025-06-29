@@ -10,14 +10,14 @@ canonize(method::Canonization, path::EinExpr; kwargs...) = canonize!(method, dee
 function canonize! end
 
 """
-    SumShadowInds
+    SumGhostInds
 
-Sums over shadow indices; i.e. indices whose size is 1.
+Sums over ghost indices that do not appear in the output; i.e. indices whose size is 1.
 """
-struct SumShadowInds <: Canonization end
+struct SumGhostInds <: Canonization end
 
-function canonize!(::SumShadowInds, path::SizedEinExpr)
-    shadowinds = filter(inds(path)) do i
+function canonize!(::SumGhostInds, path)
+    shadowinds = filter(setdiff(inds(path), head(path))) do i
         size(path, i) == 1
     end
 
@@ -35,7 +35,7 @@ Sums over open indices that do not appear in the output; i.e. indices that appea
 """
 struct SumOpenInds <: Canonization end
 
-function canonize!(::SumOpenInds, path::SizedEinExpr)
+function canonize!(::SumOpenInds, path)
     targets = setdiff(openinds(path), head(path))
 
     for i in targets
