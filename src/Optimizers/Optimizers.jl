@@ -9,7 +9,7 @@ function einexpr(path::SizedEinExpr; optimizer)
     path = deepcopy(path)
 
     # remove inds with dim=1 (shadow inds)
-    canonize!(SumShadowInds(), path)
+    canonize!(SumGhostInds(), path)
 
     einexpr(optimizer, path)
 end
