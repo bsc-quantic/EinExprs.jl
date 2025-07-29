@@ -52,13 +52,17 @@ Binarize an n-ary contraction tree.
 """
 struct Binarize <: Canonization end
 
-function canonize!(::Binarize, path::EinExpr)
-    if length(args(path)) > 2
-        copy!(args(path), args(einexpr(Naive(), path)))
-    end
+function canonize!(::Binarize, path::EinExpr{L}) where {L}
+    stack = EinExpr{L}[]; push!(stack, path)
 
-    for arg in args(path)
-        canonize!(Binarize(), arg)
+    while !isempty(stack)
+        branch = pop!(stack)
+
+        if length(args(branch)) > 2
+            copy!(args(branch), args(einexpr(Naive(), branch)))
+        end
+
+        append!(stack, args(branch))
     end
 
     return path

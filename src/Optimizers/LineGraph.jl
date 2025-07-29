@@ -79,18 +79,17 @@ function einexpr(config::LineGraph, path::EinExpr{L}, sizedict::Dict{L}) where {
     perm, tree = cliquetree(weights, ii; alg = config.alg)
 
     # find the bag containing `clique`, call it `root`
-    clique = zeros(Bool, m);
-    root = 0
+    clique = zeros(Bool, m); root = length(tree)
 
     for i in view(rowvals(it), nzrange(it, n + 1))
         clique[i] = true
     end
 
     for (b, bag) in enumerate(tree)
-        !iszero(root) && break
+        root < length(tree) && break
 
         for i in residual(bag)
-            !iszero(root) && break
+            root < length(tree) && break
 
             if clique[perm[i]]
                 root = b
