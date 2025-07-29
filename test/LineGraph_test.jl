@@ -24,7 +24,7 @@
 
     @testset let network = SizedEinExpr(
             EinExpr(
-                Symbol[:i, :p],
+                [:i, :p],
                 [
                     EinExpr([:i, :m])
                     EinExpr([:i, :j, :p])
@@ -39,6 +39,7 @@
         path1 = einexpr(Greedy(), network)
         path2 = einexpr(LineGraph(), network)
         @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
+        @test head(path2) == [:i, :p]
 
         # TODO numerical test disabled due to circular dependency
         # @test contract(network; path = path1) ≈ contract(network; path = path2)
@@ -58,12 +59,13 @@
     end
 
     @testset let network = SizedEinExpr(
-            EinExpr(Symbol[:i], [EinExpr([:i, :j]), EinExpr([:i, :j]), EinExpr([:k, :l, :m]), EinExpr([:k, :l, :m])]),
+            EinExpr([:i], [EinExpr([:i, :j]), EinExpr([:i, :j]), EinExpr([:k, :l, :m]), EinExpr([:k, :l, :m])]),
             Dict(:i => 2, :j => 2, :k => 2, :l => 2, :m => 2),
         )
         path1 = einexpr(Greedy(), network)
         path2 = einexpr(LineGraph(), network)
         @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
+        @test head(path2) == [:i]
     end
 
     # TODO numerical test disabled due to circular dependency
@@ -71,14 +73,15 @@
 
     @testset let network = SizedEinExpr(
             EinExpr(
-                Symbol[:i, :k],
+                [:i, :k],
                 [EinExpr([:i, :j]), EinExpr([:i, :j]), EinExpr([:k, :l, :m]), EinExpr([:k, :l, :m])],
             ),
             Dict(:i => 2, :j => 2, :k => 2, :l => 2, :m => 2),
         )
         path1 = einexpr(Greedy(), network)
         path2 = einexpr(LineGraph(), network)
-        @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 10
+        @test mapreduce(flops, +, Branches(path1)) >= mapreduce(flops, +, Branches(path2)) - 40
+        @test head(path2) == [:i, :k]
 
         # TODO numerical test disabled due to circular dependency
         # @test contract(network; path = path1) ≈ contract(network; path = path2)
